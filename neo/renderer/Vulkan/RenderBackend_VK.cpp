@@ -1582,7 +1582,7 @@ void idRenderBackend::GL_EndFrame() {
 	VkSemaphore * acquire = &vkcontext.acquireSemaphores[ vkcontext.currentFrameData ];
 	VkSemaphore * finished = &vkcontext.renderCompleteSemaphores[ vkcontext.currentFrameData ];
 
-	VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
