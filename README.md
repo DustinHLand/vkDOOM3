@@ -37,6 +37,8 @@ Install [Visual Studio Community](https://www.visualstudio.com) with Visual C++ 
 Open the Visual Studio solution, `neo\doom3.sln`, select the desired configuration and platform, then
 build the solution. (GL=OpenGL, VK=Vulkan)
 
+Note: I have been working with VS2015 and have not tried 2017 yet. Contributions welcome. :)
+
 ### MinGW
 
 Not currently supported.
