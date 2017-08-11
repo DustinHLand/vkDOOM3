@@ -1,0 +1,8 @@
+uniforms [
+	rpWindowCoord
+]
+bindings [
+	ubo
+	sampler
+	sampler
+]

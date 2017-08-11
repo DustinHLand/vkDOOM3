@@ -1,0 +1,13 @@
+uniforms [
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpTexGen0S
+	rpTexGen0T
+	rpTexGen0Q
+	rpTexGen1S
+]
+bindings [
+	ubo
+]

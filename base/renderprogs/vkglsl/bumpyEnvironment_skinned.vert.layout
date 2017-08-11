@@ -1,0 +1,15 @@
+uniforms [
+	rpLocalViewOrigin
+	rpColor
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpModelMatrixX
+	rpModelMatrixY
+	rpModelMatrixZ
+]
+bindings [
+	ubo
+	ubo
+]

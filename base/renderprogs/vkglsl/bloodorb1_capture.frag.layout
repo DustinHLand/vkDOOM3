@@ -1,0 +1,6 @@
+uniforms []
+bindings [
+	sampler
+	sampler
+	sampler
+]

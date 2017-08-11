@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Sys">
+      <UniqueIdentifier>{d5c7a167-9e93-4023-b53b-fa0ef811805b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sys\RC">
+      <UniqueIdentifier>{061fad51-b580-494f-9bf7-745f5f9be8ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sys\RC\res">
+      <UniqueIdentifier>{7380fc4b-a34a-4c0e-8748-57fb980d304e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sys\Win32">
+      <UniqueIdentifier>{29628558-3248-4150-b5f7-f654d246f4a4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sys\win32\rc\doom_resource.h">
+      <Filter>Sys\RC</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="sys\win32\rc\doom.rc">
+      <Filter>Sys\RC</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sys\win32\rc\res\doom.ico">
+      <Filter>Sys\RC\res</Filter>
+    </None>
+    <None Include="sys\win32\rc\res\doom3bfg.bin">
+      <Filter>Sys\RC\res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sys\win32\win_main.cpp">
+      <Filter>Sys\Win32</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

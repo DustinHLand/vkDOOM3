@@ -1,0 +1,7 @@
+uniforms [
+	rpColor
+]
+bindings [
+	ubo
+	sampler
+]

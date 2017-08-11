@@ -1,0 +1,17 @@
+uniforms [
+	rpVertexColorModulate
+	rpVertexColorAdd
+	rpColor
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpTextureMatrixS
+	rpTextureMatrixT
+	rpTexGen0S
+	rpTexGen0T
+	rpTexGen0Enabled
+]
+bindings [
+	ubo
+]

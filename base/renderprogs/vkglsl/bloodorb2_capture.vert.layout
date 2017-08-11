@@ -1,0 +1,12 @@
+uniforms [
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpUser0
+	rpUser1
+	rpUser2
+]
+bindings [
+	ubo
+]

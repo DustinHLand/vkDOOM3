@@ -1,0 +1,13 @@
+uniforms [
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpProjectionMatrixZ
+	rpOverbright
+]
+bindings [
+	ubo
+	sampler
+	sampler
+]

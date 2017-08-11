@@ -1,0 +1,10 @@
+uniforms [
+	rpLocalLightOrigin
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+]
+bindings [
+	ubo
+]

@@ -1,0 +1,17 @@
+rpLocalLightOrigin
+rpLocalViewOrigin
+rpLightProjectionS
+rpLightProjectionT
+rpLightProjectionQ
+rpLightFalloffS
+rpBumpMatrixS
+rpBumpMatrixT
+rpDiffuseMatrixS
+rpDiffuseMatrixT
+rpSpecularMatrixS
+rpSpecularMatrixT
+rpMVPmatrixX
+rpMVPmatrixY
+rpMVPmatrixZ
+rpMVPmatrixW
+

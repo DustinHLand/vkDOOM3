@@ -1,0 +1,15 @@
+uniforms [
+	rpLocalViewOrigin
+	rpVertexColorModulate
+	rpVertexColorAdd
+	rpMVPmatrixX
+	rpMVPmatrixY
+	rpMVPmatrixZ
+	rpMVPmatrixW
+	rpWobbleSkyX
+	rpWobbleSkyY
+	rpWobbleSkyZ
+]
+bindings [
+	ubo
+]

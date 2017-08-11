@@ -1,0 +1,12 @@
+uniforms[
+	rpDiffuseModifier
+	rpSpecularModifier
+]
+bindings [
+	ubo
+	sampler
+	sampler
+	sampler
+	sampler
+	sampler
+]

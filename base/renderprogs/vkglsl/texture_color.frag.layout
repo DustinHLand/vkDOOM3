@@ -1,0 +1,7 @@
+uniforms [
+	rpAlphaTest
+]
+bindings [
+	ubo
+	sampler
+]
