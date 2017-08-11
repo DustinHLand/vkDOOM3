@@ -32,7 +32,7 @@ git clone https://github.com/DustinHLand/vkDOOM3.git
 
 ### Visual Studio
 
-Install [Visual Studio Community](https://www.visualstudio.com) with Visual C++ component.
+Install [Visual Studio Community](https://www.visualstudio.com) with Visual C++ component. (Make sure you also check MFC/ATL in individual components. Community doesn't enabled this by default, and you may have issues compiling.)
 
 Open the Visual Studio solution, `neo\doom3.sln`, select the desired configuration and platform, then
 build the solution. (GL=OpenGL, VK=Vulkan)
