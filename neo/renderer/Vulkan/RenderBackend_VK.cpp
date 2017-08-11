@@ -58,6 +58,7 @@ extern idCVar r_forceZPassStencilShadows;
 extern idCVar r_useStencilShadowPreload;
 extern idCVar r_singleTriangle;
 extern idCVar r_useLightDepthBounds;
+extern idCVar r_swapInterval;
 
 void PrintState( uint64 stateBits, uint64 * stencilBits );
 
@@ -682,10 +683,21 @@ ChoosePresentMode
 =============
 */
 VkPresentModeKHR ChoosePresentMode( idList< VkPresentModeKHR > & modes ) {
-	const VkPresentModeKHR desiredMode = VK_PRESENT_MODE_MAILBOX_KHR;
+	VkPresentModeKHR desiredMode = VK_PRESENT_MODE_FIFO_KHR;
 
-	for ( int i = 0; i < modes.Num(); ++i ) {
-		if ( modes[ i ] == desiredMode ) {
+	if (r_swapInterval.GetInteger() < 1) {
+		for (int i = 0; i < modes.Num(); i++) {
+			if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+				return VK_PRESENT_MODE_MAILBOX_KHR;
+			}
+			if ((modes[i] != VK_PRESENT_MODE_MAILBOX_KHR) && (modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)) {
+				return VK_PRESENT_MODE_IMMEDIATE_KHR;
+			}
+		}
+	}
+
+	for (int i = 0; i < modes.Num(); ++i) {
+		if (modes[i] == desiredMode) {
 			return desiredMode;
 		}
 	}
