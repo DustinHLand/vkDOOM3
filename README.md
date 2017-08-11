@@ -1,6 +1,18 @@
 # Overview
 vkDOOM3 adds a Vulkan renderer to DOOM 3 BFG Edition.  It was written as an example of how to use Vulkan for writing something more sizable than simple recipes.  It covers topics such as General Setup, Proper Memory & Resource Allocation, Synchronization, Pipelines, etc.
 
+## TODO
+
+As of initial release all maps load and are playable.  However, the code base is not in complete parity with the OpenGL renderer.  Here are some notes on what is still left to do or address.
+
+* Anything using _accum is broken.
+* Some transparent surfaces don't render properly at odd angles.
+* Some SWF masks will render black in a few places.
+* Render debug functionality is largely missing.  Compare RenderDebug_GL to RenderDebug_VK.
+* Screenshots aren't implemented atm.
+* The window will resize and go from windowed <-> fullscreen properly. But not all swapchain invalidation cases are handled.
+* Some cvars from pure BFG may not function as expected.
+
 # Building
 
 ## Windows
