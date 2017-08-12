@@ -170,6 +170,9 @@ byte * idVulkanStagingManager::Stage( const int size, const int alignment, VkCom
 	}
 
 	stage = &m_buffers[ m_currentBuffer ];
+	if ( stage->submitted ) {
+		Wait( *stage );
+	}
 
 	commandBuffer = stage->commandBuffer;
 	buffer = stage->buffer;
@@ -188,6 +191,19 @@ idVulkanStagingManager::Flush
 */
 void idVulkanStagingManager::Flush() {
 	stagingBuffer_t & stage = m_buffers[ m_currentBuffer ];
+	if ( stage.submitted || stage.offset == 0 ) {
+		return;
+	}
+
+	VkMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
+	vkCmdPipelineBarrier( 
+		stage.commandBuffer, 
+		VK_PIPELINE_STAGE_TRANSFER_BIT, 
+		VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 
+		0, 1, &barrier, 0, NULL, 0, NULL );
 
 	vkEndCommandBuffer( stage.commandBuffer );
 
@@ -207,8 +223,6 @@ void idVulkanStagingManager::Flush() {
 	stage.submitted = true;
 
 	m_currentBuffer = ( m_currentBuffer + 1 ) % NUM_FRAME_DATA;
-
-	Wait( stage );
 }
 
 /*
