@@ -1010,9 +1010,9 @@ static void CreateRenderPass() {
 	resolveAttachment.format = vkcontext.swapchainFormat;
 	resolveAttachment.samples = vkcontext.sampleCount;
 	resolveAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	resolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	resolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	resolveAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 	VkAttachmentReference colorRef = {};
 	colorRef.attachment = resolve ? 2 : 0;
