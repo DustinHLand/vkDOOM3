@@ -1485,5 +1485,11 @@ Sys_SetLanguageFromSystem
 */
 extern idCVar sys_lang;
 void Sys_SetLanguageFromSystem() {
-	sys_lang.SetString( Sys_DefaultLanguage() );
+	const char * defaultLang = Sys_DefaultLanguage();
+	const char * desiredLang = sys_lang.GetString();
+	if ( fileSystem->GetFileLength( va( "strings/%s.lang", desiredLang ) ) ) {
+		sys_lang.SetString( desiredLang );
+	} else {
+		sys_lang.SetString( defaultLang );
+	}
 }
