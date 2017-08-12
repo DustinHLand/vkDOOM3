@@ -38,9 +38,6 @@ If you have questions concerning this license or the applicable additional terms
 #include <vulkan/vulkan.h>
 
 #if defined( ID_USE_AMD_ALLOCATOR )
-#define VMA_MAX( v1, v2 ) Max( (v1), (v2) )
-#define VMA_MIN( v1, v2 ) Min( (v1), (v2) )
-
 #include "vma.h"
 #endif
 

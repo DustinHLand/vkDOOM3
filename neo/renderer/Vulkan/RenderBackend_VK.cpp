@@ -938,7 +938,7 @@ static void CreateRenderTargets() {
 	VmaMemoryRequirements vmaReq = {};
 	vmaReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-	ID_VK_CHECK( vmaCreateImage( vmaAllocator, &createInfo, &vmaReq, &vkcontext.msaaImage, &vkcontext.msaaAllocation, NULL ) );
+	ID_VK_CHECK( vmaCreateImage( vmaAllocator, &createInfo, &vmaReq, &vkcontext.msaaImage, &vkcontext.msaaVmaAllocation, &vkcontext.msaaAllocation ) );
 #else
 		VkMemoryRequirements memoryRequirements = {};
 		vkGetImageMemoryRequirements( vkcontext.device, vkcontext.msaaImage, &memoryRequirements );
@@ -974,9 +974,19 @@ DestroyRenderTargets
 =============
 */
 static void DestroyRenderTargets() {
-	vulkanAllocator.Free( vkcontext.msaaAllocation );
 	vkDestroyImageView( vkcontext.device, vkcontext.msaaImageView, NULL );
+#if defined( ID_USE_AMD_ALLOCATOR )
+	vmaDestroyImage( vmaAllocator, vkcontext.msaaImage, vkcontext.msaaVmaAllocation );
+	vkcontext.msaaAllocation = VmaAllocationInfo();
+	vkcontext.msaaVmaAllocation = NULL;
+#else
 	vkDestroyImage( vkcontext.device, vkcontext.msaaImage, NULL );
+	vulkanAllocator.Free( vkcontext.msaaAllocation );
+	vkcontext.msaaAllocation = vulkanAllocation_t();
+#endif
+
+	vkcontext.msaaImage = VK_NULL_HANDLE;
+	vkcontext.msaaImageView = VK_NULL_HANDLE;
 }
 
 /*

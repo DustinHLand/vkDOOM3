@@ -86,7 +86,8 @@ protected:
 #if defined( ID_VULKAN )
 	VkBuffer			m_apiObject;
 #if defined( ID_USE_AMD_ALLOCATOR )
-	VmaAllocation		m_allocation;
+	VmaAllocation		m_vmaAllocation;
+	VmaAllocationInfo	m_allocation;
 #else
 	vulkanAllocation_t	m_allocation;
 #endif

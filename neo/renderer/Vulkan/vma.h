@@ -667,17 +667,20 @@ VkResult vmaDefragment(
 /**
 @param[out] pBuffer Buffer that was created.
 @param[out] pAllocation Allocation that was created.
-@param[out] pAllocationInfo Optional. Information about allocated memory. It can be later fetched using function VmaGetAllocationInfo().
+@param[out] pAllocationInfo Optional. Information about allocated memory. It can be later fetched using function vmaGetAllocationInfo().
 
 This function automatically:
 
--# Creates buffer/image.
+-# Creates buffer.
 -# Allocates appropriate memory for it.
--# Binds the buffer/image with the memory.
+-# Binds the buffer with the memory.
 
-You do not (and should not) pass returned pMemory to vmaFreeMemory. Only calling
-vmaDestroyBuffer() / vmaDestroyImage() is required for objects created using
-vmaCreateBuffer() / vmaCreateImage().
+If any of these operations fail, buffer and allocation are not created,
+returned value is negative error code, *pBuffer and *pAllocation are null.
+
+If the function succeeded, you must destroy both buffer and allocation when you
+no longer need them using either convenience function vmaDestroyBuffer() or
+separately, using vkDestroyBuffer() and vmaFreeMemory().
 */
 VkResult vmaCreateBuffer(
     VmaAllocator allocator,
@@ -732,7 +735,6 @@ std::pair, std::vector, std::list, std::unordered_map.
 Set it to 0 or undefined to make the library using its own implementation of
 the containers.
 */
-
 #if VMA_USE_STL_CONTAINERS
    #define VMA_USE_STL_VECTOR 1
    #define VMA_USE_STL_UNORDERED_MAP 1
@@ -837,11 +839,11 @@ remove them if not needed.
 #if VMA_STATS_STRING_ENABLED
    static inline void VmaUint32ToStr(char* outStr, size_t strLen, uint32_t num)
    {
-       _ultoa_s(num, outStr, strLen, 10);
+       snprintf(outStr, strLen, "%u", static_cast<unsigned int>(num));
    }
    static inline void VmaUint64ToStr(char* outStr, size_t strLen, uint64_t num)
    {
-       _ui64toa_s(num, outStr, strLen, 10);
+       snprintf(outStr, strLen, "%llu", static_cast<unsigned long long>(num));
    }
 #endif
 
@@ -1241,13 +1243,13 @@ public:
 #define VmaVector std::vector
 
 template<typename T, typename allocatorT>
-static void VectorInsert(std::vector<T, allocatorT>& vec, size_t index, const T& item)
+static void VmaVectorInsert(std::vector<T, allocatorT>& vec, size_t index, const T& item)
 {
     vec.insert(vec.begin() + index, item);
 }
 
 template<typename T, typename allocatorT>
-static void VectorRemove(std::vector<T, allocatorT>& vec, size_t index)
+static void VmaVectorRemove(std::vector<T, allocatorT>& vec, size_t index)
 {
     vec.erase(vec.begin() + index);
 }
@@ -1459,13 +1461,13 @@ private:
 };
 
 template<typename T, typename allocatorT>
-static void VectorInsert(VmaVector<T, allocatorT>& vec, size_t index, const T& item)
+static void VmaVectorInsert(VmaVector<T, allocatorT>& vec, size_t index, const T& item)
 {
     vec.insert(index, item);
 }
 
 template<typename T, typename allocatorT>
-static void VectorRemove(VmaVector<T, allocatorT>& vec, size_t index)
+static void VmaVectorRemove(VmaVector<T, allocatorT>& vec, size_t index)
 {
     vec.remove(index);
 }
@@ -2137,7 +2139,7 @@ void VmaMap<KeyT, ValueT>::insert(const PairType& pair)
         m_Vector.data() + m_Vector.size(),
         pair,
         VmaPairFirstLess<KeyT, ValueT>()) - m_Vector.data();
-    VectorInsert(m_Vector, indexToInsert, pair);
+    VmaVectorInsert(m_Vector, indexToInsert, pair);
 }
 
 template<typename KeyT, typename ValueT>
@@ -2161,7 +2163,7 @@ VmaPair<KeyT, ValueT>* VmaMap<KeyT, ValueT>::find(const KeyT& key)
 template<typename KeyT, typename ValueT>
 void VmaMap<KeyT, ValueT>::erase(iterator it)
 {
-    VectorRemove(m_Vector, it - m_Vector.begin());
+    VmaVectorRemove(m_Vector, it - m_Vector.begin());
 }
 
 #endif // #if VMA_USE_STL_UNORDERED_MAP
@@ -2298,23 +2300,28 @@ private:
     ALLOCATION_TYPE m_Type;
     VmaSuballocationType m_SuballocationType;
 
+    // Allocation out of VmaBlock.
+    struct BlockAllocation
+    {
+        VmaBlock* m_Block;
+        VkDeviceSize m_Offset;
+    };
+
+    // Allocation for an object that has its own private VkDeviceMemory.
+    struct OwnAllocation
+    {
+        uint32_t m_MemoryTypeIndex;
+        VkDeviceMemory m_hMemory;
+        bool m_PersistentMap;
+        void* m_pMappedData;
+    };
+
     union
     {
         // Allocation out of VmaBlock.
-        struct BlockAllocation
-        {
-            VmaBlock* m_Block;
-            VkDeviceSize m_Offset;
-        } m_BlockAllocation;
-
+        BlockAllocation m_BlockAllocation;
         // Allocation for an object that has its own private VkDeviceMemory.
-        struct OwnAllocation
-        {
-            uint32_t m_MemoryTypeIndex;
-            VkDeviceMemory m_hMemory;
-            bool m_PersistentMap;
-            void* m_pMappedData;
-        } m_OwnAllocation;
+        OwnAllocation m_OwnAllocation;
     };
 };
 
@@ -3369,7 +3376,7 @@ void VmaBlock::RegisterFreeSuballocation(VmaSuballocationList::iterator item)
                 item,
                 VmaSuballocationItemSizeLess());
             size_t index = it - m_FreeSuballocationsBySize.data();
-            VectorInsert(m_FreeSuballocationsBySize, index, item);
+            VmaVectorInsert(m_FreeSuballocationsBySize, index, item);
         }
     }
 }
@@ -3392,7 +3399,7 @@ void VmaBlock::UnregisterFreeSuballocation(VmaSuballocationList::iterator item)
         {
             if(m_FreeSuballocationsBySize[index] == item)
             {
-                VectorRemove(m_FreeSuballocationsBySize, index);
+                VmaVectorRemove(m_FreeSuballocationsBySize, index);
                 return;
             }
             VMA_ASSERT((m_FreeSuballocationsBySize[index]->size == item->size) && "Not found.");
@@ -3485,7 +3492,7 @@ void VmaBlockVector::Remove(VmaBlock* pBlock)
     {
         if(m_Blocks[blockIndex] == pBlock)
         {
-            VectorRemove(m_Blocks, blockIndex);
+            VmaVectorRemove(m_Blocks, blockIndex);
             return;
         }
     }
@@ -3871,7 +3878,7 @@ VkResult VmaDefragmentator::DefragmentRound(
                 ++m_AllocationsMoved;
                 m_BytesMoved += size;
 
-                VectorRemove(pSrcBlockInfo->m_Allocations, srcAllocIndex);
+                VmaVectorRemove(pSrcBlockInfo->m_Allocations, srcAllocIndex);
 
                 break;
             }
@@ -4297,7 +4304,7 @@ VkResult VmaAllocator_T::AllocateOwnMemory(
             pOwnAllocationsEnd,
             *pAllocation,
             VmaPointerLess()) - pOwnAllocationsBeg;
-        VectorInsert(*pOwnAllocations, indexToInsert, *pAllocation);
+        VmaVectorInsert(*pOwnAllocations, indexToInsert, *pAllocation);
     }
 
     VMA_DEBUG_LOG("    Allocated OwnMemory MemoryTypeIndex=#%u", memTypeIndex);
@@ -4644,7 +4651,7 @@ VkResult VmaAllocator_T::Defragment(
                             pDefragmentationStats->bytesFreed += pBlock->m_Size;
                         }
 
-                        VectorRemove(pBlockVector->m_Blocks, blockIndex);
+                        VmaVectorRemove(pBlockVector->m_Blocks, blockIndex);
                         pBlock->Destroy(this);
                         vma_delete(this, pBlock);
                     }
@@ -4700,7 +4707,7 @@ void VmaAllocator_T::FreeOwnMemory(VmaAllocation allocation)
         if(pOwnAllocationIt != pOwnAllocationsEnd)
         {
             const size_t ownAllocationIndex = pOwnAllocationIt - pOwnAllocationsBeg;
-            VectorRemove(*pOwnAllocations, ownAllocationIndex);
+            VmaVectorRemove(*pOwnAllocations, ownAllocationIndex);
         }
         else
         {
@@ -5105,16 +5112,18 @@ VkResult vmaAllocateMemory(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    return allocator->AllocateMemory(
+	VkResult result = allocator->AllocateMemory(
         *pVkMemoryRequirements,
         *pVmaMemoryRequirements,
         VMA_SUBALLOCATION_TYPE_UNKNOWN,
         pAllocation);
 
-    if(pAllocationInfo)
+    if(pAllocationInfo && result == VK_SUCCESS)
     {
         allocator->GetAllocationInfo(*pAllocation, pAllocationInfo);
     }
+
+	return result;
 }
 
 VkResult vmaAllocateMemoryForBuffer(
@@ -5133,16 +5142,18 @@ VkResult vmaAllocateMemoryForBuffer(
     VkMemoryRequirements vkMemReq = {};
     vkGetBufferMemoryRequirements(allocator->m_hDevice, buffer, &vkMemReq);
 
-    return allocator->AllocateMemory(
+    VkResult result = allocator->AllocateMemory(
         vkMemReq,
         *pMemoryRequirements,
         VMA_SUBALLOCATION_TYPE_BUFFER,
         pAllocation);
 
-    if(pAllocationInfo)
+    if(pAllocationInfo && result == VK_SUCCESS)
     {
         allocator->GetAllocationInfo(*pAllocation, pAllocationInfo);
     }
+
+	return result;
 }
 
 VkResult vmaAllocateMemoryForImage(
@@ -5158,17 +5169,19 @@ VkResult vmaAllocateMemoryForImage(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    return AllocateMemoryForImage(
+    VkResult result = AllocateMemoryForImage(
         allocator,
         image,
         pMemoryRequirements,
         VMA_SUBALLOCATION_TYPE_IMAGE_UNKNOWN,
         pAllocation);
 
-    if(pAllocationInfo)
+    if(pAllocationInfo && result == VK_SUCCESS)
     {
         allocator->GetAllocationInfo(*pAllocation, pAllocationInfo);
     }
+
+	return result;
 }
 
 void vmaFreeMemory(
@@ -5281,6 +5294,9 @@ VkResult vmaCreateBuffer(
     
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
+    *pBuffer = VK_NULL_HANDLE;
+    *pAllocation = VK_NULL_HANDLE;
+
     // 1. Create VkBuffer.
     VkResult res = vkCreateBuffer(allocator->m_hDevice, pCreateInfo, allocator->GetAllocationCallbacks(), pBuffer);
     if(res >= 0)
@@ -5309,9 +5325,11 @@ VkResult vmaCreateBuffer(
                 return VK_SUCCESS;
             }
             allocator->FreeMemory(*pAllocation);
+            *pAllocation = VK_NULL_HANDLE;
             return res;
         }
         vkDestroyBuffer(allocator->m_hDevice, *pBuffer, allocator->GetAllocationCallbacks());
+        *pBuffer = VK_NULL_HANDLE;
         return res;
     }
     return res;
@@ -5350,6 +5368,9 @@ VkResult vmaCreateImage(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
+    *pImage = VK_NULL_HANDLE;
+    *pAllocation = VK_NULL_HANDLE;
+
     // 1. Create VkImage.
     VkResult res = vkCreateImage(allocator->m_hDevice, pCreateInfo, allocator->GetAllocationCallbacks(), pImage);
     if(res >= 0)
@@ -5375,9 +5396,11 @@ VkResult vmaCreateImage(
                 return VK_SUCCESS;
             }
             allocator->FreeMemory(*pAllocation);
+            *pAllocation = VK_NULL_HANDLE;
             return res;
         }
         vkDestroyImage(allocator->m_hDevice, *pImage, allocator->GetAllocationCallbacks());
+        *pImage = VK_NULL_HANDLE;
         return res;
     }
     return res;

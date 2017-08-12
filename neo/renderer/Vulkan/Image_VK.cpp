@@ -388,7 +388,7 @@ void idImage::PurgeImage() {
 		m_imageGarbage[ m_garbageIndex ].Append( m_image );
 
 #if defined( ID_USE_AMD_ALLOCATOR )
-		m_allocation = VmaAllocation();
+		m_allocation = NULL;
 #else
 		m_allocation = vulkanAllocation_t();
 #endif

@@ -651,6 +651,9 @@
     <ClCompile Include="renderer\Vulkan\Staging_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\Vulkan\vma.cpp">
+      <Filter>Renderer\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ui\BindWindow.h">

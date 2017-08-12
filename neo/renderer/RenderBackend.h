@@ -169,7 +169,12 @@ struct vulkanContext_t {
 	uint32							currentSwapIndex;
 	VkImage							msaaImage;
 	VkImageView						msaaImageView;
+#if defined( ID_USE_AMD_ALLOCATOR )
+	VmaAllocation					msaaVmaAllocation;
+	VmaAllocationInfo				msaaAllocation;
+#else
 	vulkanAllocation_t				msaaAllocation;
+#endif
 	idArray< idImage * , NUM_FRAME_DATA >		swapchainImages;
 	idArray< VkFramebuffer, NUM_FRAME_DATA >	frameBuffers;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		acquireSemaphores;

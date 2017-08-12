@@ -32,15 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "../BufferObject.h"
 #include "Staging_VK.h"
 
-#if defined( ID_USE_AMD_ALLOCATOR )
-#define VMA_IMPLEMENTATION
-
-#define VMA_MAX( v1, v2 ) Max( (v1), (v2) )
-#define VMA_MIN( v1, v2 ) Min( (v1), (v2) )
-
-#include "vma.h"
-#endif
-
 extern idCVar r_showBuffers;
 
 /*
@@ -108,7 +99,7 @@ bool idVertexBuffer::AllocBufferObject( const void * data, int allocSize, buffer
 		vmaReq.flags = VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
 	}
 
-	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_allocation, NULL ) );
+	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_vmaAllocation, &m_allocation ) );
 
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
@@ -167,9 +158,10 @@ void idVertexBuffer::FreeBufferObject() {
 
 	if ( m_apiObject != VK_NULL_HANDLE ) {
 #if defined( ID_USE_AMD_ALLOCATOR )
-		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_allocation );
+		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_vmaAllocation );
 		m_apiObject = VK_NULL_HANDLE;
-		m_allocation = VmaAllocation();
+		m_allocation = VmaAllocationInfo();
+		m_vmaAllocation = NULL;
 #else
 		vulkanAllocator.Free( m_allocation );
 		vkDestroyBuffer( vkcontext.device, m_apiObject, NULL );
@@ -198,7 +190,7 @@ void idVertexBuffer::Update( const void * data, int size, int offset ) const {
 	if ( m_usage == BU_DYNAMIC ) {
 		CopyBuffer( 
 #if defined( ID_USE_AMD_ALLOCATOR )
-			(byte *)m_allocation->GetMappedData() + GetOffset() + offset, 
+			(byte *)m_allocation.pMappedData + GetOffset() + offset, 
 #else
 			m_allocation.data + GetOffset() + offset,
 #endif
@@ -233,7 +225,7 @@ void * idVertexBuffer::MapBuffer( bufferMapType_t mapType ) {
 	}
 
 #if defined( ID_USE_AMD_ALLOCATOR )
-	void * buffer = (byte *)m_allocation->GetMappedData() + GetOffset();
+	void * buffer = (byte *)m_allocation.pMappedData + GetOffset();
 #else
 	void * buffer = m_allocation.data + GetOffset();
 #endif
@@ -271,7 +263,8 @@ void idVertexBuffer::ClearWithoutFreeing() {
 	m_offsetInOtherBuffer = OWNS_BUFFER_FLAG;
 	m_apiObject = VK_NULL_HANDLE;
 #if defined( ID_USE_AMD_ALLOCATOR )
-	m_allocation = VmaAllocation();
+	m_allocation = VmaAllocationInfo();
+	m_vmaAllocation = NULL;
 #else
 	m_allocation.deviceMemory = VK_NULL_HANDLE;
 #endif
@@ -332,7 +325,7 @@ bool idIndexBuffer::AllocBufferObject( const void * data, int allocSize, bufferU
 		vmaReq.flags = VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
 	}
 
-	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_allocation, NULL ) );
+	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_vmaAllocation, &m_allocation ) );
 
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
@@ -391,9 +384,10 @@ void idIndexBuffer::FreeBufferObject() {
 
 	if ( m_apiObject != VK_NULL_HANDLE ) {
 #if defined( ID_USE_AMD_ALLOCATOR )
-		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_allocation );
+		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_vmaAllocation );
 		m_apiObject = VK_NULL_HANDLE;
-		m_allocation = VmaAllocation();
+		m_allocation = VmaAllocationInfo();
+		m_vmaAllocation = NULL;
 #else
 		vulkanAllocator.Free( m_allocation );
 		vkDestroyBuffer( vkcontext.device, m_apiObject, NULL );
@@ -422,7 +416,7 @@ void idIndexBuffer::Update( const void * data, int size, int offset ) const {
 	if ( m_usage == BU_DYNAMIC ) {
 		CopyBuffer( 
 #if defined( ID_USE_AMD_ALLOCATOR )
-			(byte *)m_allocation->GetMappedData() + GetOffset() + offset, 
+			(byte *)m_allocation.pMappedData + GetOffset() + offset, 
 #else
 			m_allocation.data + GetOffset() + offset,
 #endif
@@ -457,7 +451,7 @@ void * idIndexBuffer::MapBuffer( bufferMapType_t mapType ) {
 	}
 
 #if defined( ID_USE_AMD_ALLOCATOR )
-	void * buffer = (byte *)m_allocation->GetMappedData() + GetOffset();
+	void * buffer = (byte *)m_allocation.pMappedData + GetOffset();
 #else
 	void * buffer = m_allocation.data + GetOffset();
 #endif
@@ -495,7 +489,8 @@ void idIndexBuffer::ClearWithoutFreeing() {
 	m_offsetInOtherBuffer = OWNS_BUFFER_FLAG;
 	m_apiObject = VK_NULL_HANDLE;
 #if defined( ID_USE_AMD_ALLOCATOR )
-	m_allocation = VmaAllocation();
+	m_allocation = VmaAllocationInfo();
+	m_vmaAllocation = NULL;
 #else
 	m_allocation.deviceMemory = VK_NULL_HANDLE;
 #endif
@@ -557,13 +552,13 @@ bool idUniformBuffer::AllocBufferObject( const void * data, int allocSize, buffe
 		vmaReq.flags = VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
 	}
 
-	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_allocation, NULL ) );
+	ID_VK_CHECK( vmaCreateBuffer( vmaAllocator, &bufferCreateInfo, &vmaReq, &m_apiObject, &m_vmaAllocation, &m_allocation ) );
 
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
 	assert( ret == VK_SUCCESS );
 
-	VkMemoryRequirements memoryRequirements;
+	VkMemoryRequirements memoryRequirements = {};
 	vkGetBufferMemoryRequirements( vkcontext.device, m_apiObject, &memoryRequirements );
 
 	vulkanMemoryUsage_t memUsage = ( m_usage == BU_STATIC ) ? VULKAN_MEMORY_USAGE_GPU_ONLY : VULKAN_MEMORY_USAGE_CPU_TO_GPU;
@@ -616,9 +611,10 @@ void idUniformBuffer::FreeBufferObject() {
 
 	if ( m_apiObject != VK_NULL_HANDLE ) {
 #if defined( ID_USE_AMD_ALLOCATOR )
-		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_allocation );
+		vmaDestroyBuffer( vmaAllocator, m_apiObject, m_vmaAllocation );
 		m_apiObject = VK_NULL_HANDLE;
-		m_allocation = VmaAllocation();
+		m_allocation = VmaAllocationInfo();
+		m_vmaAllocation = NULL;
 #else
 		vulkanAllocator.Free( m_allocation );
 		vkDestroyBuffer( vkcontext.device, m_apiObject, NULL );
@@ -647,7 +643,7 @@ void idUniformBuffer::Update( const void * data, int size, int offset ) const {
 	if ( m_usage == BU_DYNAMIC ) {
 		CopyBuffer( 
 #if defined( ID_USE_AMD_ALLOCATOR )
-			(byte *)m_allocation->GetMappedData() + GetOffset() + offset, 
+			(byte *)m_allocation.pMappedData + GetOffset() + offset, 
 #else
 			m_allocation.data + GetOffset() + offset,
 #endif
@@ -683,7 +679,7 @@ void * idUniformBuffer::MapBuffer( bufferMapType_t mapType ) {
 	}
 
 #if defined( ID_USE_AMD_ALLOCATOR )
-	void * buffer = (byte *)m_allocation->GetMappedData() + GetOffset();
+	void * buffer = (byte *)m_allocation.pMappedData + GetOffset();
 #else
 	void * buffer = m_allocation.data + GetOffset();
 #endif
@@ -721,7 +717,8 @@ void idUniformBuffer::ClearWithoutFreeing() {
 	m_offsetInOtherBuffer = OWNS_BUFFER_FLAG;
 	m_apiObject = VK_NULL_HANDLE;
 #if defined( ID_USE_AMD_ALLOCATOR )
-	m_allocation = VmaAllocation();
+	m_allocation = VmaAllocationInfo();
+	m_vmaAllocation = NULL;
 #else
 	m_allocation.deviceMemory = VK_NULL_HANDLE;
 #endif
