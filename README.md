@@ -8,7 +8,6 @@ NOTE: For those just wanting to dive straight into the Vulkan code you can find 
 As of initial release all maps load and are playable.  However, the code base is not in complete parity with the OpenGL renderer.  Here are some notes on what is still left to do or address.
 
 * Anything using _accum is broken.
-* Some transparent surfaces don't render properly at odd angles.
 * Some SWF masks will render black in a few places.
 * Render debug functionality is largely missing.  Compare RenderDebug_GL to RenderDebug_VK.
 * Screenshots aren't implemented atm.
