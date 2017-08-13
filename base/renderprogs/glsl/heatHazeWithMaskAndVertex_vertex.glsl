@@ -28,7 +28,9 @@ out vec4 vofi_TexCoord1;
 out vec4 vofi_TexCoord2;
 out vec4 gl_FrontColor;
 
-void main() {vec4 modelPosition = in_Position ; if ( _va_[7 /* rpEnableSkinning */] . x > 0.0 ) {
+void main() {
+    vec4 modelPosition = in_Position ; 
+    if ( _va_[7 /* rpEnableSkinning */] . x > 0.0 ) {
 		float w0 = in_Color2 . x ;
 		float w1 = in_Color2 . y ;
 		float w2 = in_Color2 . z ;

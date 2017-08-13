@@ -28,7 +28,8 @@ void main() {
 	gl_Position . x = dot4 ( in_Position , _va_[3 /* rpMVPmatrixX */] ) ;
 	gl_Position . y = dot4 ( in_Position , _va_[4 /* rpMVPmatrixY */] ) ;
 	gl_Position . z = dot4 ( in_Position , _va_[5 /* rpMVPmatrixZ */] ) ;
-	gl_Position . w = dot4 ( in_Position , _va_[6 /* rpMVPmatrixW */] ) ; if ( _va_[11 /* rpTexGen0Enabled */] . x > 0.0 ) {
+	gl_Position . w = dot4 ( in_Position , _va_[6 /* rpMVPmatrixW */] ) ; 
+    if ( _va_[11 /* rpTexGen0Enabled */] . x > 0.0 ) {
 		vofi_TexCoord0 . x = dot4 ( in_Position , _va_[9 /* rpTexGen0S */] ) ;
 		vofi_TexCoord0 . y = dot4 ( in_Position , _va_[10 /* rpTexGen0T */] ) ;
 	} else {
