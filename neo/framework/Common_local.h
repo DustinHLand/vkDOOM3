@@ -41,8 +41,6 @@ static const int LOAD_TIP_COUNT = 26;
 class idGameThread : public idSysThread {
 public:
 	idGameThread() :
-		gameTime(),
-		drawTime(),
 		threadTime(),
 		threadGameTime(),
 		threadRenderTime(),
@@ -57,23 +55,21 @@ public:
 	gameReturn_t	RunGameAndDraw( int numGameFrames, idUserCmdMgr & userCmdMgr_, bool isClient_, int startGameFrame );
 
 	// Accessors to the stored frame/thread time information
-	void			SetThreadTotalTime( const int inTime ) { threadTime = inTime; }
-	int				GetThreadTotalTime() const { return threadTime; }
+	void			SetThreadTotalTime( const uint64 inTime ) { threadTime = inTime; }
+	uint64			GetThreadTotalTime() const { return threadTime; }
 
-	void			SetThreadGameTime( const int time ) { threadGameTime = time; }
-	int				GetThreadGameTime() const { return threadGameTime; }
+	void			SetThreadGameTime( const uint64 time ) { threadGameTime = time; }
+	uint64			GetThreadGameTime() const { return threadGameTime; }
 
-	void			SetThreadRenderTime( const int time ) { threadRenderTime = time; }
-	int				GetThreadRenderTime() const { return threadRenderTime; }
+	void			SetThreadRenderTime( const uint64 time ) { threadRenderTime = time; }
+	uint64			GetThreadRenderTime() const { return threadRenderTime; }
 
 private:
 	virtual int	Run();
 
-	int				gameTime;
-	int				drawTime;
-	int				threadTime;					// total time : game time + foreground render time
-	int				threadGameTime;				// game time only
-	int				threadRenderTime;			// render fg time only
+	uint64			threadTime;					// total time : game time + foreground render time
+	uint64			threadGameTime;				// game time only
+	uint64			threadRenderTime;			// render fg time only
 	idUserCmdMgr *	userCmdMgr;
 	gameReturn_t	ret;
 	int				numGameFrames;
@@ -205,13 +201,13 @@ public:
 public:
 	void	Draw();			// called by gameThread
 
-	int		GetGameThreadTotalTime() const { return gameThread.GetThreadTotalTime(); }
-	int		GetGameThreadGameTime() const { return gameThread.GetThreadGameTime(); }
-	int		GetGameThreadRenderTime() const { return gameThread.GetThreadRenderTime(); }
-	int		GetRendererBackEndMicroseconds() const { return time_backend; }
-	int		GetRendererShadowsMicroseconds() const { return time_shadows; }
-	int		GetRendererIdleMicroseconds() const { return mainFrameTiming.startRenderTime - mainFrameTiming.finishSyncTime; }
-	int		GetRendererGPUMicroseconds() const { return time_gpu; }
+	uint64		GetGameThreadTotalTime() const { return gameThread.GetThreadTotalTime(); }
+	uint64		GetGameThreadGameTime() const { return gameThread.GetThreadGameTime(); }
+	uint64		GetGameThreadRenderTime() const { return gameThread.GetThreadRenderTime(); }
+	uint64		GetRendererBackEndMicroseconds() const { return time_backend; }
+	uint64		GetRendererShadowsMicroseconds() const { return time_shadows; }
+	uint64		GetRendererIdleMicroseconds() const { return mainFrameTiming.startRenderTime - mainFrameTiming.finishSyncTime; }
+	uint64		GetRendererGPUMicroseconds() const { return time_gpu; }
 
 	frameTiming_t		frameTiming;
 	frameTiming_t		mainFrameTiming;

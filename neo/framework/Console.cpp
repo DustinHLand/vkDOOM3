@@ -232,48 +232,48 @@ float idConsoleLocal::DrawFPS( float y ) {
 	int w = resolutionText.Length() * BIGCHAR_WIDTH;
 	renderSystem->DrawBigStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, resolutionText.c_str(), colorWhite, true );
 
-	const int gameThreadTotalTime = commonLocal.GetGameThreadTotalTime();
-	const int gameThreadGameTime = commonLocal.GetGameThreadGameTime();
-	const int gameThreadRenderTime = commonLocal.GetGameThreadRenderTime();
-	const int rendererBackEndTime = commonLocal.GetRendererBackEndMicroseconds();
-	const int rendererShadowsTime = commonLocal.GetRendererShadowsMicroseconds();
-	const int rendererGPUIdleTime = commonLocal.GetRendererIdleMicroseconds();
-	const int rendererGPUTime = commonLocal.GetRendererGPUMicroseconds();
-	const int maxTime = 16;
+	const uint64 gameThreadTotalTime = commonLocal.GetGameThreadTotalTime();
+	const uint64 gameThreadGameTime = commonLocal.GetGameThreadGameTime();
+	const uint64 gameThreadRenderTime = commonLocal.GetGameThreadRenderTime();
+	const uint64 rendererBackEndTime = commonLocal.GetRendererBackEndMicroseconds();
+	const uint64 rendererShadowsTime = commonLocal.GetRendererShadowsMicroseconds();
+	const uint64 rendererGPUIdleTime = commonLocal.GetRendererIdleMicroseconds();
+	const uint64 rendererGPUTime = commonLocal.GetRendererGPUMicroseconds();
+	const uint64 maxTime = 16 * 1000;
 
 	y += SMALLCHAR_HEIGHT + 4;
 	idStr timeStr;
-	timeStr.Format( "%sG+RF: %4d", gameThreadTotalTime > maxTime ? S_COLOR_RED : "", gameThreadTotalTime );
+	timeStr.Format( "%sG+RF: %5llu", gameThreadTotalTime > maxTime ? S_COLOR_RED : "", gameThreadTotalTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sG: %4d", gameThreadGameTime > maxTime ? S_COLOR_RED : "", gameThreadGameTime );
+	timeStr.Format( "%sG: %5llu", gameThreadGameTime > maxTime ? S_COLOR_RED : "", gameThreadGameTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sRF: %4d", gameThreadRenderTime > maxTime ? S_COLOR_RED : "", gameThreadRenderTime );
+	timeStr.Format( "%sRF: %5llu", gameThreadRenderTime > maxTime ? S_COLOR_RED : "", gameThreadRenderTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sRB: %4.1f", rendererBackEndTime > maxTime * 1000 ? S_COLOR_RED : "", rendererBackEndTime / 1000.0f );
+	timeStr.Format( "%sRB: %5llu", rendererBackEndTime > maxTime ? S_COLOR_RED : "", rendererBackEndTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sSV: %4.1f", rendererShadowsTime > maxTime * 1000 ? S_COLOR_RED : "", rendererShadowsTime / 1000.0f );
+	timeStr.Format( "%sSV: %5llu", rendererShadowsTime > maxTime ? S_COLOR_RED : "", rendererShadowsTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sIDLE: %4.1f", rendererGPUIdleTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUIdleTime / 1000.0f );
+	timeStr.Format( "%sIDLE: %5llu", rendererGPUIdleTime > maxTime ? S_COLOR_RED : "", rendererGPUIdleTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sGPU: %4.1f", rendererGPUTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUTime / 1000.0f );
+	timeStr.Format( "%sGPU: %5llu", rendererGPUTime > maxTime ? S_COLOR_RED : "", rendererGPUTime );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 
