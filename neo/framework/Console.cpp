@@ -136,21 +136,17 @@ private:
 
 	idList< overlayText_t >	overlayText;
 	idList< idDebugGraph *> debugGraphs;
-
-	static idCVar		con_speed;
-	static idCVar		con_notifyTime;
-	static idCVar		con_noPrint;
 };
 
 static idConsoleLocal localConsole;
 idConsole * console = &localConsole;
 
-idCVar idConsoleLocal::con_speed( "con_speed", "3", CVAR_SYSTEM, "speed at which the console moves up and down" );
-idCVar idConsoleLocal::con_notifyTime( "con_notifyTime", "3", CVAR_SYSTEM, "time messages are displayed onscreen when console is pulled up" );
+idCVar con_speed( "con_speed", "3", CVAR_SYSTEM, "speed at which the console moves up and down" );
+idCVar con_notifyTime( "con_notifyTime", "3", CVAR_SYSTEM, "time messages are displayed onscreen when console is pulled up" );
 #ifdef DEBUG
-idCVar idConsoleLocal::con_noPrint( "con_noPrint", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "print on the console but not onscreen when console is pulled up" );
+idCVar con_noPrint( "con_noPrint", "0", CVAR_BOOL | CVAR_SYSTEM | CVAR_NOCHEAT, "print on the console but not onscreen when console is pulled up" );
 #else
-idCVar idConsoleLocal::con_noPrint( "con_noPrint", "1", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "print on the console but not onscreen when console is pulled up" );
+idCVar con_noPrint( "con_noPrint", "1", CVAR_BOOL | CVAR_SYSTEM | CVAR_NOCHEAT, "print on the console but not onscreen when console is pulled up" );
 #endif
 
 /*
