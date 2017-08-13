@@ -74,7 +74,7 @@ void main() {
 	
 	vec4 vec = vec4( 0, 1, 0, 1 );
 	vec. z = dot( modelPosition, rpModelViewMatrixZ );
-	float magicProjectionAdjust = 0.43;
+	float magicProjectionAdjust = -0.43;
 	float x = dot( vec, rpProjectionMatrixY ) * magicProjectionAdjust;
 	float w = dot( vec, rpProjectionMatrixW );
 	w = max( w, 1.0 );
