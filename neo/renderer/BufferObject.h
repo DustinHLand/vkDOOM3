@@ -114,7 +114,7 @@ public:
 						~idVertexBuffer();
 
 	// Allocate or free the buffer.
-	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage );
+	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName );
 	void				FreeBufferObject();
 
 	// Make this buffer a reference to another buffer.
@@ -147,7 +147,7 @@ public:
 						~idIndexBuffer();
 
 	// Allocate or free the buffer.
-	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage );
+	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName );
 	void				FreeBufferObject();
 
 	// Make this buffer a reference to another buffer.
@@ -183,7 +183,7 @@ public:
 						~idUniformBuffer();
 
 	// Allocate or free the buffer.
-	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage );
+	bool				AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName );
 	void				FreeBufferObject();
 
 	// Make this buffer a reference to another buffer.

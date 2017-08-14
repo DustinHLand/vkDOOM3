@@ -90,11 +90,11 @@ static void UnmapGeoBufferSet( geoBufferSet_t &gbs ) {
 AllocGeoBufferSet
 ==============
 */
-static void AllocGeoBufferSet( geoBufferSet_t & gbs, const int vertexBytes, const int indexBytes, const int jointBytes, bufferUsageType_t usage ) {
-	gbs.vertexBuffer.AllocBufferObject( NULL, vertexBytes, usage );
-	gbs.indexBuffer.AllocBufferObject( NULL, indexBytes, usage );
+static void AllocGeoBufferSet( geoBufferSet_t & gbs, const int vertexBytes, const int indexBytes, const int jointBytes, bufferUsageType_t usage, const char * name ) {
+	gbs.vertexBuffer.AllocBufferObject( NULL, vertexBytes, usage, va( "vertex_%s", name ) );
+	gbs.indexBuffer.AllocBufferObject( NULL, indexBytes, usage, va( "index_%s", name ) );
 	if ( jointBytes > 0 ) {
-		gbs.jointBuffer.AllocBufferObject( NULL, jointBytes, usage );
+		gbs.jointBuffer.AllocBufferObject( NULL, jointBytes, usage, va( "joint_%s", name ) );
 	}
 	
 	ClearGeoBufferSet( gbs );
@@ -116,13 +116,9 @@ void idVertexCache::Init( int uniformBufferOffsetAlignment ) {
 	m_mostUsedJoint = 0;
 
 	for ( int i = 0; i < NUM_FRAME_DATA; i++ ) {
-		AllocGeoBufferSet( m_frameData[i], VERTCACHE_VERTEX_MEMORY_PER_FRAME, VERTCACHE_INDEX_MEMORY_PER_FRAME, VERTCACHE_JOINT_MEMORY_PER_FRAME, BU_DYNAMIC );
+		AllocGeoBufferSet( m_frameData[i], VERTCACHE_VERTEX_MEMORY_PER_FRAME, VERTCACHE_INDEX_MEMORY_PER_FRAME, VERTCACHE_JOINT_MEMORY_PER_FRAME, BU_DYNAMIC, va( "framedata%d", i ) );
 	}
-#if 1
-	AllocGeoBufferSet( m_staticData, STATIC_VERTEX_MEMORY, STATIC_INDEX_MEMORY, 0, BU_STATIC );
-#else
-	AllocGeoBufferSet( m_staticData, STATIC_VERTEX_MEMORY, STATIC_INDEX_MEMORY, 0, BU_DYNAMIC );
-#endif
+	AllocGeoBufferSet( m_staticData, STATIC_VERTEX_MEMORY, STATIC_INDEX_MEMORY, 0, BU_STATIC, "staticdata" );
 
 	MapGeoBufferSet( m_frameData[ m_listNum ] );
 }

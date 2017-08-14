@@ -83,6 +83,8 @@ void idVulkanStagingManager::Init() {
 		m_buffers[ i ].offset = 0;
 
 		ID_VK_CHECK( vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_buffers[ i ].buffer ) );
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( m_buffers[ i ].buffer ), va( "staging_buffer%d", i ), VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT );
 	}
 
 	VkMemoryRequirements memoryRequirements;

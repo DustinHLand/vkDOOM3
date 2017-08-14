@@ -246,6 +246,8 @@ void idImage::CreateSampler() {
 	}
 
 	ID_VK_CHECK( vkCreateSampler( vkcontext.device, &createInfo, NULL, &m_sampler ) );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_sampler ), GetName(), VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT );
 }
 
 /*
@@ -356,6 +358,8 @@ void idImage::AllocImage() {
 	ID_VK_CHECK( vkBindImageMemory( vkcontext.device, m_image, m_allocation.deviceMemory, m_allocation.offset ) );
 #endif
 
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_image ), GetName(), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT );
+
 	// Create Image View
 	VkImageViewCreateInfo viewCreateInfo = {};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -369,6 +373,8 @@ void idImage::AllocImage() {
 	viewCreateInfo.subresourceRange.baseMipLevel = 0;
 	
 	ID_VK_CHECK( vkCreateImageView( vkcontext.device, &viewCreateInfo, NULL, &m_view ) );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_view ), GetName(), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT );
 }
 
 /*

@@ -250,6 +250,8 @@ static void CreateDescriptorSetLayout(
 		createInfo.pBindings = layoutBindings.Ptr();
 
 		vkCreateDescriptorSetLayout( vkcontext.device, &createInfo, NULL, &renderProg.descriptorSetLayout );
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( renderProg.descriptorSetLayout ), renderProg.name.c_str(), VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT );
 	}
 
 	// Pipeline Layout
@@ -260,6 +262,8 @@ static void CreateDescriptorSetLayout(
 		createInfo.pSetLayouts = &renderProg.descriptorSetLayout;
 
 		vkCreatePipelineLayout( vkcontext.device, &createInfo, NULL, &renderProg.pipelineLayout );
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( renderProg.pipelineLayout ), renderProg.name.c_str(), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT );
 	}
 }
 
@@ -315,7 +319,8 @@ static VkPipeline CreateGraphicsPipeline(
 		VkShaderModule vertexShader,
 		VkShaderModule fragmentShader,
 		VkPipelineLayout pipelineLayout,
-		uint64 stateBits ) {
+		uint64 stateBits, 
+		const char * name ) {
 
 	// Pipeline
 	vertexLayout_t & vertexLayout = vertexLayouts[ vertexLayoutType ];
@@ -548,6 +553,8 @@ static VkPipeline CreateGraphicsPipeline(
 
 	ID_VK_CHECK( vkCreateGraphicsPipelines( vkcontext.device, vkcontext.pipelineCache, 1, &createInfo, NULL, &pipeline ) );
 
+	VK_RegisterObjectForDebug( static_cast< uint64 >( pipeline ), name, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT );
+
 	return pipeline;
 }
 
@@ -575,7 +582,7 @@ VkPipeline renderProg_t::GetPipeline( uint64 stateBits, VkShaderModule vertexSha
 		return pipelineState.pipeline;
 	}
 
-	VkPipeline pipeline = CreateGraphicsPipeline( vertexLayoutType, vertexShader, fragmentShader, pipelineLayout, stateBits );
+	VkPipeline pipeline = CreateGraphicsPipeline( vertexLayoutType, vertexShader, fragmentShader, pipelineLayout, stateBits, name.c_str() );
 
 	pipelineState_t pipelineState;
 	pipelineState.pipeline = pipeline;
@@ -694,11 +701,11 @@ void idRenderProgManager::Init() {
 
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
 		m_parmBuffers[ i ] = new idUniformBuffer();
-		m_parmBuffers[ i ]->AllocBufferObject( NULL, MAX_DESC_SETS * MAX_DESC_SET_UNIFORMS * sizeof( idVec4 ), BU_DYNAMIC );
+		m_parmBuffers[ i ]->AllocBufferObject( NULL, MAX_DESC_SETS * MAX_DESC_SET_UNIFORMS * sizeof( idVec4 ), BU_DYNAMIC, va( "rpUniforms%d", i ) );
 	}
 
 	// Placeholder: mainly for optionalSkinning
-	emptyUBO.AllocBufferObject( NULL, sizeof( idVec4 ), BU_DYNAMIC );
+	emptyUBO.AllocBufferObject( NULL, sizeof( idVec4 ), BU_DYNAMIC, "rpUniformsEmpty" );
 }
 
 /*

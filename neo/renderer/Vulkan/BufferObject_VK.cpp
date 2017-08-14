@@ -65,7 +65,7 @@ idVertexBuffer::idVertexBuffer() {
 idVertexBuffer::AllocBufferObject
 ========================
 */
-bool idVertexBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage ) {
+bool idVertexBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName ) {
 	assert( m_apiObject == VK_NULL_HANDLE );
 	assert_16_byte_aligned( data );
 
@@ -104,6 +104,8 @@ bool idVertexBuffer::AllocBufferObject( const void * data, int allocSize, buffer
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
 	assert( ret == VK_SUCCESS );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_apiObject ), debugName, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT );
 
 	VkMemoryRequirements memoryRequirements;
 	vkGetBufferMemoryRequirements( vkcontext.device, m_apiObject, &memoryRequirements );
@@ -292,7 +294,7 @@ idIndexBuffer::idIndexBuffer() {
 idIndexBuffer::AllocBufferObject
 ========================
 */
-bool idIndexBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage ) {
+bool idIndexBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName ) {
 	assert( m_apiObject == VK_NULL_HANDLE );
 	assert_16_byte_aligned( data );
 
@@ -330,6 +332,8 @@ bool idIndexBuffer::AllocBufferObject( const void * data, int allocSize, bufferU
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
 	assert( ret == VK_SUCCESS );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_apiObject ), debugName, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT );
 
 	VkMemoryRequirements memoryRequirements;
 	vkGetBufferMemoryRequirements( vkcontext.device, m_apiObject, &memoryRequirements );
@@ -519,7 +523,7 @@ idUniformBuffer::idUniformBuffer() {
 idUniformBuffer::AllocBufferObject
 ========================
 */
-bool idUniformBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage ) {
+bool idUniformBuffer::AllocBufferObject( const void * data, int allocSize, bufferUsageType_t usage, const char * debugName ) {
 	assert( m_apiObject == VK_NULL_HANDLE );
 	assert_16_byte_aligned( data );
 
@@ -557,6 +561,8 @@ bool idUniformBuffer::AllocBufferObject( const void * data, int allocSize, buffe
 #else
 	VkResult ret = vkCreateBuffer( vkcontext.device, &bufferCreateInfo, NULL, &m_apiObject );
 	assert( ret == VK_SUCCESS );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( m_apiObject ), debugName, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT );
 
 	VkMemoryRequirements memoryRequirements = {};
 	vkGetBufferMemoryRequirements( vkcontext.device, m_apiObject, &memoryRequirements );

@@ -182,6 +182,9 @@ struct vulkanContext_t {
 
 	int											currentImageParm;
 	idArray< idImage *, MAX_IMAGE_PARMS >		imageParms;
+
+	bool										enableDebugMarkerSupport;
+	PFN_vkDebugMarkerSetObjectNameEXT			vkDebugMarkerSetObjectNameEXT;
 };
 
 extern vulkanContext_t vkcontext;

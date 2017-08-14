@@ -52,6 +52,9 @@ If you have questions concerning this license or the applicable additional terms
 
 const char * VK_ErrorToString( VkResult result );
 
+void VK_RegisterObjectForDebug( const uint64 handle, const char * name, const VkDebugReportObjectTypeEXT objType );
+void VK_UnregisterObjectForDebug( const uint64 handle );
+
 #endif
 
 #endif

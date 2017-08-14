@@ -44,7 +44,7 @@ If you have questions concerning this license or the applicable additional terms
 
 vulkanContext_t vkcontext;
 
-idCVar r_vkEnableValidationLayers( "r_vkEnableValidationLayers", "0", CVAR_BOOL, "" );
+idCVar r_vkEnableValidationLayers( "r_vkEnableValidationLayers", "0", CVAR_BOOL | CVAR_INIT, "" );
 
 extern idCVar r_multiSamples;
 extern idCVar r_skipRender;
@@ -70,12 +70,7 @@ static const char * g_instanceExtensions[ g_numInstanceExtensions ] = {
 
 static const int g_numDebugInstanceExtensions = 1;
 static const char * g_debugInstanceExtensions[ g_numDebugInstanceExtensions ] = {
-	VK_EXT_DEBUG_REPORT_EXTENSION_NAME
-};
-
-static const int g_numDeviceExtensions = 1;
-static const char * g_deviceExtensions[ g_numDeviceExtensions ] = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 };
 
 static const int g_numValidationLayers = 1;
@@ -85,41 +80,54 @@ static const char * g_validationLayers[ g_numValidationLayers ] = {
 
 gfxImpParms_t R_GetModeParms();
 
-#define ID_VK_ERROR_STRING( x ) case static_cast< int >( x ): return #x
+struct vulkanObjectDebugInfo_t {
+	vulkanObjectDebugInfo_t() : type( VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT ) {}
+
+	vulkanObjectDebugInfo_t( VkDebugReportObjectTypeEXT type, const idStrStatic< 128 > & name ) : 
+		type( type ),
+		name( name ) {
+	}
+
+	VkDebugReportObjectTypeEXT	type;
+	idStrStatic< 128 >			name;
+};
+
+static idHashTableT< uint64, vulkanObjectDebugInfo_t > objDebugInfo;
 
 /*
 =============
 VK_ErrorToString
 =============
 */
+#define ID_VK_CASE_TO_STRING( x ) case static_cast< int >( x ): return #x
 const char * VK_ErrorToString( VkResult result ) {
 	switch ( result ) {
-		ID_VK_ERROR_STRING( VK_SUCCESS );
-		ID_VK_ERROR_STRING( VK_NOT_READY );
-		ID_VK_ERROR_STRING( VK_TIMEOUT );
-		ID_VK_ERROR_STRING( VK_EVENT_SET );
-		ID_VK_ERROR_STRING( VK_EVENT_RESET );
-		ID_VK_ERROR_STRING( VK_INCOMPLETE );
-		ID_VK_ERROR_STRING( VK_ERROR_OUT_OF_HOST_MEMORY );
-		ID_VK_ERROR_STRING( VK_ERROR_OUT_OF_DEVICE_MEMORY );
-		ID_VK_ERROR_STRING( VK_ERROR_INITIALIZATION_FAILED );
-		ID_VK_ERROR_STRING( VK_ERROR_DEVICE_LOST );
-		ID_VK_ERROR_STRING( VK_ERROR_MEMORY_MAP_FAILED );
-		ID_VK_ERROR_STRING( VK_ERROR_LAYER_NOT_PRESENT );
-		ID_VK_ERROR_STRING( VK_ERROR_EXTENSION_NOT_PRESENT );
-		ID_VK_ERROR_STRING( VK_ERROR_FEATURE_NOT_PRESENT );
-		ID_VK_ERROR_STRING( VK_ERROR_INCOMPATIBLE_DRIVER );
-		ID_VK_ERROR_STRING( VK_ERROR_TOO_MANY_OBJECTS );
-		ID_VK_ERROR_STRING( VK_ERROR_FORMAT_NOT_SUPPORTED );
-		ID_VK_ERROR_STRING( VK_ERROR_SURFACE_LOST_KHR );
-		ID_VK_ERROR_STRING( VK_ERROR_NATIVE_WINDOW_IN_USE_KHR );
-		ID_VK_ERROR_STRING( VK_SUBOPTIMAL_KHR );
-		ID_VK_ERROR_STRING( VK_ERROR_OUT_OF_DATE_KHR );
-		ID_VK_ERROR_STRING( VK_ERROR_INCOMPATIBLE_DISPLAY_KHR );
-		ID_VK_ERROR_STRING( VK_ERROR_VALIDATION_FAILED_EXT );
-		ID_VK_ERROR_STRING( VK_ERROR_INVALID_SHADER_NV );
-		ID_VK_ERROR_STRING( VK_RESULT_BEGIN_RANGE );
-		ID_VK_ERROR_STRING( VK_RESULT_RANGE_SIZE );
+		ID_VK_CASE_TO_STRING( VK_SUCCESS );
+		ID_VK_CASE_TO_STRING( VK_NOT_READY );
+		ID_VK_CASE_TO_STRING( VK_TIMEOUT );
+		ID_VK_CASE_TO_STRING( VK_EVENT_SET );
+		ID_VK_CASE_TO_STRING( VK_EVENT_RESET );
+		ID_VK_CASE_TO_STRING( VK_INCOMPLETE );
+		ID_VK_CASE_TO_STRING( VK_ERROR_OUT_OF_HOST_MEMORY );
+		ID_VK_CASE_TO_STRING( VK_ERROR_OUT_OF_DEVICE_MEMORY );
+		ID_VK_CASE_TO_STRING( VK_ERROR_INITIALIZATION_FAILED );
+		ID_VK_CASE_TO_STRING( VK_ERROR_DEVICE_LOST );
+		ID_VK_CASE_TO_STRING( VK_ERROR_MEMORY_MAP_FAILED );
+		ID_VK_CASE_TO_STRING( VK_ERROR_LAYER_NOT_PRESENT );
+		ID_VK_CASE_TO_STRING( VK_ERROR_EXTENSION_NOT_PRESENT );
+		ID_VK_CASE_TO_STRING( VK_ERROR_FEATURE_NOT_PRESENT );
+		ID_VK_CASE_TO_STRING( VK_ERROR_INCOMPATIBLE_DRIVER );
+		ID_VK_CASE_TO_STRING( VK_ERROR_TOO_MANY_OBJECTS );
+		ID_VK_CASE_TO_STRING( VK_ERROR_FORMAT_NOT_SUPPORTED );
+		ID_VK_CASE_TO_STRING( VK_ERROR_SURFACE_LOST_KHR );
+		ID_VK_CASE_TO_STRING( VK_ERROR_NATIVE_WINDOW_IN_USE_KHR );
+		ID_VK_CASE_TO_STRING( VK_SUBOPTIMAL_KHR );
+		ID_VK_CASE_TO_STRING( VK_ERROR_OUT_OF_DATE_KHR );
+		ID_VK_CASE_TO_STRING( VK_ERROR_INCOMPATIBLE_DISPLAY_KHR );
+		ID_VK_CASE_TO_STRING( VK_ERROR_VALIDATION_FAILED_EXT );
+		ID_VK_CASE_TO_STRING( VK_ERROR_INVALID_SHADER_NV );
+		ID_VK_CASE_TO_STRING( VK_RESULT_BEGIN_RANGE );
+		ID_VK_CASE_TO_STRING( VK_RESULT_RANGE_SIZE );
 		default: return "UNKNOWN";
 	};
 }
@@ -134,6 +142,141 @@ idRenderBackend
 
 /*
 =============
+VK_RegisterObjectForDebug
+=============
+*/
+void VK_RegisterObjectForDebug( const uint64 handle, const char * name, const VkDebugReportObjectTypeEXT objType ) {
+	if ( ( handle == VK_NULL_HANDLE ) || ( idStr::Length( name ) == 0 ) ) {
+		return;
+	}
+	
+	if ( vkcontext.enableDebugMarkerSupport == false ) {
+		return;
+	}
+
+	objDebugInfo.Set( handle, vulkanObjectDebugInfo_t( objType, idStrStatic< 128 >( name ) ) );
+
+	VkDebugMarkerObjectNameInfoEXT info = {};
+	info.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+	info.objectType = objType;
+	info.object = handle;
+	info.pObjectName = name;
+
+	vkcontext.vkDebugMarkerSetObjectNameEXT( vkcontext.device, &info );
+}
+
+/*
+=============
+VK_UnregisterObjectForDebug
+=============
+*/
+void VK_UnregisterObjectForDebug( const uint64 handle ) {
+	if ( vkcontext.enableDebugMarkerSupport ) {
+		return;
+	}
+
+	objDebugInfo.Remove( handle );
+}
+
+/*
+=============
+GetSeverityString
+=============
+*/
+static const char * GetSeverityString( const VkDebugReportFlagsEXT flags ) {
+	if ( flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT ) {
+		return "INFO";
+	} else if ( flags & VK_DEBUG_REPORT_WARNING_BIT_EXT ) {
+		return "WARN";
+	} else if ( flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT ) {
+		return "PERF";
+	} else if ( flags & VK_DEBUG_REPORT_ERROR_BIT_EXT ) {
+		return "ERROR";
+	} else if ( flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT ) {
+		return "DEBUG";
+	} else {
+		return "NA";
+	}
+}
+
+/*
+=============
+GetDebugReportObjectTypeString
+=============
+*/
+#define ID_VK_CASE_TO_ABBREVIATION( x, y ) case static_cast< int >( x ): return #y
+static const char * GetDebugReportObjectTypeString( const VkDebugReportObjectTypeEXT objType ) {
+	switch( objType ) {
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, UNKNOWN );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT, INSTANCE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT, PHYSICAL_DEVICE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT, DEVICE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT, QUEUE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT, SEMAPHORE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT, COMMAND_BUFFER );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT, FENCE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, DEVICE_MEMORY );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, BUFFER );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, IMAGE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT, EVENT );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT, QUERY_POOL );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT, BUFFER_VIEW );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT, IMAGE_VIEW );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, SHADER_MODULE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT, PIPELINE_CACHE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT, PIPELINE_LAYOUT );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT, RENDER_PASS );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, PIPELINE );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT, DESCRIPTOR_SET_LAYOUT );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT, SAMPLER );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT, DESCRIPTOR_POOL );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT, DESCRIPTOR_SET );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT, FRAMEBUFFER );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT, COMMAND_POOL );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT, SURFACE_KHR );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT, SWAPCHAIN_KHR );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT, DEDBUG_REPORT_CALLBACK_EXT );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT, DISPLAY_KHR );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT, DISPLAY_MODE_KHR );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT, OBJECT_TABLE_NVX );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT, INDIRECT_COMMANDS_LAYOUT_NVX );
+		ID_VK_CASE_TO_ABBREVIATION( VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT, DESCRIPTOR_UPDATE_TEMPLATE_KHR );
+		default: return "UNKNOWN";
+	}
+}
+
+/*
+=============
+AddDebugNamesToMessage
+=============
+*/
+static idStr AddDebugNamesToMessage( const char * msg ) {
+	idStr result;
+
+	int pos = 0;
+	while ( msg[ pos ] != 0 ) {
+		if ( memcmp( msg + pos, "0x", 2 ) == 0 ) {
+			char * end = NULL;
+			uint64 handle = strtoull( msg + pos, &end, 0 );
+			vulkanObjectDebugInfo_t * info = NULL;
+			if ( objDebugInfo.Get( handle, &info ) ) {
+				const char * objTypeName = GetDebugReportObjectTypeString( info->type );
+				result.Append( objTypeName );
+				result.Append( " '" );
+				result.Append( info->name.c_str() );
+				result.Append( "' " );
+			}
+		}
+
+		result.Append( msg[ pos ] );
+		pos++;
+	}
+
+	return result;
+}
+
+/*
+=============
 DebugCallback
 =============
 */
@@ -143,8 +286,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 	uint64 obj, size_t location, int32 code,
 	const char * layerPrefix, const char * msg, void * userData ) {
 
-	idLib::Printf( "VK_DEBUG::%s: %s flags=%d, objType=%d, obj=%llu, location=%lld, code=%d\n", 
-		layerPrefix, msg, flags, objType, obj, location, code );
+	const char * severity = GetSeverityString( flags );
+	idStr detailedMsg = AddDebugNamesToMessage( msg );
+
+	vulkanObjectDebugInfo_t * info = NULL;
+
+	const char * objTypeName = GetDebugReportObjectTypeString( objType );
+	const char * objName = ( objDebugInfo.Get( obj, &info ) ) ? info->name : "";
+
+	idLib::Printf( "VK_%s::%s: %s objType=%s, objName=%s, location=%lld, code=%d\n", 
+		severity, layerPrefix, detailedMsg.c_str(), objTypeName, objName, location, code );
 
 	return VK_FALSE;
 }
@@ -391,15 +542,10 @@ static void CreateInstance() {
 	const bool enableLayers = r_vkEnableValidationLayers.GetBool();
 
 	vkcontext.instanceExtensions.Clear();
-	vkcontext.deviceExtensions.Clear();
 	vkcontext.validationLayers.Clear();
 
 	for ( int i = 0; i < g_numInstanceExtensions; ++i ) {
 		vkcontext.instanceExtensions.Append( g_instanceExtensions[ i ] );
-	}
-
-	for ( int i = 0; i < g_numDeviceExtensions; ++i ) {
-		vkcontext.deviceExtensions.Append( g_deviceExtensions[ i ] );
 	}
 
 	if ( enableLayers ) {
@@ -511,16 +657,36 @@ static void CreateSurface() {
 
 /*
 =============
-CheckPhysicalDeviceExtensionSupport
+PopulateDeviceExtensions
 =============
 */
-static bool CheckPhysicalDeviceExtensionSupport( gpuInfo_t & gpu, idList< const char * > & requiredExt ) {
+static void PopulateDeviceExtensions( const idList< VkExtensionProperties > & extensionProps, idList< const char * > & extensions ) {
+	extensions.Clear();
+	extensions.Append( VK_KHR_SWAPCHAIN_EXTENSION_NAME );
+
+	const int numExtensions = extensionProps.Num();
+	const bool enableLayers = r_vkEnableValidationLayers.GetBool();
+
+	for ( int i = 0; i < numExtensions; ++i ) {
+		if ( idStr::Icmp( extensionProps[ i ].extensionName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME ) == 0 && enableLayers ) {
+			extensions.AddUnique( VK_EXT_DEBUG_MARKER_EXTENSION_NAME );
+			continue;
+		}
+	}
+}
+
+/*
+=============
+CheckDeviceExtensionSupport
+=============
+*/
+static bool CheckDeviceExtensionSupport( const idList< VkExtensionProperties > & extensionProps, const idList< const char * > & requiredExt ) {
 	int required = requiredExt.Num();
 	int available = 0;
 
 	for ( int i = 0; i < requiredExt.Num(); ++i ) {
-		for ( int j = 0; j < gpu.extensionProps.Num(); ++j ) {
-			if ( idStr::Icmp( requiredExt[ i ], gpu.extensionProps[ j ].extensionName ) == 0 ) {
+		for ( int j = 0; j < extensionProps.Num(); ++j ) {
+			if ( idStr::Icmp( requiredExt[ i ], extensionProps[ j ].extensionName ) == 0 ) {
 				available++;
 				break;
 			}
@@ -532,6 +698,19 @@ static bool CheckPhysicalDeviceExtensionSupport( gpuInfo_t & gpu, idList< const 
 
 /*
 =============
+EnableDeviceExtensionFeatures
+=============
+*/
+static void EnableDeviceExtensionFeatures( const idList< const char * > & extensions ) {
+	for ( int i = 0; i < extensions.Num(); ++i ) {
+		if ( idStr::Icmp( extensions[ i ], VK_EXT_DEBUG_MARKER_EXTENSION_NAME ) == 0 ) {
+			vkcontext.enableDebugMarkerSupport = true;
+		}
+	}
+}
+
+/*
+=============
 SelectPhysicalDevice
 =============
 */
@@ -539,10 +718,10 @@ static void SelectPhysicalDevice() {
 	for ( int i = 0; i < vkcontext.gpus.Num(); ++i ) {
 		gpuInfo_t & gpu = vkcontext.gpus[ i ];
 
-		int graphicsIdx = -1;
-		int presentIdx = -1;
+		idList< const char * > extensions;
+		PopulateDeviceExtensions( gpu.extensionProps, extensions );
 
-		if ( !CheckPhysicalDeviceExtensionSupport( gpu, vkcontext.deviceExtensions ) ) {
+		if ( !CheckDeviceExtensionSupport( gpu.extensionProps, extensions ) ) {
 			continue;
 		}
 
@@ -553,6 +732,9 @@ static void SelectPhysicalDevice() {
 		if ( gpu.presentModes.Num() == 0 ) {
 			continue;
 		}
+
+		int graphicsIdx = -1;
+		int presentIdx = -1;
 
 		// Find graphics queue family
 		for ( int j = 0; j < gpu.queueFamilyProps.Num(); ++j ) {
@@ -590,6 +772,9 @@ static void SelectPhysicalDevice() {
 			vkcontext.presentFamilyIdx = presentIdx;
 			vkcontext.physicalDevice = gpu.device;
 			vkcontext.gpu = &gpu;
+			vkcontext.deviceExtensions = extensions;
+
+			EnableDeviceExtensionFeatures( vkcontext.deviceExtensions );
 
 			vkGetPhysicalDeviceFeatures( vkcontext.physicalDevice, &vkcontext.physicalDeviceFeatures );
 
@@ -640,17 +825,17 @@ static void CreateLogicalDeviceAndQueues() {
 	info.enabledExtensionCount = vkcontext.deviceExtensions.Num();
 	info.ppEnabledExtensionNames = vkcontext.deviceExtensions.Ptr();
 
-	if ( r_vkEnableValidationLayers.GetBool() ) {
-		info.enabledLayerCount = vkcontext.validationLayers.Num();
-		info.ppEnabledLayerNames = vkcontext.validationLayers.Ptr();
-	} else {
-		info.enabledLayerCount = 0;
-	}
-
 	ID_VK_CHECK( vkCreateDevice( vkcontext.physicalDevice, &info, NULL, &vkcontext.device ) );
 
 	vkGetDeviceQueue( vkcontext.device, vkcontext.graphicsFamilyIdx, 0, &vkcontext.graphicsQueue );
 	vkGetDeviceQueue( vkcontext.device, vkcontext.presentFamilyIdx, 0, &vkcontext.presentQueue );
+
+	if ( vkcontext.enableDebugMarkerSupport ) {
+		vkcontext.vkDebugMarkerSetObjectNameEXT = reinterpret_cast< PFN_vkDebugMarkerSetObjectNameEXT >( vkGetDeviceProcAddr( vkcontext.device, "vkDebugMarkerSetObjectNameEXT" ) );
+
+		VK_RegisterObjectForDebug( reinterpret_cast< uint64 >( vkcontext.graphicsQueue ), "graphics_queue", VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT );
+		VK_RegisterObjectForDebug( reinterpret_cast< uint64 >( vkcontext.presentQueue ), "present_queue", VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT );
+	}
 }
 
 /*
@@ -762,6 +947,8 @@ static void CreateSwapChain() {
 
 	ID_VK_CHECK( vkCreateSwapchainKHR( vkcontext.device, &info, NULL, &vkcontext.swapchain ) );
 
+	VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.swapchain ), "swapchain", VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT );
+
 	vkcontext.swapchainFormat = surfaceFormat.format;
 	vkcontext.presentMode = presentMode;
 	vkcontext.swapchainExtent = extent;
@@ -802,6 +989,9 @@ static void CreateSwapChain() {
 			vkcontext.swapchainFormat, 
 			vkcontext.swapchainExtent );
 		vkcontext.swapchainImages[ i ] = image;
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( image->GetImage() ), image->GetName(), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT );
+		VK_RegisterObjectForDebug( static_cast< uint64 >( image->GetView() ), image->GetName(), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT );
 	}
 }
 
@@ -832,6 +1022,8 @@ static void CreateCommandPool() {
 	commandPoolCreateInfo.queueFamilyIndex = vkcontext.graphicsFamilyIdx;
 
 	ID_VK_CHECK( vkCreateCommandPool( vkcontext.device, &commandPoolCreateInfo, NULL, &vkcontext.commandPool ) );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.commandPool ), "commandpool", VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT );
 }
 
 /*
@@ -853,6 +1045,8 @@ static void CreateCommandBuffer() {
 
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
 		ID_VK_CHECK( vkCreateFence( vkcontext.device, &fenceCreateInfo, NULL, &vkcontext.commandBufferFences[ i ] ) );
+
+		VK_RegisterObjectForDebug( reinterpret_cast< uint64 >( vkcontext.commandBuffer[ i ] ), va( "commandbuffer%d", i ), VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT );
 	}
 }
 
@@ -934,6 +1128,8 @@ static void CreateRenderTargets() {
 
 		ID_VK_CHECK( vkCreateImage( vkcontext.device, &createInfo, NULL, &vkcontext.msaaImage ) );
 
+		VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.msaaImage ), "msaa_image", VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT );
+
 #if defined( ID_USE_AMD_ALLOCATOR )
 	VmaMemoryRequirements vmaReq = {};
 	vmaReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -965,6 +1161,8 @@ static void CreateRenderTargets() {
 		viewInfo.subresourceRange.layerCount = 1;
 
 		ID_VK_CHECK( vkCreateImageView( vkcontext.device, &viewInfo, NULL, &vkcontext.msaaImageView ) );
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.msaaImageView ), "msaa_view", VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT );
 	}
 }
 
@@ -1054,6 +1252,8 @@ static void CreateRenderPass() {
 	renderPassCreateInfo.dependencyCount = 0;
 
 	ID_VK_CHECK( vkCreateRenderPass( vkcontext.device, &renderPassCreateInfo, NULL, &vkcontext.renderPass ) );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.renderPass ), "renderview", VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT );
 }
 
 /*
@@ -1065,6 +1265,8 @@ static void CreatePipelineCache() {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	ID_VK_CHECK( vkCreatePipelineCache( vkcontext.device, &pipelineCacheCreateInfo, NULL, &vkcontext.pipelineCache ) );
+
+	VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.pipelineCache ), "pipelinecache", VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT );
 }
 
 /*
@@ -1100,6 +1302,8 @@ static void CreateFrameBuffers() {
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
 		attachments[ 0 ] = vkcontext.swapchainImages[ i ]->GetView();
 		ID_VK_CHECK( vkCreateFramebuffer( vkcontext.device, &frameBufferCreateInfo, NULL, &vkcontext.frameBuffers[ i ] ) );
+
+		VK_RegisterObjectForDebug( static_cast< uint64 >( vkcontext.frameBuffers[ i ] ), va( "framebuffer%d", i ), VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT );
 	}
 }
 
@@ -1161,6 +1365,8 @@ static void ClearContext() {
 	vkcontext.renderCompleteSemaphores.Zero();
 	vkcontext.currentImageParm = 0;
 	vkcontext.imageParms.Zero();
+	vkcontext.enableDebugMarkerSupport = false;
+	vkcontext.vkDebugMarkerSetObjectNameEXT = NULL;
 }
 
 /*
