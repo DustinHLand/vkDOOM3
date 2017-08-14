@@ -138,8 +138,10 @@ struct vulkanContext_t {
 	VkDevice						device;
 	VkQueue							graphicsQueue;
 	VkQueue							presentQueue;
+	VkQueue							computeQueue;
 	int								graphicsFamilyIdx;
 	int								presentFamilyIdx;
+	int								computeFamilyIdx;
 	VkDebugReportCallbackEXT		callback;
 
 	idList< const char * >			instanceExtensions;

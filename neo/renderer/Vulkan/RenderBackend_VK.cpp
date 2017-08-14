@@ -541,6 +541,7 @@ static void SelectPhysicalDevice() {
 
 		int graphicsIdx = -1;
 		int presentIdx = -1;
+		int computeIdx = -1;
 
 		if ( !CheckPhysicalDeviceExtensionSupport( gpu, vkcontext.deviceExtensions ) ) {
 			continue;
@@ -554,7 +555,7 @@ static void SelectPhysicalDevice() {
 			continue;
 		}
 
-		// Find graphics queue family
+		// Find graphics & compute queue families
 		for ( int j = 0; j < gpu.queueFamilyProps.Num(); ++j ) {
 			VkQueueFamilyProperties & props = gpu.queueFamilyProps[ j ];
 
@@ -562,9 +563,12 @@ static void SelectPhysicalDevice() {
 				continue;
 			}
 
-			if ( props.queueFlags & VK_QUEUE_GRAPHICS_BIT ) {
+			if ( ( props.queueFlags & VK_QUEUE_GRAPHICS_BIT ) && graphicsIdx == -1 ) {
 				graphicsIdx = j;
-				break;
+			}
+
+			if ( ( props.queueFlags & VK_QUEUE_COMPUTE_BIT ) && computeIdx == -1 ) {
+				computeIdx = j;
 			}
 		}
 
@@ -585,9 +589,10 @@ static void SelectPhysicalDevice() {
 		}
 
 		// Did we find a device supporting both graphics and present.
-		if ( graphicsIdx >= 0 && presentIdx >= 0 ) {
+		if ( graphicsIdx >= 0 && presentIdx >= 0 && computeIdx >= 0 ) {
 			vkcontext.graphicsFamilyIdx = graphicsIdx;
 			vkcontext.presentFamilyIdx = presentIdx;
+			vkcontext.computeFamilyIdx = computeIdx;
 			vkcontext.physicalDevice = gpu.device;
 			vkcontext.gpu = &gpu;
 
@@ -651,6 +656,7 @@ static void CreateLogicalDeviceAndQueues() {
 
 	vkGetDeviceQueue( vkcontext.device, vkcontext.graphicsFamilyIdx, 0, &vkcontext.graphicsQueue );
 	vkGetDeviceQueue( vkcontext.device, vkcontext.presentFamilyIdx, 0, &vkcontext.presentQueue );
+	vkGetDeviceQueue( vkcontext.device, vkcontext.computeFamilyIdx, 0, &vkcontext.computeQueue );
 }
 
 /*
@@ -1130,8 +1136,10 @@ static void ClearContext() {
 	vkcontext.device = VK_NULL_HANDLE;
 	vkcontext.graphicsQueue = VK_NULL_HANDLE;
 	vkcontext.presentQueue = VK_NULL_HANDLE;
+	vkcontext.computeQueue = VK_NULL_HANDLE;
 	vkcontext.graphicsFamilyIdx = -1;
 	vkcontext.presentFamilyIdx = -1;
+	vkcontext.computeFamilyIdx = -1;
 	vkcontext.callback = VK_NULL_HANDLE;
 	vkcontext.instanceExtensions.Clear();
 	vkcontext.deviceExtensions.Clear();
