@@ -44,7 +44,7 @@ If you have questions concerning this license or the applicable additional terms
 
 vulkanContext_t vkcontext;
 
-idCVar r_vkEnableValidationLayers( "r_vkEnableValidationLayers", "0", CVAR_BOOL, "" );
+idCVar r_vkEnableValidationLayers( "r_vkEnableValidationLayers", "0", CVAR_BOOL | CVAR_INIT, "" );
 
 extern idCVar r_multiSamples;
 extern idCVar r_skipRender;
