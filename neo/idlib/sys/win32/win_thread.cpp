@@ -103,7 +103,7 @@ uintptr_t Sys_CreateThread( xthread_t function, void *parms, xthreadPriority pri
 									flags,
 									&threadId);
 	if ( handle == 0 ) {
-		idLib::common->FatalError( "CreateThread error: %i", GetLastError() );
+		idLib::FatalError( "CreateThread error: %i", GetLastError() );
 		return (uintptr_t)0;
 	}
 	Sys_SetThreadName( threadId, name );

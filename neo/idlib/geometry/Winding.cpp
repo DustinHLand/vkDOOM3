@@ -220,7 +220,7 @@ int idWinding::Split( const idPlane &plane, const float epsilon, idWinding **fro
 	}
 	
 	if ( f->numPoints > maxpts || b->numPoints > maxpts ) {
-		idLib::common->FatalError( "idWinding::Split: points exceeded estimate." );
+		idLib::FatalError( "idWinding::Split: points exceeded estimate." );
 	}
 
 	return SIDE_CROSS;
@@ -1007,7 +1007,7 @@ idWinding *idWinding::TryMerge( const idWinding &w, const idVec3 &planenormal, i
 	f1 = this;
 	f2 = &w;
 	//
-	// find a idLib::common edge
+	// find an edge
 	//	
 	p1 = p2 = NULL;	// stop compiler warning
 	j = 0;
@@ -1105,7 +1105,7 @@ idWinding::RemovePoint
 */
 void idWinding::RemovePoint( int point ) {
 	if ( point < 0 || point >= numPoints ) {
-		idLib::common->FatalError( "idWinding::removePoint: point out of range" );
+		idLib::FatalError( "idWinding::removePoint: point out of range" );
 	}
 	if ( point < numPoints - 1) {
 		memmove(&p[point], &p[point+1], (numPoints - point - 1) * sizeof(p[0]) );
@@ -1122,11 +1122,11 @@ void idWinding::InsertPoint( const idVec5 &point, int spot ) {
 	int i;
 
 	if ( spot > numPoints ) {
-		idLib::common->FatalError( "idWinding::insertPoint: spot > numPoints" );
+		idLib::FatalError( "idWinding::insertPoint: spot > numPoints" );
 	}
 
 	if ( spot < 0 ) {
-		idLib::common->FatalError( "idWinding::insertPoint: spot < 0" );
+		idLib::FatalError( "idWinding::insertPoint: spot < 0" );
 	}
 
 	EnsureAlloced( numPoints+1, true );

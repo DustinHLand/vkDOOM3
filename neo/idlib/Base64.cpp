@@ -1,7 +1,3 @@
-
-#include "precompiled.h"
-#pragma hdrstop
-
 /*
 Copyright (c) 1996 Lars Wirzenius.  All rights reserved.
 
@@ -32,6 +28,9 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
+
+#pragma hdrstop
+#include "precompiled.h"
 
 /*
 ============

@@ -27,8 +27,8 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
+#include "precompiled.h"
 
 #ifdef ID_RETAIL
 idCVar net_allowCheats( "net_allowCheats", "0", CVAR_BOOL | CVAR_ROM, "Allow cheats in multiplayer" );
@@ -638,7 +638,7 @@ void idCmdSystemLocal::BufferCommandText( cmdExecution_t exec, const char *text 
 			break;
 		}
 		default: {
-			common->FatalError( "idCmdSystemLocal::BufferCommandText: bad exec type" );
+			idLib::FatalError( "idCmdSystemLocal::BufferCommandText: bad exec type" );
 		}
 	}
 }
@@ -660,7 +660,7 @@ void idCmdSystemLocal::BufferCommandArgs( cmdExecution_t exec, const idCmdArgs &
 			break;
 		}
 		default: {
-			common->FatalError( "idCmdSystemLocal::BufferCommandArgs: bad exec type" );
+			idLib::FatalError( "idCmdSystemLocal::BufferCommandArgs: bad exec type" );
 		}
 	}
 }

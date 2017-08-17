@@ -564,7 +564,7 @@ void idStr::Format( const char *fmt, ... ) {
 	text[ sizeof( text ) - 1 ] = '\0';
 
 	if ( (size_t)len >= sizeof( text ) - 1 ) {
-		idLib::common->FatalError( "Tried to set a large buffer using %s", fmt );
+		idLib::FatalError( "Tried to set a large buffer using %s", fmt );
 	}
 	*this = text;
 }

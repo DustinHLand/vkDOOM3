@@ -117,7 +117,7 @@ void idDict::TransferKeyValues( idDict &other ) {
 	}
 
 	if ( other.args.Num() && other.args[0].key->GetPool() != &globalKeys ) {
-		common->FatalError( "idDict::TransferKeyValues: can't transfer values across a DLL boundary" );
+		idLib::FatalError( "idDict::TransferKeyValues: can't transfer values across a DLL boundary" );
 		return;
 	}
 
@@ -501,7 +501,7 @@ const idKeyValue *idDict::FindKey( const char *key ) const {
 	int i, hash;
 
 	if ( key == NULL || key[0] == '\0' ) {
-		idLib::common->DWarning( "idDict::FindKey: empty key" );
+		idLib::Warning( "idDict::FindKey: empty key" );
 		return NULL;
 	}
 
@@ -523,7 +523,7 @@ idDict::FindKeyIndex
 int idDict::FindKeyIndex( const char *key ) const {
 
 	if ( key == NULL || key[0] == '\0' ) {
-		idLib::common->DWarning( "idDict::FindKeyIndex: empty key" );
+		idLib::Warning( "idDict::FindKeyIndex: empty key" );
 		return 0;
 	}
 

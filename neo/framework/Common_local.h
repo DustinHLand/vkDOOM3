@@ -76,13 +76,6 @@ private:
 	bool			isClient;
 };
 
-enum errorParm_t {
-	ERP_NONE,
-	ERP_FATAL,						// exit the entire game with a popup window
-	ERP_DROP,						// print to console and disconnect from game
-	ERP_DISCONNECT					// don't kill server
-};
-
 enum gameLaunch_t {
 	LAUNCH_TITLE_DOOM = 0,
 	LAUNCH_TITLE_DOOM2,
@@ -103,9 +96,6 @@ struct frameTiming_t {
 	uint64	finishRenderTime;
 };
 
-#define	MAX_PRINT_MSG_SIZE	4096
-#define MAX_WARNING_LIST	256
-
 #define SAVEGAME_CHECKPOINT_FILENAME		"gamedata.save"
 #define SAVEGAME_DESCRIPTION_FILENAME		"gamedata.txt"
 #define SAVEGAME_STRINGS_FILENAME			"gamedata.strings"
@@ -124,18 +114,7 @@ public:
 	virtual void				UpdateLevelLoadPacifier();
 	virtual void				StartupVariable( const char * match );
 	virtual void				WriteConfigToFile( const char *filename );
-	virtual void				BeginRedirect( char *buffer, int buffersize, void (*flush)( const char * ) );
-	virtual void				EndRedirect();
 	virtual void				SetRefreshOnPrint( bool set );
-	virtual void				Printf( const char *fmt, ... );
-	virtual void				VPrintf( const char *fmt, va_list arg );
-	virtual void				DPrintf( const char *fmt, ... );
-	virtual void				Warning( const char *fmt, ... );
-	virtual void				DWarning( const char *fmt, ...);
-	virtual void				PrintWarnings();
-	virtual void				ClearWarnings( const char *reason );
-	virtual void				Error( const char *fmt, ... );
-	virtual void				FatalError( const char *fmt, ... );
 	virtual bool				IsShuttingDown() const { return com_shuttingDown; }
 
 	virtual const char *		KeysFromBinding( const char *bind );
@@ -230,22 +209,10 @@ public:	// These are public because they are called directly by static functions
 
 private:
 	bool						com_fullyInitialized;
-	bool						com_refreshOnPrint;		// update the screen every print for dmap
-	errorParm_t					com_errorEntered;
 	bool						com_shuttingDown;
 	bool						com_isJapaneseSKU;
 
 	idFile *					logFile;
-
-	char						errorMessage[MAX_PRINT_MSG_SIZE];
-
-	char *						rd_buffer;
-	int							rd_buffersize;
-	void						(*rd_flush)( const char *buffer );
-
-	idStr						warningCaption;
-	idStrList					warningList;
-	idStrList					errorList;
 
 	int							gameDLL;
 
@@ -408,7 +375,6 @@ private:
 	bool	SafeMode();
 	void	CloseLogFile();
 	void	WriteConfiguration();
-	void	DumpWarnings();
 	void	LoadGameDLL();
 	void	UnloadGameDLL();
 	void	CleanupShell();
