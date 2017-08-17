@@ -66,12 +66,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "m_menu.h"
 
-
 #include "Main.h"
-//#include "../game/player/PlayerProfileDoom.h"
-#include "sys/sys_session.h"
-#include "sys/sys_signin.h"
-#include "d3xp/Game_local.h"
 
 extern idCVar in_useJoystick;
 extern idCVar r_fullscreen;

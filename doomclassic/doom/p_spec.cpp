@@ -54,8 +54,6 @@ If you have questions concerning this license or the applicable additional terms
 // Data.
 #include "sounds.h"
 
-#include "../../neo/d3xp/Game_Local.h"
-
 //
 // Animating textures and planes
 // There is another anim_t used in wi_stuff, unrelated. BLAH!
@@ -1032,35 +1030,6 @@ void P_PlayerInSpecialSector (player_t* player)
 		// SECRET SECTOR
 		player->secretcount++;
 		sector->special = 0;
-
-
-		if ( !::g->demoplayback && ( ::g->usergame && !::g->netgame ) ) {
-			// DHM - Nerve :: Let's give achievements in real time in Doom 2
-			if ( !common->IsMultiplayer() ) {
-				switch( DoomLib::GetGameSKU() ) {
-					case GAME_SKU_DOOM1_BFG: {
-						// Removing trophies for DOOM and DOOM II BFG due to point limit.
-						//gameLocal->UnlockAchievement( Doom1BFG_Trophies::SCOUT_FIND_ANY_SECRET );
-						break;
-					}
-					case GAME_SKU_DOOM2_BFG: {
-						//gameLocal->UnlockAchievement( Doom2BFG_Trophies::IMPORTANT_LOOKING_DOOR_FIND_ANY_SECRET );
-						idAchievementManager::LocalUser_CompleteAchievement(ACHIEVEMENT_DOOM2_IMPORTANT_LOOKING_DOOR_FIND_ANY_SECRET );
-						break;
-					}
-					case GAME_SKU_DCC: {
-						// Not on PC.
-						//gameLocal->UnlockAchievement( DOOM_ACHIEVEMENT_FIND_SECRET );
-						break;
-					}
-					default: {
-						// No unlocks for other SKUs.
-						break;
-					}
-				}
-			}
-		}
-
 
 		break;
 

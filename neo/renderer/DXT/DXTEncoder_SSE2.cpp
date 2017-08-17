@@ -31,7 +31,6 @@ Contains the DxtEncoder implementation for SSE2.
 ================================================================================================
 */
 #pragma hdrstop
-#include "DXTCodec_local.h"
 #include "DXTCodec.h"
 
 #if defined( ID_WIN_X86_SSE2_INTRIN ) || ( ( defined( ID_WIN_X86_ASM ) || defined( ID_MAC_X86_ASM ) ) )

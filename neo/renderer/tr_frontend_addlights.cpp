@@ -28,9 +28,10 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderBackend.h"
 #include "RenderSystem_local.h"
+#include "jobs/prelightshadowvolume/PreLightShadowVolume.h"
 
 extern idCVar r_useAreasConnectedForShadowCulling;
 extern idCVar r_useParallelAddShadows;
@@ -457,6 +458,7 @@ idRenderSystemLocal::AddLights
 =================
 */
 viewEntity_t *R_SetEntityDefViewEntity( idRenderEntity *def );
+void PreLightShadowVolumeJob( const preLightShadowVolumeParms_t * parms );
 void idRenderSystemLocal::AddLights() {
 	SCOPED_PROFILE_EVENT( "R_AddLights" );
 

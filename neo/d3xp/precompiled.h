@@ -3,6 +3,7 @@
 
 Doom 3 BFG Edition GPL Source Code
 Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 2016-2017 Dustin Land
 
 This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
 
@@ -25,14 +26,43 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#ifndef __DXTCODEC_LOCAL_H__
-#define __DXTCODEC_LOCAL_H__
 
-/*
-================================================================================================
-Contains the DxtEncoder and DxtDecoder declarations.
-================================================================================================
-*/
-#include "../../idlib/precompiled.h"
+#ifndef __D3XP_PRECOMPILED_H__
+#define __D3XP_PRECOMPILED_H__
 
-#endif // !__DXTCODEC_LOCAL_H__
+#include "../idlib/precompiled.h"
+
+// framework
+#include "../framework/UsercmdGen.h"
+#include "../framework/Common_dialog.h"
+
+// decls
+#include "../framework/DeclManager.h"
+#include "../framework/DeclEntityDef.h"
+#include "../framework/DeclParticle.h"
+#include "../framework/DeclPDA.h"
+
+// renderer
+#include "../renderer/RenderConfig.h"
+#include "../renderer/Cinematic.h"
+#include "../renderer/Material.h"
+#include "../renderer/RenderCommon.h"
+#include "../renderer/Model.h"
+#include "../renderer/ModelManager.h"
+
+// sound engine
+#include "../sound/sound.h"
+
+#include "../swf/SWF.h"
+
+// collision detection system
+#include "../cm/CollisionModel.h"
+
+// game
+#include "../d3xp/Game.h"
+
+// sys
+#include "../sys/sys_stats_misc.h"
+#include "../sys/sys_stats.h"
+
+#endif /* !__D3XP_PRECOMPILED_H__ */

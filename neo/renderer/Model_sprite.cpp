@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
 #include "Model_local.h"
 
@@ -70,7 +70,7 @@ bool idRenderModelSprite::IsLoaded() const {
 idRenderModelSprite::InstantiateDynamicModel
 ===============
 */
-idRenderModel *	idRenderModelSprite::InstantiateDynamicModel( const struct renderEntity_s *renderEntity, const viewDef_t *viewDef, idRenderModel *cachedModel ) {
+idRenderModel *	idRenderModelSprite::InstantiateDynamicModel( const renderEntity_t *renderEntity, const viewDef_t *viewDef, idRenderModel *cachedModel ) {
 	idRenderModelStatic *staticModel;
 	srfTriangles_t *tri;
 	modelSurface_t surf;
@@ -187,7 +187,7 @@ idRenderModel *	idRenderModelSprite::InstantiateDynamicModel( const struct rende
 idRenderModelSprite::Bounds
 ===============
 */
-idBounds idRenderModelSprite::Bounds( const struct renderEntity_s *renderEntity ) const {
+idBounds idRenderModelSprite::Bounds( const renderEntity_t *renderEntity ) const {
 	idBounds b;
 
 	b.Zero();

@@ -25,14 +25,12 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#pragma hdrstop
-#include "../../idlib/precompiled.h"
 
-//#if defined( ID_VS2010 )
-//#include "../../../libs/dxsdk_June2010/include/xinput.h"
-//#else
+#ifndef __SYS_WIN_INPUT_H__
+#define __SYS_WIN_INPUT_H__
+
+#include "../sys_session.h"
 #include <Xinput.h>
-//#endif
 
 static const int MAX_JOYSTICKS = 4;
 
@@ -91,6 +89,8 @@ protected:
 	controllerState_t		controllers[ MAX_JOYSTICKS ];
 
 	// should these be per-controller?
-	bool					buttonStates[MAX_INPUT_DEVICES][K_LAST_KEY];	// For keeping track of button up/down events
-	int						joyAxis[MAX_INPUT_DEVICES][MAX_JOYSTICK_AXIS];			// For keeping track of joystick axises
+	bool					buttonStates[ MAX_INPUT_DEVICES ][ K_LAST_KEY ];	// For keeping track of button up/down events
+	int						joyAxis[ MAX_INPUT_DEVICES ][ MAX_JOYSTICK_AXIS ];	// For keeping track of joystick axises
 };
+
+#endif

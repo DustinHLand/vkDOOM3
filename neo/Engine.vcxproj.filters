@@ -22,9 +22,6 @@
     <Filter Include="Renderer">
       <UniqueIdentifier>{5c2294a1-be44-4abc-9d97-3f3fdff10082}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderer\OpenGL">
-      <UniqueIdentifier>{25f7ed20-02fb-4087-be23-47b4f8547c0b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Renderer\DXT">
       <UniqueIdentifier>{15b4a99f-0739-48df-899d-9604c4c95b7d}</UniqueIdentifier>
     </Filter>
@@ -459,9 +456,6 @@
     <ClCompile Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.cpp">
       <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
     </ClCompile>
-    <ClCompile Include="framework\CmdSystem.cpp">
-      <Filter>Framework</Filter>
-    </ClCompile>
     <ClCompile Include="framework\Common.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
@@ -495,9 +489,6 @@
     <ClCompile Include="framework\ConsoleHistory.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
-    <ClCompile Include="framework\CVarSystem.cpp">
-      <Filter>Framework</Filter>
-    </ClCompile>
     <ClCompile Include="framework\DebugGraph.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
@@ -505,9 +496,6 @@
       <Filter>Framework</Filter>
     </ClCompile>
     <ClCompile Include="framework\EventLoop.cpp">
-      <Filter>Framework</Filter>
-    </ClCompile>
-    <ClCompile Include="framework\File.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
     <ClCompile Include="framework\FileSystem.cpp">
@@ -534,13 +522,7 @@
     <ClCompile Include="framework\TokenParser.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
-    <ClCompile Include="framework\Unzip.cpp">
-      <Filter>Framework</Filter>
-    </ClCompile>
     <ClCompile Include="framework\UsercmdGen.cpp">
-      <Filter>Framework</Filter>
-    </ClCompile>
-    <ClCompile Include="framework\Zip.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
     <ClCompile Include="framework\DeclAF.cpp">
@@ -603,29 +585,17 @@
     <ClCompile Include="aas\AASFile_sample.cpp">
       <Filter>AAS</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\OpenGL\RenderBackend_GL.cpp">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\OpenGL\RenderDebug_GL.cpp">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\RenderBackend.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\RenderBackend_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\OpenGL\BufferObject_GL.cpp">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\Vulkan\BufferObject_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="renderer\BufferObject.cpp">
       <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\OpenGL\RenderProgs_GL.cpp">
-      <Filter>Renderer\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\RenderProgs_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
@@ -635,9 +605,6 @@
     </ClCompile>
     <ClCompile Include="renderer\RenderDebug.cpp">
       <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\OpenGL\Image_GL.cpp">
-      <Filter>Renderer\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\Image_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
@@ -653,6 +620,21 @@
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\vma.cpp">
       <Filter>Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\File.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\Unzip.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\Zip.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\CmdSystem.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\CVarSystem.cpp">
+      <Filter>Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -947,19 +929,7 @@
     <ClInclude Include="renderer\VertexCache.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\OpenGL\glext.h">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\OpenGL\qgl.h">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\OpenGL\wglext.h">
-      <Filter>Renderer\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="renderer\DXT\DXTCodec.h">
-      <Filter>Renderer\DXT</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\DXT\DXTCodec_local.h">
       <Filter>Renderer\DXT</Filter>
     </ClInclude>
     <ClInclude Include="renderer\Color\ColorSpace.h">
@@ -968,28 +938,7 @@
     <ClInclude Include="renderer\jobs\ShadowShared.h">
       <Filter>Renderer\Jobs</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h">
-      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume_local.h">
-      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume.h">
-      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume_local.h">
-      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.h">
-      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume_local.h">
-      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
-    </ClInclude>
     <ClInclude Include="framework\BuildVersion.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="framework\CmdSystem.h">
       <Filter>Framework</Filter>
     </ClInclude>
     <ClInclude Include="framework\Common.h">
@@ -1010,9 +959,6 @@
     <ClInclude Include="framework\ConsoleHistory.h">
       <Filter>Framework</Filter>
     </ClInclude>
-    <ClInclude Include="framework\CVarSystem.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
     <ClInclude Include="framework\DebugGraph.h">
       <Filter>Framework</Filter>
     </ClInclude>
@@ -1020,9 +966,6 @@
       <Filter>Framework</Filter>
     </ClInclude>
     <ClInclude Include="framework\EventLoop.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="framework\File.h">
       <Filter>Framework</Filter>
     </ClInclude>
     <ClInclude Include="framework\FileSystem.h">
@@ -1052,13 +995,7 @@
     <ClInclude Include="framework\TokenParser.h">
       <Filter>Framework</Filter>
     </ClInclude>
-    <ClInclude Include="framework\Unzip.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
     <ClInclude Include="framework\UsercmdGen.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="framework\Zip.h">
       <Filter>Framework</Filter>
     </ClInclude>
     <ClInclude Include="framework\DeclAF.h">
@@ -1120,6 +1057,33 @@
     </ClInclude>
     <ClInclude Include="renderer\Vulkan\vma.h">
       <Filter>Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\File.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\Unzip.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\Zip.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\CmdSystem.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\CVarSystem.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\precompiled.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume.h">
+      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.h">
+      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h">
+      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

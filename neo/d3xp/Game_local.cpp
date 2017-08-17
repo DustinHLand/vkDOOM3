@@ -27,9 +27,15 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../renderer/RenderSystem.h"
+#include "../renderer/RenderWorld.h"
+#include "../sys/sys_localuser.h"
+#include "../sys/sys_signin.h"
+#include "../sys/sys_session.h"
+#include "../ui/ListGUI.h"
+#include "../ui/UserInterface.h"
 #include "Game_local.h"
 
 #ifdef GAME_DLL

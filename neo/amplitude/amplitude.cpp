@@ -273,7 +273,7 @@ bool Process( FILE * in, FILE * out ) {
 		}
 	}
 	for ( int i = 0; i < numOutputSamples; i++ ) {
-		float amp = atan( max[i] - min[i] ) / 0.7853981633974483f;
+		float amp = atanf( max[i] - min[i] ) / 0.7853981633974483f;
 		int o = (int)( amp * 255.0f );
 		if ( o > 255 ) {
 			outputData[i] = 255;

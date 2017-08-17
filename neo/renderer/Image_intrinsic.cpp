@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "Image.h"
 
 #define	DEFAULT_SIZE	16

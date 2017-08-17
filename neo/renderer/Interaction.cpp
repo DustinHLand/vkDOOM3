@@ -28,10 +28,11 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
 #include "GLMatrix.h"
 #include "Interaction.h"
+#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
 
 srfTriangles_t *	R_AllocStaticTriSurf();
 void				R_AllocStaticTriSurfIndexes( srfTriangles_t *tri, int numIndexes );

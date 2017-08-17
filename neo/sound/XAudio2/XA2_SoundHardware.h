@@ -28,6 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __XA_SOUNDHARDWARE_H__
 #define __XA_SOUNDHARDWARE_H__
 
+class idDebugGraph;
 class idSoundSample_XAudio2;
 class idSoundVoice_XAudio2;
 

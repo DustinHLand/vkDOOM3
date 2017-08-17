@@ -44,11 +44,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "sounds.h"
 
 #include "p_pspr.h"
-#include "d3xp/Game_local.h"
 
 extern bool globalNetworking;
-
-
 
 static const float	PISTOL_MAGNITUDE_HIGH			= 0.5f;
 static const int	PISTOL_DURATION_HIGH			= 250;

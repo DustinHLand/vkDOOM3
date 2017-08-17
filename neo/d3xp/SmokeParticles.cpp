@@ -26,9 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../renderer/RenderWorld.h"
 #include "Game_local.h"
 
 static const char *smokeParticle_SnapshotName = "_SmokeParticle_Snapshot_";
@@ -294,7 +294,7 @@ bool idSmokeParticles::EmitSmoke( const idDeclParticle *smoke, const int systemS
 idSmokeParticles::UpdateRenderEntity
 ================
 */
-bool idSmokeParticles::UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView ) {
+bool idSmokeParticles::UpdateRenderEntity( renderEntity_t *renderEntity, const renderView_t *renderView ) {
 
 	// this may be triggered by a model trace or other non-view related source,
 	// to which we should look like an empty model
@@ -428,7 +428,7 @@ bool idSmokeParticles::UpdateRenderEntity( renderEntity_s *renderEntity, const r
 idSmokeParticles::ModelCallback
 ================
 */
-bool idSmokeParticles::ModelCallback( renderEntity_s *renderEntity, const renderView_t *renderView ) {
+bool idSmokeParticles::ModelCallback( renderEntity_t *renderEntity, const renderView_t *renderView ) {
 	// update the particles
 	if ( gameLocal.smokeParticles ) {
 		return gameLocal.smokeParticles->UpdateRenderEntity( renderEntity, renderView );

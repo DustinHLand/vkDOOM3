@@ -25,8 +25,9 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
+
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 
 extern idCVar fs_savepath;
 

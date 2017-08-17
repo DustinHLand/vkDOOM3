@@ -31,6 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __RENDERER_COMMON_H__
 
 #include "ScreenRect.h"
+#include "jobs/ShadowShared.h"
 
 class idRenderModelDecal;
 class idRenderModelOverlay;
@@ -79,6 +80,9 @@ static const int MAX_IMAGE_PARMS			= 16;
 static const int MAX_UBO_PARMS				= 2;
 #endif
 
+// vertCacheHandle_t packs size, offset, and frame number into 64 bits
+typedef uint64 vertCacheHandle_t;
+
 // How is this texture used?  Determines the storage and color format
 typedef enum {
 	TD_SPECULAR,			// may be compressed, and always zeros the alpha channel
@@ -100,7 +104,6 @@ typedef enum {
 	CF_NATIVE,		// _px, _nx, _py, etc, directly sent to GL
 	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
 } cubeFiles_t;
-
 
 void GL_CheckErrors();
 
@@ -132,8 +135,10 @@ drawSurf_t are always allocated and freed every frame, they are never cached
 ===========================================================================
 */
 
+struct srfTriangles_t;
 struct viewEntity_t;
 struct viewLight_t;
+class idMaterial;
 
 struct drawSurf_t {
 	const srfTriangles_t *	frontEndGeo;		// don't use on the back end, it may be updated by the front end!
@@ -173,6 +178,8 @@ idRenderLight
 
 ===========================================================================
 */
+
+class idRenderModel;
 
 typedef struct renderLight_s {
 	idMat3					axis;				// rotation vectors, must be unit length
@@ -219,7 +226,7 @@ typedef struct renderLight_s {
 
 
 	const idMaterial *		shader;				// NULL = either lights/defaultPointLight or lights/defaultProjectedLight
-	float					shaderParms[MAX_ENTITY_SHADER_PARMS];		// can be used in any way by shader
+	float					shaderParms[ MAX_ENTITY_SHADER_PARMS ];		// can be used in any way by shader
 	idSoundEmitter *		referenceSound;		// for shader sound tables, allowing effects to vary with sounds
 } renderLight_t;
 
@@ -281,9 +288,9 @@ idRenderEntity
 ===========================================================================
 */
 
-typedef bool(*deferredEntityCallback_t)( renderEntity_s *, const renderView_s * );
+typedef bool(*deferredEntityCallback_t)( renderEntity_t *, const renderView_t * );
 
-typedef struct renderEntity_s {
+struct renderEntity_t {
 	idRenderModel *			hModel;				// this can only be null if callback is set
 
 	int						entityNum;
@@ -335,7 +342,7 @@ typedef struct renderEntity_s {
 	// networking: see WriteGUIToSnapshot / ReadGUIFromSnapshot
 	class idUserInterface * gui[ MAX_RENDERENTITY_GUI ];
 
-	struct renderView_s	*	remoteRenderView;		// any remote camera surfaces will use this
+	struct renderView_t	*	remoteRenderView;		// any remote camera surfaces will use this
 
 	int						numJoints;
 	idJointMat *			joints;					// array of joints that will modify vertices.
@@ -358,7 +365,7 @@ typedef struct renderEntity_s {
 	int						forceUpdate;			// force an update (NOTE: not a bool to keep this struct a multiple of 4 bytes)
 	int						timeGroup;
 	int						xrayIndex;
-} renderEntity_t;
+};
 
 class idRenderEntity {
 public:
@@ -434,6 +441,8 @@ but should never exist if its volume does not intersect the view frustum
 ===========================================================================
 */
 
+struct preLightShadowVolumeParms_t;
+
 struct shadowOnlyEntity_t {
 	shadowOnlyEntity_t *	next;
 	idRenderEntity	*		edef;
@@ -500,6 +509,9 @@ A single entityDef can generate multiple viewEntity_t in a single frame, as when
 ===========================================================================
 */
 
+struct staticShadowVolumeParms_t;
+struct dynamicShadowVolumeParms_t;
+
 struct viewEntity_t {
 	viewEntity_t *			next;
 
@@ -544,7 +556,7 @@ Are allocated on the frame temporary stack memory
 ===========================================================================
 */
 
-typedef struct renderView_s {
+struct renderView_t {
 	// player views will set this to a non-zero integer for model suppress / allow
 	// subviews (mirrors, cameras, etc) will always clear it to zero
 	int						viewID;
@@ -562,7 +574,7 @@ typedef struct renderView_s {
 	int						time[2];
 	float					shaderParms[MAX_GLOBAL_SHADER_PARMS];		// can be used in any way by shader
 	const idMaterial		*globalMaterial;							// used to override everything draw
-} renderView_t;
+};
 
 struct viewDef_t {
 	// specified in the call to DrawScene()
@@ -672,6 +684,8 @@ complete srfTriangles_t from just a new set of vertexes
 ===========================================================================
 */
 
+struct silEdge_t;
+
 struct deformInfo_t {
 	int					numSourceVerts;
 
@@ -722,12 +736,6 @@ struct renderCommand_t {
 	rcmd_t *	next;
 };
 
-struct setBufferCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
-	GLenum		buffer;
-};
-
 struct drawSurfsCommand_t {
 	rcmd_t		commandId;
 	rcmd_t *	next;
@@ -764,22 +772,6 @@ on an SMP machine.
 
 ===========================================================================
 */
-
-enum frameAllocType_t {
-	FRAME_ALLOC_VIEW_DEF,
-	FRAME_ALLOC_VIEW_ENTITY,
-	FRAME_ALLOC_VIEW_LIGHT,
-	FRAME_ALLOC_SURFACE_TRIANGLES,
-	FRAME_ALLOC_DRAW_SURFACE,
-	FRAME_ALLOC_INTERACTION_STATE,
-	FRAME_ALLOC_SHADOW_ONLY_ENTITY,
-	FRAME_ALLOC_SHADOW_VOLUME_PARMS,
-	FRAME_ALLOC_SHADER_REGISTER,
-	FRAME_ALLOC_DRAW_SURFACE_POINTER,
-	FRAME_ALLOC_DRAW_COMMAND,
-	FRAME_ALLOC_UNKNOWN,
-	FRAME_ALLOC_MAX
-};
 
 class idFrameData {
 public:

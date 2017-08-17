@@ -52,7 +52,7 @@ Manager
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
 #include "Image.h"
 

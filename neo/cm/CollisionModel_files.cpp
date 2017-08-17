@@ -36,9 +36,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
-
-
+#include "../framework/precompiled.h"
 #include "CollisionModel_local.h"
 
 #define CM_FILE_EXT			"cm"

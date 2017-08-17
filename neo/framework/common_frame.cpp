@@ -27,9 +27,8 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
 #include "Common_local.h"
 #include "../renderer/Image.h"
 #include "../../doomclassic/doom/doomlib.h"

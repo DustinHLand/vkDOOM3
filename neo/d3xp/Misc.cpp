@@ -26,15 +26,12 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-/*
 
-Various utility objects and functions.
-
-*/
-
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../renderer/RenderWorld.h"
+#include "../ui/ListGUI.h"
+#include "../ui/UserInterface.h"
 #include "Game_local.h"
 
 /*

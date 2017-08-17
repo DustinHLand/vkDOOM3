@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
 #include "RenderBackend.h"
 #include "GLMatrix.h"
@@ -36,6 +36,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "ModelDecal.h"
 #include "ModelOverlay.h"
 #include "Interaction.h"
+#include "jobs/staticshadowvolume/StaticShadowVolume.h"
+#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
 
 idCVar r_skipStaticShadows( "r_skipStaticShadows", "0", CVAR_RENDERER | CVAR_BOOL, "skip static shadows" );
 idCVar r_skipDynamicShadows( "r_skipDynamicShadows", "0", CVAR_RENDERER | CVAR_BOOL, "skip dynamic shadows" );
@@ -1016,6 +1018,8 @@ viewDef->drawSurfs[] array and light link chains, along with
 frameData and vertexCache allocations to support the drawSurfs.
 ===================
 */
+void StaticShadowVolumeJob( const staticShadowVolumeParms_t * parms );
+void DynamicShadowVolumeJob( const dynamicShadowVolumeParms_t * parms );
 void idRenderSystemLocal::AddModels() {
 	SCOPED_PROFILE_EVENT( "R_AddModels" );
 

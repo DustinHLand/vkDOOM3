@@ -26,7 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../sys/sys_localuser.h"
+#include "../../sys/sys_signin.h"
+#include "../../sys/sys_session.h"
 #include "../Game_local.h"
 
 const static int NUM_LEADERBOARD_ITEMS = 16;

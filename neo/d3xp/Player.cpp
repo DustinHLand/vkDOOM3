@@ -27,11 +27,15 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
-#include "Game_local.h"
+#include "precompiled.h"
+#include "../renderer/RenderSystem.h"
+#include "../renderer/RenderWorld.h"
+#include "../sys/Snapshot.h"
 #include "../framework/Common_local.h"
+#include "../ui/ListGUI.h"
+#include "../ui/UserInterface.h"
+#include "Game_local.h"
 #include "PredictedValue_impl.h"
 
 idCVar flashlight_batteryDrainTimeMS( "flashlight_batteryDrainTimeMS", "30000", CVAR_INTEGER, "amount of time (in MS) it takes for full battery to drain (-1 == no battery drain)" );

@@ -26,7 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../framework/PlayerProfile.h"
+#include "../../framework/KeyInput.h"
 #include "../Game_local.h"
 
 const static int NUM_LAYOUT_OPTIONS = 1;

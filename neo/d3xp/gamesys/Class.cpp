@@ -33,11 +33,8 @@ instancing of objects.
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
 #include "../Game_local.h"
-
 #include "TypeInfo.h"
 
 

@@ -44,8 +44,6 @@ If you have questions concerning this license or the applicable additional terms
 #define RENDER_MATRIX_INFINITY				1e30f	// NOTE: cannot initiaize a vec_float4 with idMath::INFINITY on the SPU
 #define RENDER_MATRIX_PROJECTION_EPSILON	0.1f
 
-#define CLIP_SPACE_OGL		// the OpenGL clip space Z is in the range [-1, 1]
-
 /*
 ================================================================================================
 

@@ -25,13 +25,11 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
+
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "sys_lobby.h"
 #include "sys_voicechat.h"
-
-
-
 
 /*
 ========================

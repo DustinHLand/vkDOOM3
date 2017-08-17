@@ -28,8 +28,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
+#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
 #include "Model_local.h"
 #include "Model_ase.h"
 #include "Model_lwo.h"
@@ -787,7 +788,7 @@ bool idRenderModelStatic::IsReloadable() const {
 idRenderModelStatic::Bounds
 ================
 */
-idBounds idRenderModelStatic::Bounds( const struct renderEntity_s *mdef ) const {
+idBounds idRenderModelStatic::Bounds( const renderEntity_t *mdef ) const {
 	return bounds;
 }
 
@@ -805,7 +806,7 @@ float idRenderModelStatic::DepthHack() const {
 idRenderModelStatic::InstantiateDynamicModel
 ================
 */
-idRenderModel *idRenderModelStatic::InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel ) {
+idRenderModel *idRenderModelStatic::InstantiateDynamicModel( const renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel ) {
 	if ( cachedModel ) {
 		delete cachedModel;
 		cachedModel = NULL;

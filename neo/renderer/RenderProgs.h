@@ -195,8 +195,6 @@ enum rpBinding_t {
 	BINDING_TYPE_MAX
 };
 
-#if defined( ID_VULKAN )
-
 struct shader_t {
 	shader_t() : module( VK_NULL_HANDLE ) {}
 
@@ -243,41 +241,6 @@ struct renderProg_t {
 	idList< pipelineState_t >	pipelines;
 };
 
-#elif defined( ID_OPENGL )
-static const GLuint INVALID_PROGID = 0xFFFFFFFF;
-
-struct shader_t {
-	shader_t() :	
-					progId( INVALID_PROGID ),
-					uniformArray( -1 ) {}
-
-	idStr					name;
-	rpStage_t				stage;
-	GLuint					progId;
-	GLint					uniformArray;
-	idList< renderParm_t >	uniforms;
-};
-
-struct renderProg_t {
-	renderProg_t() :
-					progId( INVALID_PROGID ),
-					usesJoints( false ), 
-					optionalSkinning( false ),
-					vertexShaderIndex( -1 ),
-					fragmentShaderIndex( -1 ),
-					vertexLayoutType( LAYOUT_DRAW_VERT ) {}
-
-	idStr					name;
-	GLuint					progId;
-	bool					usesJoints;
-	bool					optionalSkinning;
-	int						vertexShaderIndex;
-	int						fragmentShaderIndex;
-	vertexLayoutType_t		vertexLayoutType;
-	idList< uint64 >		states;
-};
-#endif
-
 /*
 ===========================================================================
 
@@ -310,11 +273,7 @@ private:
 	void	LoadShader( int index );
 	void	LoadShader( shader_t & shader );
 
-#if defined( ID_OPENGL )
-	void	LoadGLSLProgram( const int programIndex, const int vertexShaderIndex, const int fragmentShaderIndex );
-#elif defined( ID_VULKAN )
 	void	AllocParmBlockBuffer( const idList< int > & parmIndices, idUniformBuffer & ubo );
-#endif
 
 public:
 	idList< renderProg_t, TAG_RENDER > m_renderProgs;
@@ -326,7 +285,6 @@ private:
 	int	m_builtinShaders[ MAX_BUILTINS ];
 	idList< shader_t, TAG_RENDER >	m_shaders;
 
-#if defined( ID_VULKAN )
 	int					m_counter;
 	int					m_currentData;
 	int					m_currentDescSet;
@@ -335,7 +293,6 @@ private:
 	VkDescriptorSet		m_descriptorSets[ NUM_FRAME_DATA ][ MAX_DESC_SETS ];
 
 	idUniformBuffer *	m_parmBuffers[ NUM_FRAME_DATA ];
-#endif
 };
 
 extern idRenderProgManager renderProgManager;

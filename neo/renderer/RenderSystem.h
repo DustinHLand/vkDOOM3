@@ -30,6 +30,11 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERER_H__
 #define __RENDERER_H__
 
+class idMaterial;
+class idRenderModel;
+struct renderView_t;
+struct renderCommand_t;
+
 /*
 ===============================================================================
 
@@ -45,7 +50,21 @@ enum graphicsVendor_t {
 	VENDOR_INTEL
 };
 
-struct renderCommand_t;
+enum frameAllocType_t {
+	FRAME_ALLOC_VIEW_DEF,
+	FRAME_ALLOC_VIEW_ENTITY,
+	FRAME_ALLOC_VIEW_LIGHT,
+	FRAME_ALLOC_SURFACE_TRIANGLES,
+	FRAME_ALLOC_DRAW_SURFACE,
+	FRAME_ALLOC_INTERACTION_STATE,
+	FRAME_ALLOC_SHADOW_ONLY_ENTITY,
+	FRAME_ALLOC_SHADOW_VOLUME_PARMS,
+	FRAME_ALLOC_SHADER_REGISTER,
+	FRAME_ALLOC_DRAW_SURFACE_POINTER,
+	FRAME_ALLOC_DRAW_COMMAND,
+	FRAME_ALLOC_UNKNOWN,
+	FRAME_ALLOC_MAX
+};
 
 const int SMALLCHAR_WIDTH		= 8;
 const int SMALLCHAR_HEIGHT		= 16;
@@ -164,7 +183,7 @@ public:
 	// This will perform swapbuffers, so it is NOT an approppriate way to
 	// generate image files that happen during gameplay, as for savegame
 	// markers.  Use WriteRender() instead.
-	virtual void			TakeScreenshot( int width, int height, const char *fileName, int samples, struct renderView_s *ref ) = 0;
+	virtual void			TakeScreenshot( int width, int height, const char *fileName, int samples, struct renderView_t *ref ) = 0;
 
 	// the render output can be cropped down to a subset of the real screen, as
 	// for save-game reviews and split-screen multiplayer.  Users of the renderer

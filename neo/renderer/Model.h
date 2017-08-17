@@ -45,11 +45,6 @@ If you have questions concerning this license or the applicable additional terms
 #define MD5_CAMERA_EXT			"md5camera"
 #define MD5_VERSION				10
 
-#include "jobs/ShadowShared.h"
-#include "jobs/prelightshadowvolume/PreLightShadowVolume.h"
-#include "jobs/staticshadowvolume/StaticShadowVolume.h"
-#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
-
 // this is used for calculating unsmoothed normals and tangents for deformed models
 struct dominantTri_t {
 	triIndex_t					v2, v3;
@@ -60,6 +55,7 @@ const int SHADOW_CAP_INFINITE	= 64;
 
 class idRenderModelStatic;
 struct viewDef_t;
+struct silEdge_t;
 
 // our only drawing geometry type
 struct srfTriangles_t {
@@ -256,7 +252,7 @@ public:
 
 	// dynamic models should return a fast, conservative approximation
 	// static models should usually return the exact value
-	virtual idBounds			Bounds( const struct renderEntity_s *ent = NULL ) const = 0;
+	virtual idBounds			Bounds( const struct renderEntity_t *ent = NULL ) const = 0;
 
 	// returns value != 0.0f if the model requires the depth hack
 	virtual float				DepthHack() const = 0;
@@ -268,7 +264,7 @@ public:
 	// The renderer will delete the returned dynamic model the next view
 	// This isn't const, because it may need to reload a purged model if it
 	// wasn't precached correctly.
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel ) = 0;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel ) = 0;
 
 	// Returns the number of joints or 0 if the model is not an MD5
 	virtual int					NumJoints() const = 0;

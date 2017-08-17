@@ -27,9 +27,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../ui/ListGUI.h"
+#include "../ui/UserInterface.h"
 #include "Game_local.h"
 
 // could be a problem if players manage to go down sudden deaths till this .. oh well

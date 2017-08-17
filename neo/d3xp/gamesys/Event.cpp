@@ -33,9 +33,7 @@ Event are used for scheduling tasks and for linking script commands.
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
 #include "../Game_local.h"
 
 #define MAX_EVENTSPERFRAME			4096

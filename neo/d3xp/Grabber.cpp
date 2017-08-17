@@ -25,10 +25,10 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#include "../idlib/precompiled.h"
+
 #pragma hdrstop
-
-
+#include "precompiled.h"
+#include "../renderer/RenderSystem.h"
 #include "Game_local.h"
 #include "Misc.h"
 

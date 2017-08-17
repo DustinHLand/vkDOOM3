@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
 #include "RenderBackend.h"
 #include "ResolutionScale.h"
@@ -517,7 +517,7 @@ void idRenderSystemLocal::Init() {
 
 	InitFrameData();
 
-	// Start Renderer Backend [ OpenGL, Vulkan, etc ]
+	// Start Renderer Backend ( API specific )
 	m_backend.Init();
 
 	// clear all our internal state
@@ -613,7 +613,6 @@ idRenderSystemLocal::VidRestart
 =================
 */
 void idRenderSystemLocal::VidRestart() {
-	// if OpenGL isn't started, do nothing
 	if ( !m_bInitialized ) {
 		return;
 	}

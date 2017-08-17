@@ -27,7 +27,12 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../framework/PlayerProfile.h"
+#include "../../framework/KeyInput.h"
+#include "../../sys/sys_localuser.h"
+#include "../../sys/sys_signin.h"
+#include "../../sys/sys_session.h"
 #include "../Game_local.h"
 
 typedef struct {

@@ -27,7 +27,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../framework/KeyInput.h"
+#include "../../renderer/RenderSystem.h"
 #include "../Game_local.h"
 
 

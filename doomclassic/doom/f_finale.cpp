@@ -47,7 +47,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "r_state.h"
 
 #include "Main.h"
-#include "d3xp/Game_local.h"
 
 // ?
 //#include "doomstat.h"

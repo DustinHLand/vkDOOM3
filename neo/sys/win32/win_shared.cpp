@@ -28,9 +28,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
+#include "../../framework/precompiled.h"
 #include "win_local.h"
+
 #undef StrCmpN
 #undef StrCmpNI
 #undef StrCmpI

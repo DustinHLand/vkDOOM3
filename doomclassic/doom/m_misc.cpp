@@ -60,7 +60,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "dstrings.h"
 
 #include "m_misc.h"
-#include "d3xp/Game_local.h"
 
 //
 // M_DrawText

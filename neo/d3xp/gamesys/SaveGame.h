@@ -30,11 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __SAVEGAME_H__
 #define __SAVEGAME_H__
 
-/*
-
-Save game related helper classes.
-
-*/
+class idDeclFX;
 
 class idSaveGame {
 public:

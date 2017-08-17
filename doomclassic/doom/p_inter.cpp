@@ -53,10 +53,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "Main.h"
 
-#include "sys/sys_signin.h"
-
-#include "../../neo/d3xp/Game_Local.h"
-
 // a weapon is found with two clip loads,
 // a big item has five clip loads
 const int	maxammo[NUMAMMO] = {200, 50, 300, 50};
@@ -620,19 +616,6 @@ P_TouchSpecialThing
 		if (!P_GiveWeapon (player, wp_bfg, false) )
 			return;
 
-		// DHM - Nerve :: Give achievement
-		if ( !common->IsMultiplayer() ) {
-			switch( DoomLib::GetGameSKU() ) {
-				case GAME_SKU_DOOM2_BFG: {
-					idAchievementManager::LocalUser_CompleteAchievement( ACHIEVEMENT_DOOM2_REALLY_BIG_GUN_FIND_BFG_SINGLEPLAYER );
-				}
-				default: {
-					// No unlocks for other SKUs.
-					break;
-				}
-			}
-		}
-
 		player->message = GOTBFG9000;
 		sound = sfx_wpnup;	
 		break;
@@ -690,40 +673,6 @@ P_TouchSpecialThing
 	player->bonuscount += BONUSADD;
 	if (player == &::g->players[::g->consoleplayer])
 		S_StartSound (player->mo, sound);
-}
-
-//
-// IsOnlineDeathmatchWithLocalProfile
-//
-// Helper to simplify the online frag stat tracking. Returns the
-// master user's profile if successful, NULL if not.
-// 
-idPlayerProfile * IsOnlineDeathmatchWithLocalProfile() {
-	if ( !MatchTypeIsOnline( session->GetGameLobbyBase().GetMatchParms().matchFlags ) ) {
-		return NULL;
-	}
-
-	if ( !::g ) {
-		return NULL;
-	}
-
-	if ( !::g->deathmatch ) {
-		return NULL;
-	}
-
-	// Assume that the master local user is the one playing.
-	idLocalUser * user = session->GetSignInManager().GetMasterLocalUser();
-	if ( user == NULL ) {
-		return NULL;
-	}
-
-	idPlayerProfile * profile = user->GetProfile();
-
-	if ( profile == NULL ) {
-		return NULL;
-	}
-	
-	return profile;
 }
 
 //
