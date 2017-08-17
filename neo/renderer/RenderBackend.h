@@ -112,8 +112,6 @@ void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *s
 bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
 bool CreateGameWindow( gfxImpParms_t parms );
 
-#if defined( ID_VULKAN )
-
 struct gpuInfo_t {
 	VkPhysicalDevice					device;
 	VkPhysicalDeviceProperties			props;
@@ -185,22 +183,6 @@ struct vulkanContext_t {
 };
 
 extern vulkanContext_t vkcontext;
-
-#elif defined( ID_OPENGL )
-
-struct glContext_t {
-	bool		bAnisotropicFilterAvailable;
-	bool		bTextureLODBiasAvailable;
-
-	float		maxTextureAnisotropy;
-
-	tmu_t		tmu[ MAX_MULTITEXTURE_UNITS ];
-	uint64		stencilOperations[ STENCIL_FACE_NUM ];
-};
-
-extern glContext_t glcontext;
-
-#endif
 
 /*
 ===========================================================================
@@ -343,42 +325,6 @@ private:
 	idRenderMatrix		m_prevMVP;				// world MVP from previous frame for motion blur
 
 	unsigned short		m_gammaTable[ 256 ];	// brightness / gamma modify this
-
-private:
-#if defined( ID_OPENGL )
-	int					m_currenttmu;
-
-	unsigned int		m_currentVertexBuffer;
-	unsigned int		m_currentIndexBuffer;
-
-	float				m_polyOfsScale;
-	float				m_polyOfsBias;
-
-	idStr				m_rendererString;
-	idStr				m_vendorString;
-	idStr				m_versionString;
-	idStr				m_extensionsString;
-	idStr				m_wglExtensionsString;
-	idStr				m_shadingLanguageString;
-
-	float				m_glVersion;			// atof( version_string )
-	graphicsVendor_t	m_vendor;
-
-	int					m_maxTextureSize;		// queried from GL
-	int					m_maxTextureCoords;
-	int					m_maxTextureImageUnits;
-	int					m_uniformBufferOffsetAlignment;
-
-	int					m_colorBits;
-	int					m_depthBits;
-	int					m_stencilBits;
-
-	bool				m_depthBoundsTestAvailable;
-	bool				m_timerQueryAvailable;
-	bool				m_swapControlTearAvailable;
-		
-	int					m_displayFrequency;
-#endif
 };
 
 #endif

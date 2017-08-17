@@ -288,9 +288,6 @@ private:
 
 	int					m_refCount;				// overall ref count
 
-	static const GLuint TEXTURE_NOT_LOADED = 0xFFFFFFFF;
-
-#if defined( ID_VULKAN )
 	bool				m_bIsSwapChainImage;
 	VkFormat			m_internalFormat;
 	VkImage				m_image;
@@ -310,14 +307,6 @@ private:
 	static idList< VkImage >		m_imageGarbage[ NUM_FRAME_DATA ];
 	static idList< VkImageView >	m_viewGarbage[ NUM_FRAME_DATA ];
 	static idList< VkSampler >		m_samplerGarbage[ NUM_FRAME_DATA ];
-#elif defined( ID_OPENGL )
-	GLuint				m_texnum;				// gl texture binding
-
-	// we could derive these in subImageUpload each time if necessary
-	GLuint				m_internalFormat;
-	GLuint				m_dataFormat;
-	GLuint				m_dataType;
-#endif
 };
 
 // data is RGBA

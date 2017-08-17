@@ -722,12 +722,6 @@ struct renderCommand_t {
 	rcmd_t *	next;
 };
 
-struct setBufferCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
-	GLenum		buffer;
-};
-
 struct drawSurfsCommand_t {
 	rcmd_t		commandId;
 	rcmd_t *	next;

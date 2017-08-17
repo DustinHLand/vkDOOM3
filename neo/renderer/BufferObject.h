@@ -64,11 +64,7 @@ public:
 	int					GetSize() const { return ( m_size & ~MAPPED_FLAG ); }
 	int					GetAllocedSize() const { return ( ( m_size & ~MAPPED_FLAG ) + 15 ) & ~15; }
 	bufferUsageType_t	GetUsage() const { return m_usage; }
-#if defined( ID_VULKAN )
 	VkBuffer			GetAPIObject() const { return m_apiObject; }
-#elif defined( ID_OPENGL )
-	GLuint				GetAPIObject() const { return m_apiObject; }
-#endif
 	int					GetOffset() const { return ( m_offsetInOtherBuffer & ~OWNS_BUFFER_FLAG ); }
 
 	bool				IsMapped() const { return ( m_size & MAPPED_FLAG ) != 0; }
@@ -83,17 +79,12 @@ protected:
 	int					m_offsetInOtherBuffer;	// offset in bytes
 	bufferUsageType_t	m_usage;
 
-#if defined( ID_VULKAN )
 	VkBuffer			m_apiObject;
 #if defined( ID_USE_AMD_ALLOCATOR )
 	VmaAllocation		m_vmaAllocation;
 	VmaAllocationInfo	m_allocation;
 #else
 	vulkanAllocation_t	m_allocation;
-#endif
-#elif defined( ID_OPENGL )
-	GLuint				m_apiObject;
-	void *				m_buffer;
 #endif
 
 	// sizeof() confuses typeinfo...
