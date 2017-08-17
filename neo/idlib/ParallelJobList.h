@@ -28,7 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __PARALLELJOBLIST_H__
 #define __PARALLELJOBLIST_H__
 
-struct CellSpursJob128;
 class idColor;
 
 typedef void ( * jobRun_t )( void * );
@@ -82,7 +81,6 @@ class idParallelJobList {
 public:
 
 	void					AddJob( jobRun_t function, void * data );
-	CellSpursJob128 *		AddJobSPURS();
 	void					InsertSyncPoint( jobSyncType_t syncType );
 
 	// Submit the jobs in this list.

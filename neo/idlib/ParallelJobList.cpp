@@ -739,15 +739,6 @@ void idParallelJobList::AddJob( jobRun_t function, void * data ) {
 
 /*
 ========================
-idParallelJobList::AddJobSPURS
-========================
-*/
-CellSpursJob128 * idParallelJobList::AddJobSPURS() {
-	return NULL;
-}
-
-/*
-========================
 idParallelJobList::InsertSyncPoint
 ========================
 */

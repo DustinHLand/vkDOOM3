@@ -111,6 +111,5 @@ struct dynamicShadowVolumeParms_t {
 
 
 void DynamicShadowVolumeJob( const dynamicShadowVolumeParms_t * parms );
-void DynamicShadowVolume_SetupSPURSHeader( CellSpursJob128 * job, const dynamicShadowVolumeParms_t * parms );
 
 #endif // !__DYNAMICSHADOWVOLUME_H__
