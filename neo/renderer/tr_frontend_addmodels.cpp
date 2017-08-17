@@ -1041,37 +1041,37 @@ void idRenderSystemLocal::AddModels() {
 	//-------------------------------------------------
 	// Kick off jobs to setup static and dynamic shadow volumes.
 	//-------------------------------------------------
+	{
+		const int start = Sys_Microseconds();
 
-	if ( r_useParallelAddShadows.GetInteger() == 1 ) {
-		for ( viewEntity_t * vEntity = m_viewDef->viewEntitys; vEntity != NULL; vEntity = vEntity->next ) {
-			for ( staticShadowVolumeParms_t * shadowParms = vEntity->staticShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				m_frontEndJobList->AddJob( (jobRun_t)StaticShadowVolumeJob, shadowParms );
+		if ( r_useParallelAddShadows.GetInteger() == 1 ) {
+			for ( viewEntity_t * vEntity = m_viewDef->viewEntitys; vEntity != NULL; vEntity = vEntity->next ) {
+				for ( staticShadowVolumeParms_t * shadowParms = vEntity->staticShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					m_frontEndJobList->AddJob( (jobRun_t)StaticShadowVolumeJob, shadowParms );
+				}
+				for ( dynamicShadowVolumeParms_t * shadowParms = vEntity->dynamicShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					m_frontEndJobList->AddJob( (jobRun_t)DynamicShadowVolumeJob, shadowParms );
+				}
+				vEntity->staticShadowVolumes = NULL;
+				vEntity->dynamicShadowVolumes = NULL;
 			}
-			for ( dynamicShadowVolumeParms_t * shadowParms = vEntity->dynamicShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				m_frontEndJobList->AddJob( (jobRun_t)DynamicShadowVolumeJob, shadowParms );
+			m_frontEndJobList->Submit();
+			// wait here otherwise the shadow volume index buffer may be unmapped before all shadow volumes have been constructed
+			m_frontEndJobList->Wait();
+		} else {
+			for ( viewEntity_t * vEntity = m_viewDef->viewEntitys; vEntity != NULL; vEntity = vEntity->next ) {
+				for ( staticShadowVolumeParms_t * shadowParms = vEntity->staticShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					StaticShadowVolumeJob( shadowParms );
+				}
+				for ( dynamicShadowVolumeParms_t * shadowParms = vEntity->dynamicShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					DynamicShadowVolumeJob( shadowParms );
+				}
+				vEntity->staticShadowVolumes = NULL;
+				vEntity->dynamicShadowVolumes = NULL;
 			}
-			vEntity->staticShadowVolumes = NULL;
-			vEntity->dynamicShadowVolumes = NULL;
 		}
-		m_frontEndJobList->Submit();
-		// wait here otherwise the shadow volume index buffer may be unmapped before all shadow volumes have been constructed
-		m_frontEndJobList->Wait();
-	} else {
-		int start = Sys_Microseconds();
 
-		for ( viewEntity_t * vEntity = m_viewDef->viewEntitys; vEntity != NULL; vEntity = vEntity->next ) {
-			for ( staticShadowVolumeParms_t * shadowParms = vEntity->staticShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				StaticShadowVolumeJob( shadowParms );
-			}
-			for ( dynamicShadowVolumeParms_t * shadowParms = vEntity->dynamicShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				DynamicShadowVolumeJob( shadowParms );
-			}
-			vEntity->staticShadowVolumes = NULL;
-			vEntity->dynamicShadowVolumes = NULL;
-		}
-
-		int end = Sys_Microseconds();
-		m_backend.m_pc.shadowMicroSec += end - start;
+		m_backend.m_pc.shadowMicroSec += Sys_Microseconds() - start;
 	}
 
 	//-------------------------------------------------
