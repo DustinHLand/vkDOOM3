@@ -621,6 +621,21 @@
     <ClCompile Include="renderer\Vulkan\vma.cpp">
       <Filter>Renderer\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="framework\File.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\Unzip.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\Zip.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\CmdSystem.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\CVarSystem.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ui\BindWindow.h">
@@ -1065,6 +1080,21 @@
       <Filter>Renderer\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="framework\precompiled.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\File.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\Unzip.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\Zip.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\CmdSystem.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\CVarSystem.h">
       <Filter>Framework</Filter>
     </ClInclude>
   </ItemGroup>

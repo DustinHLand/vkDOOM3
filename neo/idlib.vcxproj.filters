@@ -166,11 +166,6 @@
     <ClCompile Include="idlib\math\VecX.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="idlib\CmdSystem.cpp" />
-    <ClCompile Include="idlib\CVarSystem.cpp" />
-    <ClCompile Include="idlib\File.cpp" />
-    <ClCompile Include="idlib\Unzip.cpp" />
-    <ClCompile Include="idlib\Zip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="idlib\bv\Bounds.h">
@@ -398,10 +393,5 @@
     <ClInclude Include="idlib\geometry\DrawVert_intrinsics.h">
       <Filter>Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="idlib\CmdSystem.h" />
-    <ClInclude Include="idlib\CVarSystem.h" />
-    <ClInclude Include="idlib\File.h" />
-    <ClInclude Include="idlib\Unzip.h" />
-    <ClInclude Include="idlib\Zip.h" />
   </ItemGroup>
 </Project>

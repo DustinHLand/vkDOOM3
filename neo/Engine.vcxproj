@@ -23,6 +23,7 @@
     <ClCompile Include="cm\CollisionModel_rotate.cpp" />
     <ClCompile Include="cm\CollisionModel_trace.cpp" />
     <ClCompile Include="cm\CollisionModel_translate.cpp" />
+    <ClCompile Include="framework\CmdSystem.cpp" />
     <ClCompile Include="framework\Common.cpp" />
     <ClCompile Include="framework\Common_dialog.cpp" />
     <ClCompile Include="framework\common_frame.cpp" />
@@ -34,6 +35,7 @@
     <ClCompile Include="framework\Compressor.cpp" />
     <ClCompile Include="framework\Console.cpp" />
     <ClCompile Include="framework\ConsoleHistory.cpp" />
+    <ClCompile Include="framework\CVarSystem.cpp" />
     <ClCompile Include="framework\DebugGraph.cpp" />
     <ClCompile Include="framework\DeclAF.cpp" />
     <ClCompile Include="framework\DeclEntityDef.cpp" />
@@ -45,6 +47,7 @@
     <ClCompile Include="framework\DeclTable.cpp" />
     <ClCompile Include="framework\EditField.cpp" />
     <ClCompile Include="framework\EventLoop.cpp" />
+    <ClCompile Include="framework\File.cpp" />
     <ClCompile Include="framework\FileSystem.cpp" />
     <ClCompile Include="framework\File_Manifest.cpp" />
     <ClCompile Include="framework\File_Resource.cpp" />
@@ -56,7 +59,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="framework\TokenParser.cpp" />
+    <ClCompile Include="framework\Unzip.cpp" />
     <ClCompile Include="framework\UsercmdGen.cpp" />
+    <ClCompile Include="framework\Zip.cpp" />
     <ClCompile Include="renderer\BinaryImage.cpp" />
     <ClCompile Include="renderer\BufferObject.cpp" />
     <ClCompile Include="renderer\Cinematic.cpp" />
@@ -230,12 +235,14 @@
     <ClInclude Include="cm\CollisionModel.h" />
     <ClInclude Include="cm\CollisionModel_local.h" />
     <ClInclude Include="framework\BuildVersion.h" />
+    <ClInclude Include="framework\CmdSystem.h" />
     <ClInclude Include="framework\Common.h" />
     <ClInclude Include="framework\Common_dialog.h" />
     <ClInclude Include="framework\Common_local.h" />
     <ClInclude Include="framework\Compressor.h" />
     <ClInclude Include="framework\Console.h" />
     <ClInclude Include="framework\ConsoleHistory.h" />
+    <ClInclude Include="framework\CVarSystem.h" />
     <ClInclude Include="framework\DebugGraph.h" />
     <ClInclude Include="framework\DeclAF.h" />
     <ClInclude Include="framework\DeclEntityDef.h" />
@@ -247,6 +254,7 @@
     <ClInclude Include="framework\DeclTable.h" />
     <ClInclude Include="framework\EditField.h" />
     <ClInclude Include="framework\EventLoop.h" />
+    <ClInclude Include="framework\File.h" />
     <ClInclude Include="framework\FileSystem.h" />
     <ClInclude Include="framework\File_Manifest.h" />
     <ClInclude Include="framework\File_Resource.h" />
@@ -257,7 +265,9 @@
     <ClInclude Include="framework\precompiled.h" />
     <ClInclude Include="framework\Serializer.h" />
     <ClInclude Include="framework\TokenParser.h" />
+    <ClInclude Include="framework\Unzip.h" />
     <ClInclude Include="framework\UsercmdGen.h" />
+    <ClInclude Include="framework\Zip.h" />
     <ClInclude Include="renderer\BinaryImage.h" />
     <ClInclude Include="renderer\BinaryImageData.h" />
     <ClInclude Include="renderer\BufferObject.h" />
