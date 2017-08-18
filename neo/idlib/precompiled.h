@@ -82,7 +82,6 @@ const int MAX_EXPRESSION_OPS = 4096;
 const int MAX_EXPRESSION_REGISTERS = 4096;
 
 // renderer
-#include "../renderer/OpenGL/qgl.h"
 #include "../renderer/Vulkan/qvk.h"
 #include "../renderer/RenderConfig.h"
 #include "../renderer/Cinematic.h"
