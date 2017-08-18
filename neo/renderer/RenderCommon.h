@@ -31,6 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __RENDERER_COMMON_H__
 
 #include "ScreenRect.h"
+#include "jobs/ShadowShared.h"
 
 class idRenderModelDecal;
 class idRenderModelOverlay;
@@ -79,6 +80,9 @@ static const int MAX_IMAGE_PARMS			= 16;
 static const int MAX_UBO_PARMS				= 2;
 #endif
 
+// vertCacheHandle_t packs size, offset, and frame number into 64 bits
+typedef uint64 vertCacheHandle_t;
+
 // How is this texture used?  Determines the storage and color format
 typedef enum {
 	TD_SPECULAR,			// may be compressed, and always zeros the alpha channel
@@ -100,7 +104,6 @@ typedef enum {
 	CF_NATIVE,		// _px, _nx, _py, etc, directly sent to GL
 	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
 } cubeFiles_t;
-
 
 void GL_CheckErrors();
 
@@ -132,8 +135,10 @@ drawSurf_t are always allocated and freed every frame, they are never cached
 ===========================================================================
 */
 
+struct srfTriangles_t;
 struct viewEntity_t;
 struct viewLight_t;
+class idMaterial;
 
 struct drawSurf_t {
 	const srfTriangles_t *	frontEndGeo;		// don't use on the back end, it may be updated by the front end!
@@ -173,6 +178,8 @@ idRenderLight
 
 ===========================================================================
 */
+
+class idRenderModel;
 
 typedef struct renderLight_s {
 	idMat3					axis;				// rotation vectors, must be unit length
@@ -219,7 +226,7 @@ typedef struct renderLight_s {
 
 
 	const idMaterial *		shader;				// NULL = either lights/defaultPointLight or lights/defaultProjectedLight
-	float					shaderParms[MAX_ENTITY_SHADER_PARMS];		// can be used in any way by shader
+	float					shaderParms[ MAX_ENTITY_SHADER_PARMS ];		// can be used in any way by shader
 	idSoundEmitter *		referenceSound;		// for shader sound tables, allowing effects to vary with sounds
 } renderLight_t;
 
@@ -434,6 +441,8 @@ but should never exist if its volume does not intersect the view frustum
 ===========================================================================
 */
 
+struct preLightShadowVolumeParms_t;
+
 struct shadowOnlyEntity_t {
 	shadowOnlyEntity_t *	next;
 	idRenderEntity	*		edef;
@@ -499,6 +508,9 @@ A single entityDef can generate multiple viewEntity_t in a single frame, as when
 
 ===========================================================================
 */
+
+struct staticShadowVolumeParms_t;
+struct dynamicShadowVolumeParms_t;
 
 struct viewEntity_t {
 	viewEntity_t *			next;
@@ -671,6 +683,8 @@ complete srfTriangles_t from just a new set of vertexes
 
 ===========================================================================
 */
+
+struct silEdge_t;
 
 struct deformInfo_t {
 	int					numSourceVerts;

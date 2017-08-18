@@ -26,7 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../sys/sys_localuser.h"
+#include "../../sys/sys_signin.h"
+#include "../../sys/sys_session.h"
 #include "../Game_local.h"
 
 const static int NUM_LOBBY_OPTIONS = 8;
@@ -562,6 +565,7 @@ bool idMenuScreen_Shell_PartyLobby::HandleAction( idWidgetAction & action, const
 						return true;
 					}
 
+					void InvitePartyOrFriends();
 					InvitePartyOrFriends();
 					break;
 				}

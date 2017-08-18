@@ -74,6 +74,7 @@
     <Lib />
     <ClCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -254,6 +255,7 @@
     <ClInclude Include="d3xp\physics\Physics_Static.h" />
     <ClInclude Include="d3xp\physics\Physics_StaticMulti.h" />
     <ClInclude Include="d3xp\physics\Push.h" />
+    <ClInclude Include="d3xp\precompiled.h" />
     <ClInclude Include="d3xp\PredictedValue.h" />
     <ClInclude Include="d3xp\PredictedValue_impl.h" />
     <ClInclude Include="d3xp\script\Script_Compiler.h" />

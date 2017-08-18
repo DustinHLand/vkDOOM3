@@ -28,9 +28,8 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
+#include "../../renderer/RenderWorld.h"
 #include "../Game_local.h"
 
 static const char *moveCommandString[ NUM_MOVE_COMMANDS ] = {

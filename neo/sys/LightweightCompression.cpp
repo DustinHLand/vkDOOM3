@@ -25,8 +25,9 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
+
 #pragma hdrstop
-#include "../idLib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "LightweightCompression.h"
 
 /*

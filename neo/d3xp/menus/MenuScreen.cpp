@@ -26,14 +26,44 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 #pragma hdrstop
-#include "../../idLib/precompiled.h"
+#include "../precompiled.h"
+#include "../../sys/sys_localuser.h"
+#include "../../sys/sys_signin.h"
+#include "../../sys/sys_session.h"
 #include "../Game_local.h"
 
+/*
+========================
+InvitePartyOrFriends
+
+Invites the master local user's party, if he's in one and the party isn't in the lobby already.
+Otherwise brings up the invite friends system menu.
+========================
+*/
+void InvitePartyOrFriends() {
+	const idLocalUser * const user = session->GetSignInManager().GetMasterLocalUser();
+	if ( user != NULL && user->IsInParty() && user->GetPartyCount() > 1 && !session->IsPlatformPartyInLobby() ) {
+		session->InviteParty();
+	} else {
+		session->InviteFriends();
+	}
+}
+
+/*
+========================
+idMenuScreen::idMenuScreen
+========================
+*/
 idMenuScreen::idMenuScreen() {
 	menuGUI = NULL;
 	transition = MENU_TRANSITION_INVALID;
 }
 
+/*
+========================
+idMenuScreen::~idMenuScreen
+========================
+*/
 idMenuScreen::~idMenuScreen() {
 
 }

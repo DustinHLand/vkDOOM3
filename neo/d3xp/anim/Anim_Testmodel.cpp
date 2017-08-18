@@ -50,9 +50,8 @@ move around it to view it from different angles.
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
+#include "../../renderer/RenderWorld.h"
 #include "../Game_local.h"
 
 CLASS_DECLARATION( idAnimatedEntity, idTestModel )

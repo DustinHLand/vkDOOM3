@@ -27,9 +27,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../renderer/RenderWorld.h"
+#include "../framework/DeclAF.h"
 #include "Game_local.h"
 
 

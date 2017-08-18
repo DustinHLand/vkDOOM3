@@ -29,6 +29,8 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __DECLPARTICLE_H__
 #define __DECLPARTICLE_H__
 
+class idDeclTable;
+
 /*
 ===============================================================================
 

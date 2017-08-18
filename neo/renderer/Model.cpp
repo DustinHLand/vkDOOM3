@@ -28,8 +28,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
+#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
 #include "Model_local.h"
 #include "Model_ase.h"
 #include "Model_lwo.h"

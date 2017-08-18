@@ -28,6 +28,8 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __SWF_H__
 #define __SWF_H__
 
+class idRenderSystem;
+
 #include "SWF_Enums.h"
 #include "SWF_Types.h"
 #include "SWF_Bitstream.h"

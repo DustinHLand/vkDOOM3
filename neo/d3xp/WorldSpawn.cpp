@@ -32,9 +32,9 @@ Worldspawn class.  Each map has one worldspawn which handles global spawnargs.
 
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../aas/AASFile.h"
 #include "Game_local.h"
 
 /*

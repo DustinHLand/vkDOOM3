@@ -482,6 +482,7 @@
     </ClInclude>
     <ClInclude Include="d3xp\PredictedValue.h" />
     <ClInclude Include="d3xp\PredictedValue_impl.h" />
+    <ClInclude Include="d3xp\precompiled.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="d3xp\Game.def" />

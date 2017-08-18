@@ -29,8 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __MENUSCREEN_H__
 #define __MENUSCREEN_H__
 
-#include "../../renderer/RenderSystem_local.h"
-
 enum mainMenuTransition_t {
 	MENU_TRANSITION_INVALID = -1,
 	MENU_TRANSITION_SIMPLE,
@@ -1555,23 +1553,5 @@ class idMenuScreen_Scoreboard_Team : public idMenuScreen_Scoreboard {
 public:
 	virtual void				Initialize( idMenuHandler * data );
 };
-
-
-/*
-========================
-InvitePartyOrFriends
-
-Invites the master local user's party, if he's in one and the party isn't in the lobby already.
-Otherwise brings up the invite friends system menu.
-========================
-*/
-inline void InvitePartyOrFriends() {
-	const idLocalUser * const user = session->GetSignInManager().GetMasterLocalUser();
-	if ( user != NULL && user->IsInParty() && user->GetPartyCount() > 1 && !session->IsPlatformPartyInLobby() ) {
-		session->InviteParty();
-	} else {
-		session->InviteFriends();
-	}
-}
 
 #endif

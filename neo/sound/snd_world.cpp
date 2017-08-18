@@ -26,9 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#pragma hdrstop
-#include "../idlib/precompiled.h"
 
+#pragma hdrstop
+#include "../framework/precompiled.h"
 #include "snd_local.h"
 
 idCVar s_lockListener( "s_lockListener", "0", CVAR_BOOL, "lock listener updates" );

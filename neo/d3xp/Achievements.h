@@ -123,8 +123,6 @@ enum achievement_t {
 	STAT_DOOM_COMPLETED_EPISODE_4_HARD,
 };
 
-compile_time_assert( ACHIEVEMENTS_NUM <= idPlayerProfile::MAX_PLAYER_PROFILE_STATS );
-
 /*
 ================================================
 idAchievementManager 

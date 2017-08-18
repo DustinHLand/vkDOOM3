@@ -28,6 +28,21 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __STATICSHADOWVOLUME_H__
 #define __STATICSHADOWVOLUME_H__
 
+#include "../../../idlib/ParallelJobList_JobHeaders.h"
+#include "../../../idlib/SoftwareCache.h"
+
+#include "../../../idlib/math/Vector.h"
+#include "../../../idlib/math/Matrix.h"
+#include "../../../idlib/math/Quat.h"
+#include "../../../idlib/math/Rotation.h"
+#include "../../../idlib/math/Plane.h"
+#include "../../../idlib/bv/Sphere.h"
+#include "../../../idlib/bv/Bounds.h"
+#include "../../../idlib/geometry/JointTransform.h"
+#include "../../../idlib/geometry/DrawVert.h"
+#include "../../../idlib/geometry/RenderMatrix.h"
+#include "../ShadowShared.h"
+
 /*
 ================================================================================================
 
@@ -44,11 +59,6 @@ rendered with Z-Fail, and optionally calculates the shadow volume depth bounds.
 ================================================================================================
 */
 
-/*
-================================================
-staticShadowVolumeParms_t
-================================================
-*/
 struct staticShadowVolumeParms_t {
 	// input
 	const idShadowVert *			verts;					// streamed in from main memory
@@ -79,8 +89,5 @@ struct staticShadowVolumeParms_t {
 	staticShadowVolumeParms_t *		next;
 	int								pad[3];
 };
-
-
-void StaticShadowVolumeJob( const staticShadowVolumeParms_t * parms );
 
 #endif // !__STATICSHADOWVOLUME_H__

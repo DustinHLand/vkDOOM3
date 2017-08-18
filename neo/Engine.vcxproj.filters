@@ -932,32 +932,11 @@
     <ClInclude Include="renderer\DXT\DXTCodec.h">
       <Filter>Renderer\DXT</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\DXT\DXTCodec_local.h">
-      <Filter>Renderer\DXT</Filter>
-    </ClInclude>
     <ClInclude Include="renderer\Color\ColorSpace.h">
       <Filter>Renderer\Color</Filter>
     </ClInclude>
     <ClInclude Include="renderer\jobs\ShadowShared.h">
       <Filter>Renderer\Jobs</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h">
-      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume_local.h">
-      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume.h">
-      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume_local.h">
-      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.h">
-      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume_local.h">
-      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
     </ClInclude>
     <ClInclude Include="framework\BuildVersion.h">
       <Filter>Framework</Filter>
@@ -1079,9 +1058,6 @@
     <ClInclude Include="renderer\Vulkan\vma.h">
       <Filter>Renderer\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="framework\precompiled.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
     <ClInclude Include="framework\File.h">
       <Filter>Framework</Filter>
     </ClInclude>
@@ -1096,6 +1072,18 @@
     </ClInclude>
     <ClInclude Include="framework\CVarSystem.h">
       <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\precompiled.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume.h">
+      <Filter>Renderer\Jobs\StaticShadowVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.h">
+      <Filter>Renderer\Jobs\PreLightShadowVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h">
+      <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

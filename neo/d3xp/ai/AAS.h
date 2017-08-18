@@ -29,6 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __AAS_H__
 #define __AAS_H__
 
+class idReachability;
+class idAASSettings;
+
 /*
 ===============================================================================
 

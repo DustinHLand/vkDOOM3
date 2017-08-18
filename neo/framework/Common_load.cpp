@@ -27,12 +27,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
 #include "Common_local.h"
 #include "../sys/sys_lobby_backend.h"
-
 
 #define LAUNCH_TITLE_DOOM_EXECUTABLE		"doom1.exe"
 #define LAUNCH_TITLE_DOOM2_EXECUTABLE		"doom2.exe"

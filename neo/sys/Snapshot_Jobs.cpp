@@ -26,9 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#pragma hdrstop
-#include "../idlib/precompiled.h"
 
+#pragma hdrstop
+#include "../framework/precompiled.h"
 #include "Snapshot_Jobs.h"
 
 uint32 SnapObjChecksum( const uint8 * data, int length ) {

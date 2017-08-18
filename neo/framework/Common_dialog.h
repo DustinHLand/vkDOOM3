@@ -29,6 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __COMMON_DIALOG_H__
 #define __COMMON_DIALOG_H__
 
+class idSWFScriptFunction;
+class idSWF;
+
 static const int	MAX_DIALOGS			= 4;		// maximum dialogs that can be open at one time
 static const int	PC_KEYBOARD_WAIT	= 20000;
 

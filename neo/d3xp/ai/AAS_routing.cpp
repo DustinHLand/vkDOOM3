@@ -27,11 +27,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
+#include "../Game_local.h"
 #include "AAS_local.h"
-#include "../Game_local.h"		// for print and error
 
 #define CACHETYPE_AREA				1
 #define CACHETYPE_PORTAL			2

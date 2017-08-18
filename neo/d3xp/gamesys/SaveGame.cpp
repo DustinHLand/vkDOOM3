@@ -27,11 +27,12 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
+#include "../../framework/DeclFX.h"
+#include "../../framework/DeclSkin.h"
+#include "../../ui/ListGUI.h"
+#include "../../ui/UserInterface.h"
 #include "../Game_local.h"
-
 #include "TypeInfo.h"
 
 /*

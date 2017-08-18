@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
+#include "../../framework/precompiled.h"
 #include "../../framework/Common_local.h"
 #include "../../sys/win32/rc/doom_resource.h"
 #include "../GLState.h"

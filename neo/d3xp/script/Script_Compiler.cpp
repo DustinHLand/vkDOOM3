@@ -28,9 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-
+#include "../precompiled.h"
 #include "../Game_local.h"
 
 #define FUNCTION_PRIORITY	2

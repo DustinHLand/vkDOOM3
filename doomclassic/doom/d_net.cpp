@@ -40,8 +40,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "doomlib.h"
 #include "Main.h"
-#include "d3xp/Game_local.h"
-
+#include "../../neo/sys/sys_session.h"
+#include "../../neo/framework/Common_dialog.h"
 
 void I_GetEvents( controller_t * );
 void D_ProcessEvents (void); 
@@ -60,14 +60,7 @@ extern bool globalNetworking;
 // a ::g->gametic cannot be run until ::g->nettics[] > ::g->gametic for all ::g->players
 //
 
-
-
-
 #define NET_TIMEOUT	1 * TICRATE
-
-
-
-
 
 //
 //

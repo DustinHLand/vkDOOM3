@@ -27,7 +27,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../idlib/precompiled.h"
+#include "../framework/precompiled.h"
 
 void idSWFParmList::Append( const idSWFScriptVar & other ) {
 	idSWFScriptVar * var = Alloc();

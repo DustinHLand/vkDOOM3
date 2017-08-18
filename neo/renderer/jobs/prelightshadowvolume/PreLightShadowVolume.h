@@ -25,8 +25,23 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#ifndef __PRELIGHTSHADOWVOLUME_H__
-#define __PRELIGHTSHADOWVOLUME_H__
+#ifndef __PRELGHTSHADOWVOLUME_H__
+#define __PRELGHTSHADOWVOLUME_H__
+
+#include "../../../idlib/ParallelJobList_JobHeaders.h"
+#include "../../../idlib/SoftwareCache.h"
+
+#include "../../../idlib/math/Vector.h"
+#include "../../../idlib/math/Matrix.h"
+#include "../../../idlib/math/Quat.h"
+#include "../../../idlib/math/Rotation.h"
+#include "../../../idlib/math/Plane.h"
+#include "../../../idlib/bv/Sphere.h"
+#include "../../../idlib/bv/Bounds.h"
+#include "../../../idlib/geometry/JointTransform.h"
+#include "../../../idlib/geometry/DrawVert.h"
+#include "../../../idlib/geometry/RenderMatrix.h"
+#include "../ShadowShared.h"
 
 /*
 ================================================================================================
@@ -43,11 +58,6 @@ not the shadow volume needs to be rendered with Z-Fail.
 ================================================================================================
 */
 
-/*
-================================================
-preLightShadowVolumeParms_t
-================================================
-*/
 struct preLightShadowVolumeParms_t {
 	// input
 	const idShadowVert *			verts;					// streamed in from main memory
@@ -77,7 +87,4 @@ struct preLightShadowVolumeParms_t {
 	int								pad;
 };
 
-
-void PreLightShadowVolumeJob( const preLightShadowVolumeParms_t * parms );
-
-#endif // !__PRELIGHTSHADOWVOLUME_H__
+#endif // !__PRELGHTSHADOWVOLUME_H__

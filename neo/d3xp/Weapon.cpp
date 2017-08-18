@@ -27,9 +27,12 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../framework/DeclSkin.h"
+#include "../renderer/RenderWorld.h"
+#include "../ui/ListGUI.h"
+#include "../ui/UserInterface.h"
 #include "Game_local.h"
 #include "PredictedValue_impl.h"
 

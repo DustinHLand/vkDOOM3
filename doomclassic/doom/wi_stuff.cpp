@@ -29,11 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Precompiled.h"
 #include "globaldata.h"
 #include "Main.h"
-#include "sys/sys_session.h"
-#include "sys/sys_signin.h"
 #include "DoomLeaderboards.h"
-#include "d3xp/Game_Local.h"
-
 
 #include <stdio.h>
 
@@ -253,15 +249,6 @@ const wbplayerstruct_t* plrs;  // ::g->wbs->plyr[]
 void localCalculateAchievements(bool epComplete)
 {
 
-	if( !common->IsMultiplayer() ) {
-
-			player_t  *player = &::g->players[::g->consoleplayer];
-
-			// Calculate Any Achievements earned from stat cumulation.
-			idAchievementManager::CheckDoomClassicsAchievements( player->killcount, player->itemcount, player->secretcount, ::g->gameskill, ::g->gamemission, ::g->gamemap, ::g->gameepisode, ::g->totalkills, ::g->totalitems, ::g->totalsecret );
-
-
-	}
 }
 
 // slam background

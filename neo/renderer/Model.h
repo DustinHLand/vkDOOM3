@@ -45,11 +45,6 @@ If you have questions concerning this license or the applicable additional terms
 #define MD5_CAMERA_EXT			"md5camera"
 #define MD5_VERSION				10
 
-#include "jobs/ShadowShared.h"
-#include "jobs/prelightshadowvolume/PreLightShadowVolume.h"
-#include "jobs/staticshadowvolume/StaticShadowVolume.h"
-#include "jobs/dynamicshadowvolume/DynamicShadowVolume.h"
-
 // this is used for calculating unsmoothed normals and tangents for deformed models
 struct dominantTri_t {
 	triIndex_t					v2, v3;
@@ -60,6 +55,7 @@ const int SHADOW_CAP_INFINITE	= 64;
 
 class idRenderModelStatic;
 struct viewDef_t;
+struct silEdge_t;
 
 // our only drawing geometry type
 struct srfTriangles_t {

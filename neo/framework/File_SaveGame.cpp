@@ -25,9 +25,9 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#pragma hdrstop
-#include "../idlib/precompiled.h"
 
+#pragma hdrstop
+#include "precompiled.h"
 #include "File_SaveGame.h"
 
 /*

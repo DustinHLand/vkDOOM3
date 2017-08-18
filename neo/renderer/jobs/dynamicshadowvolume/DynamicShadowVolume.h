@@ -28,6 +28,21 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __DYNAMICSHADOWVOLUME_H__
 #define __DYNAMICSHADOWVOLUME_H__
 
+#include "../../../idlib/ParallelJobList_JobHeaders.h"
+#include "../../../idlib/SoftwareCache.h"
+
+#include "../../../idlib/math/Vector.h"
+#include "../../../idlib/math/Matrix.h"
+#include "../../../idlib/math/Quat.h"
+#include "../../../idlib/math/Rotation.h"
+#include "../../../idlib/math/Plane.h"
+#include "../../../idlib/bv/Sphere.h"
+#include "../../../idlib/bv/Bounds.h"
+#include "../../../idlib/geometry/JointTransform.h"
+#include "../../../idlib/geometry/DrawVert.h"
+#include "../../../idlib/geometry/RenderMatrix.h"
+#include "../ShadowShared.h"
+
 /*
 ================================================================================================
 
@@ -108,8 +123,5 @@ struct dynamicShadowVolumeParms_t {
 	dynamicShadowVolumeParms_t *	next;
 	int								pad;
 };
-
-
-void DynamicShadowVolumeJob( const dynamicShadowVolumeParms_t * parms );
 
 #endif // !__DYNAMICSHADOWVOLUME_H__

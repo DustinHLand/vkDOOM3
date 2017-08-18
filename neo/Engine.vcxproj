@@ -274,7 +274,6 @@
     <ClInclude Include="renderer\Cinematic.h" />
     <ClInclude Include="renderer\Color\ColorSpace.h" />
     <ClInclude Include="renderer\DXT\DXTCodec.h" />
-    <ClInclude Include="renderer\DXT\DXTCodec_local.h" />
     <ClInclude Include="renderer\Font.h" />
     <ClInclude Include="renderer\GLMatrix.h" />
     <ClInclude Include="renderer\GLState.h" />
@@ -282,12 +281,9 @@
     <ClInclude Include="renderer\Image.h" />
     <ClInclude Include="renderer\Interaction.h" />
     <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h" />
-    <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume_local.h" />
     <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume.h" />
-    <ClInclude Include="renderer\jobs\prelightshadowvolume\PreLightShadowVolume_local.h" />
     <ClInclude Include="renderer\jobs\ShadowShared.h" />
     <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume.h" />
-    <ClInclude Include="renderer\jobs\staticshadowvolume\StaticShadowVolume_local.h" />
     <ClInclude Include="renderer\Material.h" />
     <ClInclude Include="renderer\Model.h" />
     <ClInclude Include="renderer\ModelDecal.h" />
@@ -440,6 +436,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

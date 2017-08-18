@@ -25,11 +25,18 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#include "../idlib/precompiled.h"
-#pragma hdrstop
 
+#pragma hdrstop
+#include "precompiled.h"
+#include "../framework/PlayerProfile.h"
+#include "../sys/sys_localuser.h"
+#include "../sys/sys_signin.h"
+#include "../sys/sys_session.h"
+#include "../sys/sys_achievements.h"
 #include "Game_local.h"
 #include "..\..\doomclassic\doom\doomdef.h"
+
+compile_time_assert( ACHIEVEMENTS_NUM <= idPlayerProfile::MAX_PLAYER_PROFILE_STATS );
 
 idCVar achievements_Verbose( "achievements_Verbose", "1", CVAR_BOOL, "debug spam" );
 idCVar g_demoMode( "g_demoMode", "0", CVAR_INTEGER, "this is a demo" );

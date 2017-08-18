@@ -37,6 +37,20 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
+class idLeaderboardCallback;
+class idSaveGameDetails;
+class idSnapShot;
+class idSoundEmitter;
+class idSoundShader;
+class idUserCmdMgr;
+class idRenderSystem;
+class idSoundSystem;
+class idRenderModelManager;
+class idUserInterfaceManager;
+class idDeclManager;
+class idAASFileManager;
+class idCollisionModelManager;
+
 // default scripts
 #define SCRIPT_DEFAULTDEFS			"script/doom_defs.script"
 #define SCRIPT_DEFAULT				"script/doom_main.script"

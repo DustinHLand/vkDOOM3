@@ -55,7 +55,10 @@ If you have questions concerning this license or the applicable additional terms
 #include "../timidity/timidity.h"
 #include "../timidity/controls.h"
 
-#include "sound/snd_local.h"
+#include "../../neo/renderer/Cinematic.h"
+#include "../../neo/framework/DeclManager.h"
+#include "../../neo/sound/sound.h"
+#include "../../neo/sound/snd_local.h"
 
 #include <xaudio2.h>
 #include <x3daudio.h>

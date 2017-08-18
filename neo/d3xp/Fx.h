@@ -29,6 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __GAME_FX_H__
 #define __GAME_FX_H__
 
+struct idFXSingleAction;
+class idDeclFX;
+
 /*
 ===============================================================================
 

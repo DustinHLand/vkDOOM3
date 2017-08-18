@@ -27,10 +27,10 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../idlib/precompiled.h"
-
-#include "AAS_local.h"
+#include "../precompiled.h"
+#include "../../renderer/RenderWorld.h"
 #include "../Game_local.h"		// for cvars and debug drawing
+#include "AAS_local.h"
 
 
 /*

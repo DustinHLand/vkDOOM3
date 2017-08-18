@@ -25,23 +25,18 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-/*
 
-  SecurityCamera.cpp
-
-  Security camera that triggers targets when player is in view
-
-*/
-
-#include "../idlib/precompiled.h"
 #pragma hdrstop
-
+#include "precompiled.h"
+#include "../renderer/RenderWorld.h"
 #include "Game_local.h"
 
 
 /***********************************************************************
 
-  idSecurityCamera
+	idSecurityCamera
+
+	Security camera that triggers targets when player is in view
 	
 ***********************************************************************/
 

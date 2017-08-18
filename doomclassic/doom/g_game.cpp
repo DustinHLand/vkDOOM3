@@ -29,9 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "Precompiled.h"
 #include "globaldata.h"
 #include "Main.h"
-#include "sys/sys_signin.h"
-#include "d3xp/Game_local.h"
-
 
 #include <string.h>
 #include <stdlib.h>
@@ -77,8 +74,9 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "g_game.h"
 
-#include "framework/Common.h"
-#include "sys/sys_lobby.h"
+#include "../../neo/framework/UsercmdGen.h"
+#include "../../neo/framework/Common_dialog.h"
+#include "../../neo/sys/sys_signin.h"
 
 #include <limits>
 

@@ -91,6 +91,8 @@ void gameError( const char *fmt, ... );
 
 #include "anim/Anim.h"
 
+#include "../aas/AASFile.h"
+#include "../aas/AASFileManager.h"
 #include "ai/AAS.h"
 
 #include "physics/Clip.h"
