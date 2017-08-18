@@ -72,6 +72,8 @@ public:
 
 	virtual					~idRenderSystem() {}
 
+	// set up cvars and basic data structures, but don't
+	// init OpenGL, so it can also be used for dedicated servers
 	virtual void			Init() = 0;
 	virtual void			Shutdown() = 0;
 	virtual bool			IsInitialized() const = 0;

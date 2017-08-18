@@ -46,13 +46,6 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
-enum errorParm_t {
-	ERP_NONE,
-	ERP_FATAL,						// exit the entire game with a popup window
-	ERP_DROP,						// print to console and disconnect from game
-	ERP_DISCONNECT					// don't kill server
-};
-
 class idLib {
 private:
 	static bool					mainThreadInitialized;
@@ -64,8 +57,6 @@ public:
 	static class idCVarSystem *	cvarSystem;
 	static class idFileSystem *	fileSystem;
 	static int					frameNumber;
-	static bool					refreshOnPrint;
-	static errorParm_t			errorEntered;
 
 	static void					Init();
 	static void					ShutDown();
@@ -73,13 +64,10 @@ public:
 	// wrapper to idCommon functions 
 	static void					Printf( const char *fmt, ... );
 	static void					PrintfIf( const bool test, const char *fmt, ... );
-	static void					VPrintf( const char *fmt, va_list arg );
 	static void					Error( const char *fmt, ... );
 	static void					FatalError( const char *fmt, ... );
 	static void					Warning( const char *fmt, ... );
 	static void					WarningIf( const bool test, const char *fmt, ... );
-	static void					PrintWarnings();
-	static void					ClearWarnings( const char *reason );
 
 	// the extra check for mainThreadInitialized is necessary for this to be accurate
 	// when called by startup code that happens before idLib::Init

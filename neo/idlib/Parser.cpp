@@ -418,7 +418,7 @@ int idParser::ReadSourceToken( idToken *token ) {
 	int type, skip, changedScript;
 
 	if ( !idParser::scriptstack ) {
-		idLib::FatalError( "idParser::ReadSourceToken: not loaded" );
+		idLib::common->FatalError( "idParser::ReadSourceToken: not loaded" );
 		return false;
 	}
 	changedScript = 0;
@@ -3039,7 +3039,7 @@ int idParser::LoadFile( const char *filename, bool OSPath ) {
 	idLexer *script;
 
 	if ( idParser::loaded ) {
-		idLib::FatalError("idParser::loadFile: another source already loaded");
+		idLib::common->FatalError("idParser::loadFile: another source already loaded");
 		return false;
 	}
 	script = new (TAG_IDLIB_PARSER) idLexer( filename, 0, OSPath );
@@ -3075,7 +3075,7 @@ int idParser::LoadMemory(const char *ptr, int length, const char *name ) {
 	idLexer *script;
 
 	if ( idParser::loaded ) {
-		idLib::FatalError("idParser::loadMemory: another source already loaded");
+		idLib::common->FatalError("idParser::loadMemory: another source already loaded");
 		return false;
 	}
 	script = new (TAG_IDLIB_PARSER) idLexer( ptr, length, name );

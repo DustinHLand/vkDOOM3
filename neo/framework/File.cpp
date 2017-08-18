@@ -176,7 +176,7 @@ idFile::Read
 =================
 */
 int idFile::Read( void *buffer, int len ) {
-	idLib::FatalError( "idFile::Read: cannot read from idFile" );
+	common->FatalError( "idFile::Read: cannot read from idFile" );
 	return 0;
 }
 
@@ -186,7 +186,7 @@ idFile::Write
 =================
 */
 int idFile::Write( const void *buffer, int len ) {
-	idLib::FatalError( "idFile::Write: cannot write to idFile" );
+	common->FatalError( "idFile::Write: cannot write to idFile" );
 	return 0;
 }
 
@@ -714,7 +714,7 @@ idFile_Memory::Read
 int idFile_Memory::Read( void *buffer, int len ) {
 
 	if ( !( mode & ( 1 << FS_READ ) ) ) {
-		idLib::FatalError( "idFile_Memory::Read: %s not opened in read mode", name.c_str() );
+		common->FatalError( "idFile_Memory::Read: %s not opened in read mode", name.c_str() );
 		return 0;
 	}
 
@@ -763,7 +763,7 @@ int idFile_Memory::Write( const void *buffer, int len ) {
 	}
 
 	if ( !( mode & ( 1 << FS_WRITE ) ) ) {
-		idLib::FatalError( "idFile_Memory::Write: %s not opened in write mode", name.c_str() );
+		common->FatalError( "idFile_Memory::Write: %s not opened in write mode", name.c_str() );
 		return 0;
 	}
 
@@ -913,7 +913,7 @@ int idFile_Memory::Seek( long offset, fsOrigin_t origin ) {
 			break;
 		}
 		default: {
-			idLib::FatalError( "idFile_Memory::Seek: bad origin for %s\n", name.c_str() );
+			common->FatalError( "idFile_Memory::Seek: bad origin for %s\n", name.c_str() );
 			return -1;
 		}
 	}
@@ -1055,7 +1055,7 @@ idFile_BitMsg::Read
 int idFile_BitMsg::Read( void *buffer, int len ) {
 
 	if ( !( mode & ( 1 << FS_READ ) ) ) {
-		idLib::FatalError( "idFile_BitMsg::Read: %s not opened in read mode", name.c_str() );
+		common->FatalError( "idFile_BitMsg::Read: %s not opened in read mode", name.c_str() );
 		return 0;
 	}
 
@@ -1070,7 +1070,7 @@ idFile_BitMsg::Write
 int idFile_BitMsg::Write( const void *buffer, int len ) {
 
 	if ( !( mode & ( 1 << FS_WRITE ) ) ) {
-		idLib::FatalError( "idFile_Memory::Write: %s not opened in write mode", name.c_str() );
+		common->FatalError( "idFile_Memory::Write: %s not opened in write mode", name.c_str() );
 		return 0;
 	}
 
@@ -1183,7 +1183,7 @@ int idFile_Permanent::Read( void *buffer, int len ) {
 	int		tries;
 
 	if ( !(mode & ( 1 << FS_READ ) ) ) {
-		idLib::FatalError( "idFile_Permanent::Read: %s not opened in read mode", name.c_str() );
+		common->FatalError( "idFile_Permanent::Read: %s not opened in read mode", name.c_str() );
 		return 0;
 	}
 
@@ -1214,7 +1214,7 @@ int idFile_Permanent::Read( void *buffer, int len ) {
 		}
 
 		if ( read == -1 ) {
-			idLib::FatalError( "idFile_Permanent::Read: -1 bytes read from %s", name.c_str() );
+			common->FatalError( "idFile_Permanent::Read: -1 bytes read from %s", name.c_str() );
 		}
 
 		remaining -= read;
@@ -1237,7 +1237,7 @@ int idFile_Permanent::Write( const void *buffer, int len ) {
 	int		tries;
 
 	if ( !( mode & ( 1 << FS_WRITE ) ) ) {
-		idLib::FatalError( "idFile_Permanent::Write: %s not opened in write mode", name.c_str() );
+		common->FatalError( "idFile_Permanent::Write: %s not opened in write mode", name.c_str() );
 		return 0;
 	}
 
@@ -1492,7 +1492,7 @@ idFile_InZip::Write
 =================
 */
 int idFile_InZip::Write( const void *buffer, int len ) {
-	idLib::FatalError( "idFile_InZip::Write: cannot write to the zipped file %s", name.c_str() );
+	common->FatalError( "idFile_InZip::Write: cannot write to the zipped file %s", name.c_str() );
 	return 0;
 }
 
@@ -1502,7 +1502,7 @@ idFile_InZip::ForceFlush
 =================
 */
 void idFile_InZip::ForceFlush() {
-	idLib::FatalError( "idFile_InZip::ForceFlush: cannot flush the zipped file %s", name.c_str() );
+	common->FatalError( "idFile_InZip::ForceFlush: cannot flush the zipped file %s", name.c_str() );
 }
 
 /*
@@ -1511,7 +1511,7 @@ idFile_InZip::Flush
 =================
 */
 void idFile_InZip::Flush() {
-	idLib::FatalError( "idFile_InZip::Flush: cannot flush the zipped file %s", name.c_str() );
+	common->FatalError( "idFile_InZip::Flush: cannot flush the zipped file %s", name.c_str() );
 }
 
 /*
@@ -1578,7 +1578,7 @@ int idFile_InZip::Seek( long offset, fsOrigin_t origin ) {
 			return ( res == offset ) ? 0 : -1;
 		}
 		default: {
-			idLib::FatalError( "idFile_InZip::Seek: bad origin for %s\n", name.c_str() );
+			common->FatalError( "idFile_InZip::Seek: bad origin for %s\n", name.c_str() );
 			break;
 		}
 	}
@@ -1691,7 +1691,7 @@ int idFile_InnerResource::Seek( long offset, fsOrigin_t origin ) {
 			return -1;
 		}
 		default: {
-			idLib::FatalError( "idFile_InnerResource::Seek: bad origin for %s\n", name.c_str() );
+			common->FatalError( "idFile_InnerResource::Seek: bad origin for %s\n", name.c_str() );
 			break;
 		}
 	}

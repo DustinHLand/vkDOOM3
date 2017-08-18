@@ -50,18 +50,8 @@ idFileSystem *	idLib::fileSystem	= NULL;
 int				idLib::frameNumber	= 0;
 bool			idLib::mainThreadInitialized = 0;
 ID_TLS			idLib::isMainThread = 0;
-bool			idLib::refreshOnPrint = false;
-errorParm_t		idLib::errorEntered = ERP_NONE;
 
-char idException::error[ 2048 ];
-
-#define	MAX_PRINT_MSG_SIZE	4096
-#define MAX_WARNING_LIST	256
-static char errorMessage[ MAX_PRINT_MSG_SIZE ];
-
-static idStr	 warningCaption;
-static idStrList warningList;
-static idStrList errorList;
+char idException::error[2048];
 
 /*
 ================
@@ -201,39 +191,8 @@ void idLib::FatalError( const char *fmt, ... ) {
 	va_start( argptr, fmt );
 	idStr::vsnPrintf( text, sizeof( text ), fmt, argptr );
 	va_end( argptr );
-	
-	// if we got a recursive error, make it fatal
-	if ( errorEntered ) {
-		// if we are recursively erroring while exiting
-		// from a fatal error, just kill the entire
-		// process immediately, which will prevent a
-		// full screen rendering window covering the
-		// error dialog
 
-		Sys_Printf( "FATAL: recursed fatal error:\n%s\n", errorMessage );
-
-		va_start( argptr, fmt );
-		idStr::vsnPrintf( errorMessage, sizeof(errorMessage), fmt, argptr );
-		va_end( argptr );
-		errorMessage[sizeof(errorMessage)-1] = '\0';
-
-		Sys_Printf( "%s\n", errorMessage );
-
-		// write the console to a log file?
-		Sys_Quit();
-	}
-	errorEntered = ERP_FATAL;
-
-	va_start( argptr, fmt );
-	idStr::vsnPrintf( errorMessage, sizeof(errorMessage), fmt, argptr );
-	va_end( argptr );
-	errorMessage[ sizeof( errorMessage ) - 1 ] = '\0';
-
-	if ( cvarSystem->GetCVarBool( "r_fullscreen" ) ) {
-		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart partial windowed\n" );
-	}
-
-	Sys_Error( "%s", errorMessage );
+	common->FatalError( "%s", text );
 }
 
 /*
@@ -249,111 +208,7 @@ void idLib::Error( const char *fmt, ... ) {
 	idStr::vsnPrintf( text, sizeof( text ), fmt, argptr );
 	va_end( argptr );
 
-	static int	lastErrorTime;
-	static int	errorCount;
-	int			currentTime;
-
-	errorParm_t code = ERP_DROP;
-
-	// always turn this off after an error
-	refreshOnPrint = false;
-
-	// when we are running automated scripts, make sure we
-	// know if anything failed
-	if ( cvarSystem->GetCVarInteger( "fs_copyfiles" ) ) {
-		code = ERP_FATAL;
-	}
-
-	// if we got a recursive error, make it fatal
-	if ( errorEntered ) {
-		// if we are recursively erroring while exiting
-		// from a fatal error, just kill the entire
-		// process immediately, which will prevent a
-		// full screen rendering window covering the
-		// error dialog
-		if ( errorEntered == ERP_FATAL ) {
-			Sys_Quit();
-		}
-		code = ERP_FATAL;
-	}
-
-	// if we are getting a solid stream of ERP_DROP, do an ERP_FATAL
-	currentTime = Sys_Milliseconds();
-	if ( currentTime - lastErrorTime < 100 ) {
-		if ( ++errorCount > 3 ) {
-			code = ERP_FATAL;
-		}
-	} else {
-		errorCount = 0;
-	}
-	lastErrorTime = currentTime;
-
-	errorEntered = code;
-
-	va_start (argptr,fmt);
-	idStr::vsnPrintf( errorMessage, sizeof(errorMessage), fmt, argptr );
-	va_end (argptr);
-	errorMessage[sizeof(errorMessage)-1] = '\0';
-
-
-	// copy the error message to the clip board
-	Sys_SetClipboardData( errorMessage );
-
-	Stop();
-
-	if ( code == ERP_DISCONNECT ) {
-		errorEntered = ERP_NONE;
-		throw idException( errorMessage );
-	} else if ( code == ERP_DROP ) {
-		Printf( "********************\nERROR: %s\n********************\n", errorMessage );
-		errorEntered = ERP_NONE;
-		throw idException( errorMessage );
-	} else {
-		Printf( "********************\nERROR: %s\n********************\n", errorMessage );
-	}
-
-	if ( cvarSystem->GetCVarBool( "r_fullscreen" ) ) {
-		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart partial windowed\n" );
-	}
-
-	Sys_Error( "%s", errorMessage );
-}
-
-/*
-==================
-idLib::PrintWarnings
-==================
-*/
-void idLib::PrintWarnings() {
-	int i;
-
-	if ( !warningList.Num() ) {
-		return;
-	}
-
-	Printf( "------------- Warnings ---------------\n" );
-	Printf( "during %s...\n", warningCaption.c_str() );
-
-	for ( i = 0; i < warningList.Num(); i++ ) {
-		Printf( S_COLOR_YELLOW "WARNING: " S_COLOR_RED "%s\n", warningList[i].c_str() );
-	}
-	if ( warningList.Num() ) {
-		if ( warningList.Num() >= MAX_WARNING_LIST ) {
-			Printf( "more than %d warnings\n", MAX_WARNING_LIST );
-		} else {
-			Printf( "%d warnings\n", warningList.Num() );
-		}
-	}
-}
-
-/*
-==================
-idLib::ClearWarnings
-==================
-*/
-void idLib::ClearWarnings( const char *reason ) {
-	warningCaption = reason;
-	warningList.Clear();
+	common->Error( "%s", text );
 }
 
 /*
@@ -369,22 +224,7 @@ void idLib::Warning( const char *fmt, ... ) {
 	idStr::vsnPrintf( text, sizeof( text ), fmt, argptr );
 	va_end( argptr );
 
-	char msg[ MAX_PRINT_MSG_SIZE ];
-	
-	if ( !idLib::IsMainThread() ) {
-		return;	// not thread safe!
-	}
-
-	va_start( argptr, fmt );
-	idStr::vsnPrintf( msg, sizeof( msg ), fmt, argptr );
-	va_end( argptr );
-	msg[ sizeof( msg ) - 1 ] = 0;
-
-	Printf( S_COLOR_YELLOW "WARNING: " S_COLOR_RED "%s\n", msg );
-
-	if ( warningList.Num() < MAX_WARNING_LIST ) {
-		warningList.AddUnique( msg );
-	}
+	common->Warning( "%s", text );
 }
 
 /*
@@ -404,122 +244,7 @@ void idLib::WarningIf( const bool test, const char *fmt, ... ) {
 	idStr::vsnPrintf( text, sizeof( text ), fmt, argptr );
 	va_end( argptr );
 
-	Warning( "%s", text );
-}
-
-/*
-==================
-idLib::VPrintf
-
-A raw string should NEVER be passed as fmt, because of "%f" type crashes.
-==================
-*/
-void idLib::VPrintf( const char *fmt, va_list args ) {
-	static bool	logFileFailed = false;
-
-	// if the cvar system is not initialized
-	if ( !cvarSystem->IsInitialized() ) {
-		return;
-	}
-	// optionally put a timestamp at the beginning of each print,
-	// so we can see how long different init sections are taking
-	int timeLength = 0;
-	char msg[ MAX_PRINT_MSG_SIZE ];
-	msg[ 0 ] = '\0';
-	if ( com_timestampPrints.GetInteger() ) {
-		int	t = Sys_Milliseconds();
-		if ( com_timestampPrints.GetInteger() == 1 ) {
-			sprintf( msg, "[%5.2f]", t * 0.001f );
-		} else {
-			sprintf( msg, "[%i]", t );
-		}
-	} 
-	timeLength = strlen( msg );
-	// don't overflow
-	if ( idStr::vsnPrintf( msg+timeLength, MAX_PRINT_MSG_SIZE-timeLength-1, fmt, args ) < 0 ) {
-		msg[sizeof(msg)-2] = '\n'; msg[sizeof(msg)-1] = '\0'; // avoid output garbling
-		Sys_Printf( "idCommon::VPrintf: truncated to %d characters\n", strlen(msg)-1 );
-	}
-	
-#ifndef ID_RETAIL
-	if ( com_printFilter.GetString() != NULL && com_printFilter.GetString()[ 0 ] != '\0' ) {
-		idStrStatic< 4096 > filterBuf = com_printFilter.GetString();
-		idStrStatic< 4096 > msgBuf = msg;
-		filterBuf.ToLower();
-		msgBuf.ToLower();
-		char *sp = strtok( &filterBuf[ 0 ], ";" );
-		bool p = false;
-		for( ; sp != NULL ; ) {
-			if ( strstr( msgBuf, sp ) != NULL ) {
-				p = true;
-				break;
-			}
-			sp = strtok( NULL, ";" );
-		}
-		if ( !p ) {
-			return;
-		}
-	}
-#endif
-	if ( !idLib::IsMainThread() ) {
-		OutputDebugString( msg );
-		return;
-	}
-
-	// echo to console buffer
-	console->Print( msg );
-
-	// remove any color codes
-	idStr::RemoveColors( msg );
-
-	// echo to dedicated console and early console
-	Sys_Printf( "%s", msg );
-
-	// print to script debugger server
-	// DebuggerServerPrint( msg );
-
-	// logFile
-	if ( com_logFile.GetInteger() && !logFileFailed && fileSystem->IsInitialized() ) {
-		static bool recursing;
-
-		if ( !logFile && !recursing ) {
-			const char *fileName = com_logFileName.GetString()[0] ? com_logFileName.GetString() : "qconsole.log";
-
-			// fileSystem->OpenFileWrite can cause recursive prints into here
-			recursing = true;
-
-			logFile = fileSystem->OpenFileWrite( fileName );
-			if ( !logFile ) {
-				logFileFailed = true;
-				FatalError( "failed to open log file '%s'\n", fileName );
-			}
-
-			recursing = false;
-
-			if ( com_logFile.GetInteger() > 1 ) {
-				// force it to not buffer so we get valid
-				// data even if we are crashing
-				logFile->ForceFlush();
-			}
-
-			time_t aclock;
-			time( &aclock );
-			struct tm * newtime = localtime( &aclock );
-			Printf( "log file '%s' opened on %s\n", fileName, asctime( newtime ) );
-		}
-		if ( logFile ) {
-			logFile->Write( msg, strlen( msg ) );
-			logFile->Flush();	// ForceFlush doesn't help a whole lot
-		}
-	}
-
-	// don't trigger any updates if we are in the process of doing a fatal error
-	if ( errorEntered != ERP_FATAL ) {
-		// update the console if we are in a long-running command, like dmap
-		if ( refreshOnPrint ) {
-			UpdateScreen();
-		}
-	}
+	common->Warning( "%s", text );
 }
 
 /*
@@ -528,9 +253,11 @@ idLib::Printf
 ===============
 */
 void idLib::Printf( const char *fmt, ... ) {
-	va_list	argptr;
+	va_list		argptr;
 	va_start( argptr, fmt );
-	VPrintf( fmt, argptr );
+	if ( common ) {
+		common->VPrintf( fmt, argptr );
+	}
 	va_end( argptr );
 }
 
@@ -544,9 +271,9 @@ void idLib::PrintfIf( const bool test, const char *fmt, ... ) {
 		return;
 	}
 
-	va_list	argptr;
+	va_list		argptr;
 	va_start( argptr, fmt );
-	VPrintf( fmt, argptr );
+	common->VPrintf( fmt, argptr );
 	va_end( argptr );
 }
 

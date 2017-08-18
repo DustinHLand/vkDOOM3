@@ -128,10 +128,18 @@ idCommonLocal::idCommonLocal() :
 	totalRecvTime		= 0;
 
 	com_fullyInitialized = false;
+	com_refreshOnPrint = false;
+	com_errorEntered = ERP_NONE;
 	com_shuttingDown = false;
 	com_isJapaneseSKU = false;
 
 	logFile = NULL;
+
+	strcpy( errorMessage, "" );
+
+	rd_buffer = NULL;
+	rd_buffersize = 0;
+	rd_flush = NULL;
 
 	gameDLL = 0;
 
