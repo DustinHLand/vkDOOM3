@@ -130,53 +130,25 @@ struct vulkanContext_t {
 	vertCacheHandle_t				jointCacheHandle;
 	uint64							stencilOperations[ STENCIL_FACE_NUM ];
 
-	VkInstance						instance;
-	VkPhysicalDevice				physicalDevice;
-	VkPhysicalDeviceFeatures		physicalDeviceFeatures;
-	VkDevice						device;
-	VkQueue							graphicsQueue;
-	VkQueue							presentQueue;
-	int								graphicsFamilyIdx;
-	int								presentFamilyIdx;
-	VkDebugReportCallbackEXT		callback;
-
-	idList< const char * >			instanceExtensions;
-	idList< const char * >			deviceExtensions;
-	idList< const char * >			validationLayers;
-
 	gpuInfo_t *						gpu;
 	idList< gpuInfo_t >				gpus;
+
+	VkDevice						device;
+	int								graphicsFamilyIdx;
+	int								presentFamilyIdx;
+	VkQueue							graphicsQueue;
+	VkQueue							presentQueue;
 
 	VkCommandPool					commandPool;
 	idArray< VkCommandBuffer, NUM_FRAME_DATA >	commandBuffer;
 	idArray< VkFence, NUM_FRAME_DATA >			commandBufferFences;
 	idArray< bool, NUM_FRAME_DATA >				commandBufferRecorded;
 
-	VkSurfaceKHR					surface;
-	VkPresentModeKHR				presentMode;
 	VkFormat						depthFormat;
 	VkRenderPass					renderPass;
 	VkPipelineCache					pipelineCache;
 	VkSampleCountFlagBits			sampleCount;
 	bool							supersampling;
-
-	int								fullscreen;
-	VkSwapchainKHR					swapchain;
-	VkFormat						swapchainFormat;
-	VkExtent2D						swapchainExtent;
-	uint32							currentSwapIndex;
-	VkImage							msaaImage;
-	VkImageView						msaaImageView;
-#if defined( ID_USE_AMD_ALLOCATOR )
-	VmaAllocation					msaaVmaAllocation;
-	VmaAllocationInfo				msaaAllocation;
-#else
-	vulkanAllocation_t				msaaAllocation;
-#endif
-	idArray< idImage * , NUM_FRAME_DATA >		swapchainImages;
-	idArray< VkFramebuffer, NUM_FRAME_DATA >	frameBuffers;
-	idArray< VkSemaphore, NUM_FRAME_DATA >		acquireSemaphores;
-	idArray< VkSemaphore, NUM_FRAME_DATA >		renderCompleteSemaphores;
 
 	int											currentImageParm;
 	idArray< idImage *, MAX_IMAGE_PARMS >		imageParms;
@@ -268,6 +240,31 @@ private:
 	void				GL_Color( float * color );
 
 private:
+	void				Clear();
+
+	void				CreateInstance();
+
+	void				EnumeratePhysicalDevices();
+	void				SelectPhysicalDevice();
+
+	void				CreateLogicalDeviceAndQueues();
+
+	void				CreateSemaphores();
+
+	void				CreateSurface();
+
+	void				CreateSwapChain();
+	void				DestroySwapChain();
+
+	void				CreateRenderTargets();
+	void				DestroyRenderTargets();
+
+	void				CreateRenderPass();
+
+	void				CreateFrameBuffers();
+	void				DestroyFrameBuffers();
+
+private:
 	void				DBG_SimpleSurfaceSetup( const drawSurf_t * drawSurf );
 	void				DBG_SimpleWorldSetup();
 	void				DBG_ShowDestinationAlpha();
@@ -325,6 +322,38 @@ private:
 	idRenderMatrix		m_prevMVP;				// world MVP from previous frame for motion blur
 
 	unsigned short		m_gammaTable[ 256 ];	// brightness / gamma modify this
+
+private:
+	
+	VkInstance						m_instance;
+	VkPhysicalDevice				m_physicalDevice;
+	VkPhysicalDeviceFeatures		m_physicalDeviceFeatures;
+
+	idList< const char * >			m_instanceExtensions;
+	idList< const char * >			m_deviceExtensions;
+	idList< const char * >			m_validationLayers;
+
+	VkSurfaceKHR					m_surface;
+	VkPresentModeKHR				m_presentMode;
+
+	int								m_fullscreen;
+	VkSwapchainKHR					m_swapchain;
+	VkFormat						m_swapchainFormat;
+	VkExtent2D						m_swapchainExtent;
+	uint32							m_currentSwapIndex;
+	VkImage							m_msaaImage;
+	VkImageView						m_msaaImageView;
+#if defined( ID_USE_AMD_ALLOCATOR )
+	VmaAllocation					m_msaaVmaAllocation;
+	VmaAllocationInfo				m_msaaAllocation;
+#else
+	vulkanAllocation_t				m_msaaAllocation;
+#endif
+	idArray< VkImage, NUM_FRAME_DATA >			m_swapchainImages;
+	idArray< VkImageView, NUM_FRAME_DATA >		m_swapchainViews;
+	idArray< VkFramebuffer, NUM_FRAME_DATA >	m_frameBuffers;
+	idArray< VkSemaphore, NUM_FRAME_DATA >		m_acquireSemaphores;
+	idArray< VkSemaphore, NUM_FRAME_DATA >		m_renderCompleteSemaphores;
 };
 
 #endif
