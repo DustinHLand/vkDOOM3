@@ -109,6 +109,7 @@
     <ClCompile Include="renderer\Model_md5.cpp" />
     <ClCompile Include="renderer\Model_prt.cpp" />
     <ClCompile Include="renderer\Model_sprite.cpp" />
+    <ClCompile Include="renderer\RenderContext.cpp" />
     <ClCompile Include="renderer\RenderDebug.cpp" />
     <ClCompile Include="renderer\RenderEntity.cpp" />
     <ClCompile Include="renderer\RenderLog.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="renderer\RenderBackend.h" />
     <ClInclude Include="renderer\RenderCommon.h" />
     <ClInclude Include="renderer\RenderConfig.h" />
+    <ClInclude Include="renderer\RenderContext.h" />
     <ClInclude Include="renderer\RenderLog.h" />
     <ClInclude Include="renderer\RenderProgs.h" />
     <ClInclude Include="renderer\RenderSystem.h" />

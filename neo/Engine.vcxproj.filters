@@ -636,6 +636,9 @@
     <ClCompile Include="framework\CVarSystem.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\RenderContext.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ui\BindWindow.h">
@@ -1084,6 +1087,9 @@
     </ClInclude>
     <ClInclude Include="renderer\jobs\dynamicshadowvolume\DynamicShadowVolume.h">
       <Filter>Renderer\Jobs\DynamicShadowVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RenderContext.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
