@@ -180,17 +180,6 @@ void Sys_MemFrame() {
 #endif
 
 /*
-==================
-Sys_FlushCacheMemory
-
-On windows, the vertex buffers are write combined, so they
-don't need to be flushed from the cache
-==================
-*/
-void Sys_FlushCacheMemory( void *base, int bytes ) {
-}
-
-/*
 =============
 Sys_Error
 
