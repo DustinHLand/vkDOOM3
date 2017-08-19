@@ -83,8 +83,8 @@ typedef enum {
 	POR_Z
 } prtOrientation_t;
 
-typedef struct renderEntity_s renderEntity_t;
-typedef struct renderView_s renderView_t;
+struct renderEntity_t;
+struct renderView_t;
 
 typedef struct {
 	const renderEntity_t *	renderEnt;			// for shaderParms, etc

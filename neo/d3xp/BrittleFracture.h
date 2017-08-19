@@ -121,8 +121,8 @@ private:
 	mutable int					lastRenderEntityUpdate;
 	mutable bool				changed;
 
-	bool						UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView ) const;
-	static bool					ModelCallback( renderEntity_s *renderEntity, const renderView_t *renderView );
+	bool						UpdateRenderEntity( renderEntity_t *renderEntity, const renderView_t *renderView ) const;
+	static bool					ModelCallback( renderEntity_t *renderEntity, const renderView_t *renderView );
 
 	void						AddShard( idClipModel *clipModel, idFixedWinding &w );
 	void						RemoveShard( int index );

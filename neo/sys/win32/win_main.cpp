@@ -28,7 +28,8 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
-#include "../../framework/precompiled.h"
+#include "../../idlib/precompiled.h"
+#include "../../renderer/RenderSystem.h"
 
 #include <direct.h>
 #include <io.h>
@@ -50,7 +51,7 @@ Win32Vars_t	win32;
 
 extern idCVar win_viewlog;
 
-static char		sys_cmdline[MAX_STRING_CHARS];
+static char sys_cmdline[ MAX_STRING_CHARS ];
 
 static sysMemoryStats_t exeLaunchMemoryStats;
 

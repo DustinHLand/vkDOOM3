@@ -96,8 +96,8 @@ private:
 	int							numActiveSmokes;
 	int							currentParticleTime;	// don't need to recalculate if == view time
 
-	bool						UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView );
-	static bool					ModelCallback( renderEntity_s *renderEntity, const renderView_t *renderView );
+	bool						UpdateRenderEntity( renderEntity_t *renderEntity, const renderView_t *renderView );
+	static bool					ModelCallback( renderEntity_t *renderEntity, const renderView_t *renderView );
 };
 
 #endif /* !__SMOKEPARTICLES_H__ */

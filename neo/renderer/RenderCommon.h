@@ -288,9 +288,9 @@ idRenderEntity
 ===========================================================================
 */
 
-typedef bool(*deferredEntityCallback_t)( renderEntity_s *, const renderView_s * );
+typedef bool(*deferredEntityCallback_t)( renderEntity_t *, const renderView_t * );
 
-typedef struct renderEntity_s {
+struct renderEntity_t {
 	idRenderModel *			hModel;				// this can only be null if callback is set
 
 	int						entityNum;
@@ -342,7 +342,7 @@ typedef struct renderEntity_s {
 	// networking: see WriteGUIToSnapshot / ReadGUIFromSnapshot
 	class idUserInterface * gui[ MAX_RENDERENTITY_GUI ];
 
-	struct renderView_s	*	remoteRenderView;		// any remote camera surfaces will use this
+	struct renderView_t	*	remoteRenderView;		// any remote camera surfaces will use this
 
 	int						numJoints;
 	idJointMat *			joints;					// array of joints that will modify vertices.
@@ -365,7 +365,7 @@ typedef struct renderEntity_s {
 	int						forceUpdate;			// force an update (NOTE: not a bool to keep this struct a multiple of 4 bytes)
 	int						timeGroup;
 	int						xrayIndex;
-} renderEntity_t;
+};
 
 class idRenderEntity {
 public:
@@ -556,7 +556,7 @@ Are allocated on the frame temporary stack memory
 ===========================================================================
 */
 
-typedef struct renderView_s {
+struct renderView_t {
 	// player views will set this to a non-zero integer for model suppress / allow
 	// subviews (mirrors, cameras, etc) will always clear it to zero
 	int						viewID;
@@ -574,7 +574,7 @@ typedef struct renderView_s {
 	int						time[2];
 	float					shaderParms[MAX_GLOBAL_SHADER_PARMS];		// can be used in any way by shader
 	const idMaterial		*globalMaterial;							// used to override everything draw
-} renderView_t;
+};
 
 struct viewDef_t {
 	// specified in the call to DrawScene()
@@ -772,22 +772,6 @@ on an SMP machine.
 
 ===========================================================================
 */
-
-enum frameAllocType_t {
-	FRAME_ALLOC_VIEW_DEF,
-	FRAME_ALLOC_VIEW_ENTITY,
-	FRAME_ALLOC_VIEW_LIGHT,
-	FRAME_ALLOC_SURFACE_TRIANGLES,
-	FRAME_ALLOC_DRAW_SURFACE,
-	FRAME_ALLOC_INTERACTION_STATE,
-	FRAME_ALLOC_SHADOW_ONLY_ENTITY,
-	FRAME_ALLOC_SHADOW_VOLUME_PARMS,
-	FRAME_ALLOC_SHADER_REGISTER,
-	FRAME_ALLOC_DRAW_SURFACE_POINTER,
-	FRAME_ALLOC_DRAW_COMMAND,
-	FRAME_ALLOC_UNKNOWN,
-	FRAME_ALLOC_MAX
-};
 
 class idFrameData {
 public:

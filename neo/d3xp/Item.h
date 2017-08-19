@@ -116,8 +116,8 @@ private:
 	// used for prediction in mp
 	int						clientPredictPickupMilliseconds;
 	
-	bool					UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView ) const;
-	static bool				ModelCallback( renderEntity_s *renderEntity, const renderView_t *renderView );
+	bool					UpdateRenderEntity( renderEntity_t *renderEntity, const renderView_t *renderView ) const;
+	static bool				ModelCallback( renderEntity_t *renderEntity, const renderView_t *renderView );
 
 	void					Event_DropToFloor();
 	void					Event_Touch( idEntity *other, trace_t *trace );

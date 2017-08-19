@@ -456,7 +456,7 @@ void TransformVertsAndTangents( idDrawVert * targetVerts, const int numVerts, co
 idMD5Mesh::UpdateSurface
 ====================
 */
-void idMD5Mesh::UpdateSurface( const struct renderEntity_s *ent, const idJointMat *entJoints,
+void idMD5Mesh::UpdateSurface( const renderEntity_t *ent, const idJointMat *entJoints,
 								const idJointMat *entJointsInverted, modelSurface_t *surf ) {
 
 	tr.pc.c_deformedSurfaces++;
@@ -1209,7 +1209,7 @@ idRenderModelMD5::InstantiateDynamicModel
 ====================
 */
 const idMaterial *R_RemapShaderBySkin( const idMaterial *shader, const idDeclSkin *customSkin, const idMaterial *customShader );
-idRenderModel *idRenderModelMD5::InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel ) {
+idRenderModel *idRenderModelMD5::InstantiateDynamicModel( const renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel ) {
 	if ( cachedModel != NULL && !r_useCachedDynamicModels.GetBool() ) {
 		delete cachedModel;
 		cachedModel = NULL;

@@ -80,14 +80,14 @@ public:
 	virtual dynamicModel_t		IsDynamicModel() const;
 	virtual bool				IsDefaultModel() const;
 	virtual bool				IsReloadable() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
 	virtual int					NumJoints() const;
 	virtual const idMD5Joint *	GetJoints() const;
 	virtual jointHandle_t		GetJointHandle( const char *name ) const;
 	virtual const char *		GetJointName( jointHandle_t handle ) const;
 	virtual const idJointQuat *	GetDefaultPose() const;
 	virtual int					NearestJoint( int surfaceNum, int a, int b, int c ) const;
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 	virtual float				DepthHack() const;
 
 	virtual bool				ModelHasDrawingSurfaces() const { return hasDrawingSurfaces; };
@@ -162,7 +162,7 @@ public:
 	int							NumVerts() const { return numVerts; }
 	int							NumTris() const { return numTris; }
 
-	void						UpdateSurface( const struct renderEntity_s *ent, const idJointMat *joints,
+	void						UpdateSurface( const struct renderEntity_t *ent, const idJointMat *joints,
 												const idJointMat *entJointsInverted, modelSurface_t *surf );
 	void						CalculateBounds( const idJointMat * entJoints, idBounds & bounds ) const;
 	int							NearestJoint( int a, int b, int c ) const;
@@ -184,14 +184,14 @@ public:
 	virtual bool				LoadBinaryModel( idFile * file, const ID_TIME_T sourceTimeStamp );
 	virtual void				WriteBinaryModel( idFile * file, ID_TIME_T *_timeStamp = NULL ) const;
 	virtual dynamicModel_t		IsDynamicModel() const;
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 	virtual void				Print() const;
 	virtual void				List() const;
 	virtual void				TouchData();
 	virtual void				PurgeModel();
 	virtual void				LoadModel();
 	virtual int					Memory() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
 	virtual int					NumJoints() const;
 	virtual const idMD5Joint *	GetJoints() const;
 	virtual jointHandle_t		GetJointHandle( const char *name ) const;
@@ -227,8 +227,8 @@ public:
 	virtual void				InitFromFile( const char *fileName );
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual dynamicModel_t		IsDynamicModel() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 private:
 	int							index;			// model = tr.models[model->index]
@@ -254,8 +254,8 @@ public:
 	virtual void				InitFromFile( const char *fileName );
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual dynamicModel_t		IsDynamicModel() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 	virtual void				Reset();
 	void						IntersectBounds( const idBounds &bounds, float displacement );
@@ -311,8 +311,8 @@ public:
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual void				TouchData();
 	virtual dynamicModel_t		IsDynamicModel() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 	virtual float				DepthHack() const;
 	virtual int					Memory() const;
 
@@ -339,8 +339,8 @@ public:
 	virtual dynamicModel_t		IsDynamicModel() const;
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual bool				IsLoaded() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 	// with the addModels2 arrangement we could have light accepting and
 	// shadowing dynamic models, but the original game never did
@@ -377,8 +377,8 @@ public:
 	virtual dynamicModel_t		IsDynamicModel() const;
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual bool				IsLoaded() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 	// with the addModels2 arrangement we could have light accepting and
 	// shadowing dynamic models, but the original game never did
@@ -388,7 +388,7 @@ public:
 
 	int							NewTrail( idVec3 pt, int duration );
 	void						UpdateTrail( int index, idVec3 pt );
-	void						DrawTrail( int index, const struct renderEntity_s *ent, srfTriangles_t *tri, float globalAlpha );
+	void						DrawTrail( int index, const struct renderEntity_t *ent, srfTriangles_t *tri, float globalAlpha );
 };
 
 /*
@@ -404,8 +404,8 @@ public:
 	virtual dynamicModel_t		IsDynamicModel() const;
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual bool				IsLoaded() const;
-	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 	// with the addModels2 arrangement we could have light accepting and
 	// shadowing dynamic models, but the original game never did
@@ -426,8 +426,8 @@ public:
 	virtual	dynamicModel_t		IsDynamicModel() const;
 	virtual bool				SupportsBinaryModel() { return false; }
 	virtual	bool				IsLoaded() const;
-	virtual	idRenderModel *		InstantiateDynamicModel( const struct renderEntity_s *ent, const viewDef_t *view, idRenderModel *cachedModel );
-	virtual	idBounds			Bounds( const struct renderEntity_s *ent ) const;
+	virtual	idRenderModel *		InstantiateDynamicModel( const struct renderEntity_t *ent, const viewDef_t *view, idRenderModel *cachedModel );
+	virtual	idBounds			Bounds( const struct renderEntity_t *ent ) const;
 
 	// with the addModels2 arrangement we could have light accepting and
 	// shadowing dynamic models, but the original game never did
