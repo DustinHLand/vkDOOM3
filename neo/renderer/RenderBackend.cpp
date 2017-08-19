@@ -93,7 +93,7 @@ extern idCVar r_singleTriangle;
 PrintState
 ====================
 */
-void PrintState( uint64 stateBits, uint64 * stencilBits ) {
+void PrintState( uint64 stateBits ) {
 	if ( renderLog.Active() == 0 ) {
 		return;
 	}
@@ -230,8 +230,8 @@ void PrintState( uint64 stateBits, uint64 * stencilBits ) {
 	uint32 mask = uint32( ( stateBits & GLS_STENCIL_FUNC_MASK_BITS ) >> GLS_STENCIL_FUNC_MASK_SHIFT );
 	uint32 ref = uint32( ( stateBits & GLS_STENCIL_FUNC_REF_BITS ) >> GLS_STENCIL_FUNC_REF_SHIFT );
 	if ( stateBits & GLS_SEPARATE_STENCIL ) {
-		printStencil( STENCIL_FACE_FRONT, stencilBits[ 0 ], mask, ref );
-		printStencil( STENCIL_FACE_BACK, stencilBits[ 1 ], mask, ref );
+		printStencil( STENCIL_FACE_FRONT, ( stateBits & GLS_STENCIL_FRONT_OPS ), mask, ref );
+		printStencil( STENCIL_FACE_BACK, ( stateBits & GLS_STENCIL_BACK_OPS ), mask, ref );
 	} else {
 		printStencil( STENCIL_FACE_NUM, stateBits, mask, ref );
 	}
@@ -3307,9 +3307,11 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 	idRenderMatrix::Multiply( m_viewDef->worldSpace.mvp, vLight->inverseBaseLightProject, invProjectMVPMatrix );
 	RB_SetMVP( invProjectMVPMatrix );
 
+	uint64 stencil = GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_REPLACE | GLS_STENCIL_OP_PASS_ZERO
+		| GLS_BACK_STENCIL_OP_FAIL_KEEP | GLS_BACK_STENCIL_OP_ZFAIL_ZERO | GLS_BACK_STENCIL_OP_PASS_REPLACE;
+
 	// two-sided stencil test
-	GL_SeparateStencil( STENCIL_FACE_FRONT, GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_REPLACE | GLS_STENCIL_OP_PASS_ZERO );
-	GL_SeparateStencil( STENCIL_FACE_BACK, GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_ZERO | GLS_STENCIL_OP_PASS_REPLACE );
+	GL_State( m_glStateBits | stencil );
 
 	DrawElementsWithCounters( &m_zeroOneCubeSurface );
 

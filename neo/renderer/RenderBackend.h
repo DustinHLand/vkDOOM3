@@ -128,7 +128,6 @@ struct vulkanContext_t {
 	uint32							currentFrameData;
 
 	vertCacheHandle_t				jointCacheHandle;
-	uint64							stencilOperations[ STENCIL_FACE_NUM ];
 
 	gpuInfo_t *						gpu;
 	idList< gpuInfo_t >				gpus;
@@ -218,7 +217,6 @@ private:
 	uint64				GL_GetCurrentStateMinusStencil() const;
 	void				GL_SetDefaultState();
 	void				GL_State( uint64 stateBits, bool forceGlState = false );
-	void				GL_SeparateStencil( stencilFace_t face, uint64 stencilBits );
 
 	void				GL_SelectTexture( int unit );
 	void				GL_BindTexture( idImage * image );
