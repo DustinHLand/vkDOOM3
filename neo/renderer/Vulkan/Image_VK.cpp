@@ -400,15 +400,6 @@ void idImage::PurgeImage() {
 
 /*
 ====================
-idImage::SetImageParameters
-====================
-*/
-void idImage::SetImageParameters() {
-	
-}
-
-/*
-====================
 idImage::SetSamplerState
 ====================
 */

@@ -246,7 +246,6 @@ private:
 
 	void		DeriveOpts();
 	void		AllocImage();
-	void		SetImageParameters();
 	void		SetSamplerState( textureFilter_t filter, textureRepeat_t repeat );
 	void		UploadScratchImage( const byte * data, int cols, int rows );
 
