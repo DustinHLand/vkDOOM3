@@ -93,7 +93,7 @@ extern idCVar r_singleTriangle;
 PrintState
 ====================
 */
-void PrintState( uint64 stateBits, uint64 * stencilBits ) {
+void PrintState( uint64 stateBits ) {
 	if ( renderLog.Active() == 0 ) {
 		return;
 	}
@@ -230,8 +230,8 @@ void PrintState( uint64 stateBits, uint64 * stencilBits ) {
 	uint32 mask = uint32( ( stateBits & GLS_STENCIL_FUNC_MASK_BITS ) >> GLS_STENCIL_FUNC_MASK_SHIFT );
 	uint32 ref = uint32( ( stateBits & GLS_STENCIL_FUNC_REF_BITS ) >> GLS_STENCIL_FUNC_REF_SHIFT );
 	if ( stateBits & GLS_SEPARATE_STENCIL ) {
-		printStencil( STENCIL_FACE_FRONT, stencilBits[ 0 ], mask, ref );
-		printStencil( STENCIL_FACE_BACK, stencilBits[ 1 ], mask, ref );
+		printStencil( STENCIL_FACE_FRONT, ( stateBits & GLS_STENCIL_FRONT_OPS ), mask, ref );
+		printStencil( STENCIL_FACE_BACK, ( ( stateBits & GLS_STENCIL_BACK_OPS ) >> 12 ), mask, ref );
 	} else {
 		printStencil( STENCIL_FACE_NUM, stateBits, mask, ref );
 	}
@@ -3149,7 +3149,6 @@ void idRenderBackend::StencilShadowPass( const drawSurf_t *drawSurfs, const view
 	// Two Sided Stencil reduces two draw calls to one for slightly faster shadows
 	GL_State( 
 		glState | 
-		GLS_SEPARATE_STENCIL | 
 		GLS_STENCIL_OP_FAIL_KEEP | 
 		GLS_STENCIL_OP_ZFAIL_KEEP | 
 		GLS_STENCIL_OP_PASS_INCR | 
@@ -3289,6 +3288,7 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 	// set the depthbounds
 	GL_DepthBoundsTest( vLight->scissorRect.zmin, vLight->scissorRect.zmax );
 
+	// two-sided stencil test
 	GL_State( 
 		GLS_COLORMASK | 
 		GLS_ALPHAMASK | 
@@ -3296,7 +3296,8 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 		GLS_DEPTHMASK | 
 		GLS_DEPTHFUNC_LESS | 
 		GLS_STENCIL_FUNC_ALWAYS | 
-		GLS_SEPARATE_STENCIL | 
+		GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_REPLACE | GLS_STENCIL_OP_PASS_ZERO |
+		GLS_BACK_STENCIL_OP_FAIL_KEEP | GLS_BACK_STENCIL_OP_ZFAIL_ZERO | GLS_BACK_STENCIL_OP_PASS_REPLACE |
 		GLS_STENCIL_MAKE_REF( STENCIL_SHADOW_TEST_VALUE ) | 
 		GLS_STENCIL_MAKE_MASK( STENCIL_SHADOW_MASK_VALUE ) );
 
@@ -3307,14 +3308,9 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 	idRenderMatrix::Multiply( m_viewDef->worldSpace.mvp, vLight->inverseBaseLightProject, invProjectMVPMatrix );
 	RB_SetMVP( invProjectMVPMatrix );
 
-	// two-sided stencil test
-	GL_SeparateStencil( STENCIL_FACE_FRONT, GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_REPLACE | GLS_STENCIL_OP_PASS_ZERO );
-	GL_SeparateStencil( STENCIL_FACE_BACK, GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_ZERO | GLS_STENCIL_OP_PASS_REPLACE );
-
 	DrawElementsWithCounters( &m_zeroOneCubeSurface );
 
 	// reset stencil state
-
 	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
 
 	renderProgManager.Unbind();
