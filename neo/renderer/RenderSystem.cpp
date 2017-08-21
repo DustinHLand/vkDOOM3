@@ -965,7 +965,7 @@ void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms, bool guiOnly ) {
 	drawSurfsCommand_t	*cmd;
 
 	cmd = (drawSurfsCommand_t *)GetCommandBuffer( sizeof( *cmd ) );
-	cmd->commandId = ( guiOnly ) ? RC_DRAW_VIEW_GUI : RC_DRAW_VIEW_3D;
+	cmd->commandId = RC_DRAW_VIEW;
 
 	cmd->viewDef = parms;
 
@@ -1448,7 +1448,7 @@ void idRenderSystemLocal::RenderCommandBuffers( const renderCommand_t * const cm
 	// if there isn't a draw view command, do nothing to avoid swapping a bad frame
 	bool hasView = false;
 	for ( const renderCommand_t * cmd = cmdHead ; cmd ; cmd = (const renderCommand_t *)cmd->next ) {
-		if ( cmd->commandId == RC_DRAW_VIEW_3D || cmd->commandId == RC_DRAW_VIEW_GUI ) {
+		if ( cmd->commandId == RC_DRAW_VIEW ) {
 			hasView = true;
 			break;
 		}

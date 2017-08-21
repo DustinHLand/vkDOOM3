@@ -1206,8 +1206,7 @@ void idRenderBackend::ExecuteBackEndCommands( const renderCommand_t *cmds ) {
 		switch ( cmds->commandId ) {
 			case RC_NOP:
 				break;
-			case RC_DRAW_VIEW_3D:
-			case RC_DRAW_VIEW_GUI:
+			case RC_DRAW_VIEW:
 				DrawView( cmds );
 				break;
 			case RC_COPY_RENDER:

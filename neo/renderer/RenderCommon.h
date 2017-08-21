@@ -726,8 +726,7 @@ TR_CMDS
 
 enum rcmd_t {
 	RC_NOP,
-	RC_DRAW_VIEW_3D,	// may be at a reduced resolution, will be upsampled before 2D GUIs
-	RC_DRAW_VIEW_GUI,	// not resolution scaled
+	RC_DRAW_VIEW,
 	RC_COPY_RENDER,
 };
 
