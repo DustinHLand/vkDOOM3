@@ -512,24 +512,24 @@ void idRenderSystemLocal::AddLights() {
 	// Add jobs to setup pre-light shadow volumes.
 	//-------------------------------------------------
 
-	if ( r_useParallelAddShadows.GetInteger() == 1 ) {
-		for ( viewLight_t * vLight = m_viewDef->viewLights; vLight != NULL; vLight = vLight->next ) {
-			for ( preLightShadowVolumeParms_t * shadowParms = vLight->preLightShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				m_frontEndJobList->AddJob( (jobRun_t)PreLightShadowVolumeJob, shadowParms );
+	{
+		const uint64 start = Sys_Microseconds();
+		if ( r_useParallelAddShadows.GetInteger() == 1 ) {
+			for ( viewLight_t * vLight = m_viewDef->viewLights; vLight != NULL; vLight = vLight->next ) {
+				for ( preLightShadowVolumeParms_t * shadowParms = vLight->preLightShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					m_frontEndJobList->AddJob( (jobRun_t)PreLightShadowVolumeJob, shadowParms );
+				}
+				vLight->preLightShadowVolumes = NULL;
 			}
-			vLight->preLightShadowVolumes = NULL;
-		}
-	} else {
-		int start = Sys_Microseconds();
-
-		for ( viewLight_t * vLight = m_viewDef->viewLights; vLight != NULL; vLight = vLight->next ) {
-			for ( preLightShadowVolumeParms_t * shadowParms = vLight->preLightShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
-				PreLightShadowVolumeJob( shadowParms );
+		} else {
+			for ( viewLight_t * vLight = m_viewDef->viewLights; vLight != NULL; vLight = vLight->next ) {
+				for ( preLightShadowVolumeParms_t * shadowParms = vLight->preLightShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
+					PreLightShadowVolumeJob( shadowParms );
+				}
+				vLight->preLightShadowVolumes = NULL;
 			}
-			vLight->preLightShadowVolumes = NULL;
 		}
-
-		int end = Sys_Microseconds();
+		const uint64 end = Sys_Microseconds();
 		m_backend.m_pc.shadowMicroSec += end - start;
 	}
 }

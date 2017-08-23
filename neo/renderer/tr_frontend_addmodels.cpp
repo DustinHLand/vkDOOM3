@@ -1046,8 +1046,7 @@ void idRenderSystemLocal::AddModels() {
 	// Kick off jobs to setup static and dynamic shadow volumes.
 	//-------------------------------------------------
 	{
-		const int start = Sys_Microseconds();
-
+		const uint64 start = Sys_Microseconds();
 		if ( r_useParallelAddShadows.GetInteger() == 1 ) {
 			for ( viewEntity_t * vEntity = m_viewDef->viewEntitys; vEntity != NULL; vEntity = vEntity->next ) {
 				for ( staticShadowVolumeParms_t * shadowParms = vEntity->staticShadowVolumes; shadowParms != NULL; shadowParms = shadowParms->next ) {
@@ -1075,7 +1074,8 @@ void idRenderSystemLocal::AddModels() {
 			}
 		}
 
-		m_backend.m_pc.shadowMicroSec += Sys_Microseconds() - start;
+		const uint64 end = Sys_Microseconds();
+		m_backend.m_pc.shadowMicroSec += end - start;
 	}
 
 	//-------------------------------------------------
