@@ -29,6 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #pragma hdrstop
 #include "../framework/precompiled.h"
+#include "../framework/Common_local.h"
 #include "RenderSystem_local.h"
 #include "RenderBackend.h"
 #include "ResolutionScale.h"
@@ -555,7 +556,7 @@ void idRenderSystemLocal::Init() {
 	m_bInitialized = true;
 
 	// make sure the command buffers are ready to accept the first screen update
-	SwapCommandBuffers( NULL, NULL, NULL, NULL );
+	SwapCommandBuffers( NULL );
 
 	idLib::Printf( "renderSystem initialized.\n" );
 	idLib::Printf( "--------------------------------------\n" );
@@ -1322,13 +1323,9 @@ After this is called, new command buffers can be built up in parallel
 with the rendering of the closed off command buffers by RenderCommandBuffers()
 ====================
 */
-const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers( 
-													uint64 * frontEndMicroSec,
-													uint64 * backEndMicroSec,
-													uint64 * shadowMicroSec,
-													uint64 * gpuMicroSec )  {
+const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers( frameTiming_t * frameTiming )  {
 
-	SwapCommandBuffers_FinishRendering( frontEndMicroSec, backEndMicroSec, shadowMicroSec, gpuMicroSec );
+	SwapCommandBuffers_FinishRendering( frameTiming );
 
 	return SwapCommandBuffers_FinishCommandBuffers();
 }
@@ -1338,15 +1335,11 @@ const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers(
 idRenderSystemLocal::SwapCommandBuffers_FinishRendering
 =====================
 */
-void idRenderSystemLocal::SwapCommandBuffers_FinishRendering( 
-												uint64 * frontEndMicroSec,
-												uint64 * backEndMicroSec,
-												uint64 * shadowMicroSec,
-												uint64 * gpuMicroSec )  {
+void idRenderSystemLocal::SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming )  {
 	SCOPED_PROFILE_EVENT( "SwapCommandBuffers_FinishRendering" );
 
-	if ( gpuMicroSec != NULL ) {
-		*gpuMicroSec = 0;		// until shown otherwise
+	if ( frameTiming != NULL ) {
+		frameTiming->gpuTime = 0;		// until shown otherwise
 	}
 
 	if ( !m_bInitialized ) {
@@ -1360,14 +1353,13 @@ void idRenderSystemLocal::SwapCommandBuffers_FinishRendering(
 	//------------------------------
 
 	// save out timing information
-	if ( frontEndMicroSec != NULL ) {
-		*frontEndMicroSec = pc.frontEndMicroSec;
-	}
-	if ( backEndMicroSec != NULL ) {
-		*backEndMicroSec = m_backend.m_pc.totalMicroSec;
-	}
-	if ( shadowMicroSec != NULL ) {
-		*shadowMicroSec = m_backend.m_pc.shadowMicroSec;
+	if ( frameTiming != NULL ) {
+		frameTiming->frontendTime= pc.frontEndMicroSec;
+		frameTiming->backendTime = m_backend.m_pc.totalMicroSec;
+		frameTiming->shadowTime = m_backend.m_pc.shadowMicroSec;
+		frameTiming->depthTime = m_backend.m_pc.depthMicroSec;
+		frameTiming->interactionTime = m_backend.m_pc.interactionMicroSec;
+		frameTiming->shaderTime = m_backend.m_pc.shaderPassMicroSec;
 	}
 
 	// print any other statistics and clear all of them

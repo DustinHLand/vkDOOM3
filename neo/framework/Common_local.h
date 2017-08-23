@@ -94,6 +94,22 @@ struct netTimes_t {
 };
 
 struct frameTiming_t {
+	frameTiming_t() : 
+		startSyncTime( 0 ),
+		finishSyncTime( 0 ),
+		startGameTime( 0 ),
+		finishGameTime( 0 ),
+		finishDrawTime( 0 ),
+		startRenderTime( 0 ),
+		finishRenderTime( 0 ),
+		frontendTime( 0 ),
+		backendTime( 0 ),
+		depthTime( 0 ),
+		interactionTime( 0 ),
+		shaderTime( 0 ),
+		shadowTime( 0 ),
+		gpuTime( 0 ) {
+	}
 	uint64	startSyncTime;
 	uint64	finishSyncTime;
 	uint64	startGameTime;
@@ -101,6 +117,14 @@ struct frameTiming_t {
 	uint64	finishDrawTime;
 	uint64	startRenderTime;
 	uint64	finishRenderTime;
+
+	uint64	frontendTime;
+	uint64	backendTime;
+	uint64	depthTime;
+	uint64	interactionTime;
+	uint64	shaderTime;
+	uint64	shadowTime;
+	uint64	gpuTime;
 };
 
 #define	MAX_PRINT_MSG_SIZE	4096
@@ -204,13 +228,9 @@ public:
 	uint64		GetGameThreadTotalTime() const { return gameThread.GetThreadTotalTime(); }
 	uint64		GetGameThreadGameTime() const { return gameThread.GetThreadGameTime(); }
 	uint64		GetGameThreadRenderTime() const { return gameThread.GetThreadRenderTime(); }
-	uint64		GetRendererBackEndMicroseconds() const { return time_backend; }
-	uint64		GetRendererShadowsMicroseconds() const { return time_shadows; }
-	uint64		GetRendererIdleMicroseconds() const { return mainFrameTiming.startRenderTime - mainFrameTiming.finishSyncTime; }
-	uint64		GetRendererGPUMicroseconds() const { return time_gpu; }
 
-	frameTiming_t		frameTiming;
-	frameTiming_t		mainFrameTiming;
+	frameTiming_t		m_frameTiming;
+	frameTiming_t		m_mainFrameTiming;
 
 public:	// These are public because they are called directly by static functions in this file
 
@@ -331,8 +351,6 @@ private:
 	int				totalBufferedTime;
 	int				totalRecvTime;
 
-
-
 	int					clientPrediction;
 
 	int					gameFrame;			// Frame number of the local game
@@ -371,16 +389,6 @@ private:
 	bool				wipeForced;		// used for the PS3 to start an early wipe while we are accessing saved game data
 
 	idGameThread		gameThread;				// the game and draw code can be run in parallel
-
-	// com_speeds times
-	int					count_numGameFrames;	// total number of game frames that were run
-	int					time_gameFrame;			// game logic time
-	int					time_maxGameFrame;		// maximum single frame game logic time
-	int					time_gameDraw;			// game present time
-	uint64				time_frontend;			// renderer frontend time
-	uint64				time_backend;			// renderer backend time
-	uint64				time_shadows;			// renderer backend waiting for shadow volumes to be created
-	uint64				time_gpu;				// total gpu time, at least for PC
 
 	// Used during loading screens
 	int					lastPacifierSessionTime;

@@ -447,11 +447,6 @@ void idCommonLocal::RunNetworkSnapshotFrame() {
 	}
 	reliableQueue.Clear();
 
-	// abuse the game timing to time presentable thinking on clients
-	time_gameFrame = Sys_Microseconds();
-	time_maxGameFrame = 0;
-	count_numGameFrames = 0;
-
 	if ( snapPrevious.serverTime >= 0 ) {
 
 		int	msec_interval = 1 + idMath::Ftoi( (float)initialBaseTicksPerSec  );
@@ -573,8 +568,6 @@ void idCommonLocal::RunNetworkSnapshotFrame() {
 			clientTimeResidual = 0;
 		}
 	}
-
-	time_gameFrame = Sys_Microseconds() - time_gameFrame;
 }
 
 /*

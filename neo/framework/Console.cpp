@@ -235,47 +235,36 @@ float idConsoleLocal::DrawFPS( float y ) {
 	const uint64 gameThreadTotalTime = commonLocal.GetGameThreadTotalTime();
 	const uint64 gameThreadGameTime = commonLocal.GetGameThreadGameTime();
 	const uint64 gameThreadRenderTime = commonLocal.GetGameThreadRenderTime();
-	const uint64 rendererBackEndTime = commonLocal.GetRendererBackEndMicroseconds();
-	const uint64 rendererShadowsTime = commonLocal.GetRendererShadowsMicroseconds();
-	const uint64 rendererGPUIdleTime = commonLocal.GetRendererIdleMicroseconds();
-	const uint64 rendererGPUTime = commonLocal.GetRendererGPUMicroseconds();
+	const uint64 rendererBackEndTime = commonLocal.m_mainFrameTiming.backendTime;
+	const uint64 rendererDepthTime = commonLocal.m_mainFrameTiming.depthTime;
+	const uint64 rendererInteractTime = commonLocal.m_mainFrameTiming.interactionTime;
+	const uint64 rendererShaderTime = commonLocal.m_mainFrameTiming.shaderTime;
+	const uint64 rendererShadowsTime = commonLocal.m_mainFrameTiming.shadowTime;
+	const uint64 rendererGPUIdleTime = commonLocal.m_mainFrameTiming.startRenderTime - commonLocal.m_mainFrameTiming.finishSyncTime;
+	const uint64 rendererGPUTime = commonLocal.m_mainFrameTiming.gpuTime;
 	const uint64 maxTime = 16 * 1000;
 
 	y += SMALLCHAR_HEIGHT + 4;
+
+	auto printTiming = [&] ( idStr & buffer, const char * fmt, uint64 time ) {
+		buffer.Format( fmt, time > maxTime ? S_COLOR_RED : "", time );
+		w = buffer.LengthWithoutColors() * SMALLCHAR_WIDTH;
+		renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, buffer.c_str(), colorWhite, false );
+		y += SMALLCHAR_HEIGHT + 4;
+	};
+
 	idStr timeStr;
-	timeStr.Format( "%sG+RF: %5llu", gameThreadTotalTime > maxTime ? S_COLOR_RED : "", gameThreadTotalTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sG: %5llu", gameThreadGameTime > maxTime ? S_COLOR_RED : "", gameThreadGameTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
-
-	timeStr.Format( "%sRF: %5llu", gameThreadRenderTime > maxTime ? S_COLOR_RED : "", gameThreadRenderTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
-
-	timeStr.Format( "%sRB: %5llu", rendererBackEndTime > maxTime ? S_COLOR_RED : "", rendererBackEndTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
-
-	timeStr.Format( "%sSV: %5llu", rendererShadowsTime > maxTime ? S_COLOR_RED : "", rendererShadowsTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
-
-	timeStr.Format( "%sIDLE: %5llu", rendererGPUIdleTime > maxTime ? S_COLOR_RED : "", rendererGPUIdleTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
-	y += SMALLCHAR_HEIGHT + 4;
-
-	timeStr.Format( "%sGPU: %5llu", rendererGPUTime > maxTime ? S_COLOR_RED : "", rendererGPUTime );
-	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
-	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
+	printTiming( timeStr, "%sG+RF: %5llu", gameThreadTotalTime );
+	printTiming( timeStr, "%sG: %5llu", gameThreadGameTime );
+	printTiming( timeStr, "%sRF: %5llu", gameThreadRenderTime );
+	printTiming( timeStr, "%sRB: %5llu", rendererBackEndTime );
+	printTiming( timeStr, "%sDEPTH: %5llu", rendererDepthTime );
+	printTiming( timeStr, "%sINTER: %5llu", rendererInteractTime );
+	printTiming( timeStr, "%sSHADER: %5llu", rendererShaderTime );
+	printTiming( timeStr, "%sSHADOW: %5llu", rendererShadowsTime );
+	printTiming( timeStr, "%sIDLE: %5llu", rendererGPUIdleTime );
+	printTiming( timeStr, "%sGPU: %5llu", rendererGPUTime );
 
 	return y + BIGCHAR_HEIGHT + 4;
 }

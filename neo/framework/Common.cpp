@@ -63,7 +63,6 @@ idCVar com_allowConsole( "com_allowConsole", "1", CVAR_BOOL | CVAR_SYSTEM | CVAR
 #endif
 
 idCVar com_developer( "developer", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "developer mode" );
-idCVar com_speeds( "com_speeds", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show engine timings" );
 idCVar com_showFPS( "com_showFPS", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_ARCHIVE|CVAR_NOCHEAT, "show frames rendered per second" );
 idCVar com_showMemoryUsage( "com_showMemoryUsage", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show total and per frame memory usage" );
 idCVar com_updateLoadSize( "com_updateLoadSize", "0", CVAR_BOOL | CVAR_SYSTEM | CVAR_NOCHEAT, "update the load size after loading a map" );
@@ -792,7 +791,7 @@ void idCommonLocal::RenderSplash() {
 	renderSystem->SetColor4( 1, 1, 1, 1 );
 	renderSystem->DrawStretchPic( barWidth, barHeight, SCREEN_WIDTH - barWidth * 2.0f, SCREEN_HEIGHT - barHeight * 2.0f, 0, 0, 1, 1, splashScreen );
 
-	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &time_frontend, &time_backend, &time_shadows, &time_gpu );
+	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
 	renderSystem->RenderCommandBuffers( cmd );
 }
 
@@ -818,7 +817,7 @@ void idCommonLocal::RenderBink( const char * path ) {
 
 	while ( Sys_Milliseconds() <= material->GetCinematicStartTime() + material->CinematicLength() ) {
 		renderSystem->DrawStretchPic( chop, 0, imageWidth, SCREEN_HEIGHT, 0, 0, 1, 1, material );
-		const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &time_frontend, &time_backend, &time_shadows, &time_gpu );
+		const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
 		renderSystem->RenderCommandBuffers( cmd );
 		Sys_GenerateEvents();
 		Sys_Sleep( 10 );

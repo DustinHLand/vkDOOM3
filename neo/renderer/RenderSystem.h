@@ -34,6 +34,7 @@ class idMaterial;
 class idRenderModel;
 struct renderView_t;
 struct renderCommand_t;
+struct frameTiming_t;
 
 /*
 ===============================================================================
@@ -164,11 +165,11 @@ public:
 	//
 	// After this is called, new command buffers can be built up in parallel
 	// with the rendering of the closed off command buffers by RenderCommandBuffers()
-	virtual const renderCommand_t *	SwapCommandBuffers( uint64 *frontEndMicroSec, uint64 *backEndMicroSec, uint64 *shadowMicroSec, uint64 *gpuMicroSec ) = 0;
+	virtual const renderCommand_t *	SwapCommandBuffers( frameTiming_t * frameTiming ) = 0;
 
 	// SwapCommandBuffers operation can be split in two parts for non-smp rendering
 	// where the GPU is idled intentionally for minimal latency.
-	virtual void			SwapCommandBuffers_FinishRendering( uint64 *frontEndMicroSec, uint64 *backEndMicroSec, uint64 *shadowMicroSec, uint64 *gpuMicroSec ) = 0;
+	virtual void			SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming ) = 0;
 	virtual const renderCommand_t *	SwapCommandBuffers_FinishCommandBuffers() = 0;
 
 	// issues GPU commands to render a built up list of command buffers returned

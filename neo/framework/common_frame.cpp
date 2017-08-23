@@ -83,7 +83,7 @@ be called directly in the foreground thread for comparison.
 ===============
 */
 int idGameThread::Run() {
-	commonLocal.frameTiming.startGameTime = Sys_Microseconds();
+	commonLocal.m_frameTiming.startGameTime = Sys_Microseconds();
 
 	// debugging tool to test frame dropping behavior
 	if ( com_sleepGame.GetInteger() ) {
@@ -126,9 +126,9 @@ int idGameThread::Run() {
 		}
 	}
 
-	commonLocal.frameTiming.finishGameTime = Sys_Microseconds();
+	commonLocal.m_frameTiming.finishGameTime = Sys_Microseconds();
 
-	SetThreadGameTime( commonLocal.frameTiming.finishGameTime - commonLocal.frameTiming.startGameTime );
+	SetThreadGameTime( commonLocal.m_frameTiming.finishGameTime - commonLocal.m_frameTiming.startGameTime );
 
 	// build render commands and geometry
 	{
@@ -136,11 +136,11 @@ int idGameThread::Run() {
 		commonLocal.Draw();
 	}
 
-	commonLocal.frameTiming.finishDrawTime = Sys_Microseconds();
+	commonLocal.m_frameTiming.finishDrawTime = Sys_Microseconds();
 
-	SetThreadRenderTime( commonLocal.frameTiming.finishDrawTime - commonLocal.frameTiming.finishGameTime );
+	SetThreadRenderTime( commonLocal.m_frameTiming.finishDrawTime - commonLocal.m_frameTiming.finishGameTime );
 
-	SetThreadTotalTime( commonLocal.frameTiming.finishDrawTime - commonLocal.frameTiming.startGameTime );
+	SetThreadTotalTime( commonLocal.m_frameTiming.finishDrawTime - commonLocal.m_frameTiming.startGameTime );
 
 	return 0;
 }
@@ -246,13 +246,9 @@ void idCommonLocal::Draw() {
 		bool gameDraw = false;
 		// normal drawing for both single and multi player
 		if ( !com_skipGameDraw.GetBool() && Game()->GetLocalClientNum() >= 0 ) {
-			// draw the game view
-			int	start = Sys_Milliseconds();
 			if ( game ) {
 				gameDraw = game->Draw( Game()->GetLocalClientNum() );
 			}
-			int end = Sys_Milliseconds();
-			time_gameDraw += ( end - start );	// note time used for com_speeds
 		}
 		if ( !gameDraw ) {
 			renderSystem->SetColor( colorBlack );
@@ -299,7 +295,7 @@ void idCommonLocal::UpdateScreen() {
 	Draw();
 
 	// this should exit right after vsync, with the GPU idle and ready to draw
-	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &time_frontend, &time_backend, &time_shadows, &time_gpu );
+	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
 
 	// get the GPU busy with new commands
 	renderSystem->RenderCommandBuffers( cmd );
@@ -404,16 +400,16 @@ void idCommonLocal::Frame() {
 		//--------------------------------------------
 		// this should exit right after vsync, with the GPU idle and ready to draw
 		// This may block if the GPU isn't finished renderng the previous frame.
-		frameTiming.startSyncTime = Sys_Microseconds();
+		m_frameTiming.startSyncTime = Sys_Microseconds();
 		const renderCommand_t * renderCommands = NULL;
 		if ( com_smp.GetBool() ) {
-			renderCommands = renderSystem->SwapCommandBuffers( &time_frontend, &time_backend, &time_shadows, &time_gpu );
+			renderCommands = renderSystem->SwapCommandBuffers( &m_frameTiming );
 		} else {
 			// the GPU will stay idle through command generation for minimal
 			// input latency
-			renderSystem->SwapCommandBuffers_FinishRendering( &time_frontend, &time_backend, &time_shadows, &time_gpu );
+			renderSystem->SwapCommandBuffers_FinishRendering( &m_frameTiming );
 		}
-		frameTiming.finishSyncTime = Sys_Microseconds();
+		m_frameTiming.finishSyncTime = Sys_Microseconds();
 
 		//--------------------------------------------
 		// Determine how many game tics we are going to run,
@@ -607,13 +603,13 @@ void idCommonLocal::Frame() {
 		// Run the render back end, getting the GPU busy with new commands
 		// ASAP to minimize the pipeline bubble.
 		//----------------------------------------
-		frameTiming.startRenderTime = Sys_Microseconds();
+		m_frameTiming.startRenderTime = Sys_Microseconds();
 		renderSystem->RenderCommandBuffers( renderCommands );
 		if ( com_sleepRender.GetInteger() > 0 ) {
 			// debug tool to test frame adaption
 			Sys_Sleep( com_sleepRender.GetInteger() );
 		}
-		frameTiming.finishRenderTime = Sys_Microseconds();
+		m_frameTiming.finishRenderTime = Sys_Microseconds();
 
 		// make sure the game / draw thread has completed
 		// This may block if the game is taking longer than the render back end
@@ -651,24 +647,13 @@ void idCommonLocal::Frame() {
 			lobby.DrawDebugNetworkHUD_ServerSnapshotMetrics( net_drawDebugHud.GetInteger() == 3 );
 		}
 
-		// report timing information
-		if ( com_speeds.GetBool() ) {
-			static int lastTime = Sys_Milliseconds();
-			int	nowTime = Sys_Milliseconds();
-			int	com_frameMsec = nowTime - lastTime;
-			lastTime = nowTime;
-			Printf( "frame:%d all:%3d gfr:%3d rf:%3lld bk:%3lld\n", idLib::frameNumber, com_frameMsec, time_gameFrame, time_frontend / 1000, time_backend / 1000 );
-			time_gameFrame = 0;
-			time_gameDraw = 0;
-		}
-
 		// the FPU stack better be empty at this point or some bad code or compiler bug left values on the stack
 		if ( !Sys_FPU_StackIsEmpty() ) {
 			Printf( Sys_FPU_GetState() );
 			FatalError( "idCommon::Frame: the FPU stack is not empty at the end of the frame\n" );
 		}
 
-		mainFrameTiming = frameTiming;
+		m_mainFrameTiming = m_frameTiming;
 
 		session->GetSaveGameManager().Pump();
 	} catch( idException & ) {

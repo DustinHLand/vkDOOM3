@@ -1186,7 +1186,7 @@ smp extensions, or asyncronously by another thread.
 void idRenderBackend::ExecuteBackEndCommands( const renderCommand_t *cmds ) {
 	CheckCVars();
 
-	resolutionScale.SetCurrentGPUFrameTime( commonLocal.GetRendererGPUMicroseconds() );
+	resolutionScale.SetCurrentGPUFrameTime( commonLocal.m_mainFrameTiming.gpuTime );
 
 	if ( cmds->commandId == RC_NOP && !cmds->next ) {
 		return;
@@ -1338,21 +1338,31 @@ void idRenderBackend::DrawView( const void * data ) {
 		//-------------------------------------------------
 		// fill the depth buffer and clear color buffer to black except on subviews
 		//-------------------------------------------------
-		FillDepthBufferFast( drawSurfs, numDrawSurfs );
+		{
+			uint64 start = Sys_Microseconds();
+			FillDepthBufferFast( drawSurfs, numDrawSurfs );
+			m_pc.depthMicroSec += Sys_Microseconds() - start;
+		}
 
 		//-------------------------------------------------
 		// main light renderer
 		//-------------------------------------------------
-		DrawInteractions();
+		{
+			uint64 start = Sys_Microseconds();
+			DrawInteractions();
+			m_pc.interactionMicroSec += Sys_Microseconds() - start;
+		}
 
 		//-------------------------------------------------
 		// now draw any non-light dependent shading passes
 		//-------------------------------------------------
 		int processed = 0;
 		if ( !r_skipShaderPasses.GetBool() ) {
+			uint64 start = Sys_Microseconds();
 			renderLog.OpenMainBlock( MRB_DRAW_SHADER_PASSES );
 			processed = DrawShaderPasses( drawSurfs, numDrawSurfs );
 			renderLog.CloseMainBlock();
+			m_pc.shaderPassMicroSec += Sys_Microseconds() - start;
 		}
 
 		//-------------------------------------------------

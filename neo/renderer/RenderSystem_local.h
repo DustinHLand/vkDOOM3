@@ -101,8 +101,8 @@ public:
 	virtual void			DrawBigChar( int x, int y, int ch );
 	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor );
 
-	virtual const renderCommand_t *	SwapCommandBuffers( uint64 *frontEndMicroSec, uint64 *backEndMicroSec, uint64 *shadowMicroSec, uint64 *gpuMicroSec );
-	virtual void			SwapCommandBuffers_FinishRendering( uint64 *frontEndMicroSec, uint64 *backEndMicroSec, uint64 *shadowMicroSec, uint64 *gpuMicroSec );
+	virtual const renderCommand_t *	SwapCommandBuffers( frameTiming_t * frameTiming );
+	virtual void			SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming );
 	virtual const renderCommand_t *	SwapCommandBuffers_FinishCommandBuffers();
 	virtual void			RenderCommandBuffers( const renderCommand_t * commandBuffers );
 

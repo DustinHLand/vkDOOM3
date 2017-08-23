@@ -44,6 +44,21 @@ enum stencilFace_t {
 };
 
 struct backEndCounters_t {
+	backEndCounters_t() :
+		c_surfaces( 0 ),
+		c_shaders( 0 ),
+		c_drawElements( 0 ),
+		c_drawIndexes( 0 ),
+		c_shadowElements( 0 ),
+		c_shadowIndexes( 0 ),
+		c_copyFrameBuffer( 0 ),
+		c_overDraw( 0 ),
+		totalMicroSec( 0 ),
+		shadowMicroSec( 0 ),
+		interactionMicroSec( 0 ),
+		shaderPassMicroSec( 0 ) {
+	}
+
 	int		c_surfaces;
 	int		c_shaders;
 
@@ -55,10 +70,13 @@ struct backEndCounters_t {
 
 	int		c_copyFrameBuffer;
 
-	float	c_overDraw;	
+	float	c_overDraw;
 
-	int		totalMicroSec;		// total microseconds for backend run
-	int		shadowMicroSec;
+	uint64	totalMicroSec;		// total microseconds for backend run
+	uint64	shadowMicroSec;
+	uint64	depthMicroSec;
+	uint64	interactionMicroSec;
+	uint64	shaderPassMicroSec;
 };
 
 struct gfxImpParms_t {
