@@ -447,7 +447,7 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 	if ( !pm_thirdPerson.GetBool() && !g_skipViewEffects.GetBool() ) {
 		if ( !player->spectating ) {
 			for ( int i = 0 ; i < MAX_SCREEN_BLOBS ; i++ ) {
-				screenBlob_t	*blob = &screenBlobs[i];
+				screenBlob_t * blob = &screenBlobs[i];
 				if ( blob->finishTime <= gameLocal.fast.time ) {
 					continue;
 				}
@@ -478,7 +478,6 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, armorMaterial );
 		}
 
-
 		// tunnel vision
 		float health = 0.0f;
 		if ( g_testHealthVision.GetFloat() != 0.0f ) {
@@ -503,7 +502,6 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
 		}
-		
 	}
 
 	// test a single material drawn over everything
