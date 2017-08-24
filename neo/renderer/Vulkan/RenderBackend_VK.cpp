@@ -1592,9 +1592,8 @@ void idRenderBackend::GL_EndFrame() {
 	barrier.subresourceRange.layerCount = 1;
 	barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
 	barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	barrier.srcAccessMask = VK_PIPELINE_STAGE_TRANSFER_BIT | 
-							VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	barrier.dstAccessMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	barrier.dstAccessMask = 0;
 
 	vkCmdPipelineBarrier( 
 		vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
@@ -1712,7 +1711,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 		dstBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		vkCmdPipelineBarrier( 
 			cmdBuffer, 
-			VK_PIPELINE_STAGE_TRANSFER_BIT, 
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, 
 			0, 0, NULL, 0, NULL, 1, &dstBarrier );
 	}
@@ -1749,7 +1748,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 		vkCmdPipelineBarrier( 
 			cmdBuffer, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, 
-			VK_PIPELINE_STAGE_TRANSFER_BIT, 
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
 			0, 0, NULL, 0, NULL, 1, &dstBarrier );
 	}
 
