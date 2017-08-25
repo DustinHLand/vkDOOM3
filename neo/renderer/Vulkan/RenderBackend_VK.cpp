@@ -1762,15 +1762,6 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 }
 
 /*
-====================
-idRenderBackend::GL_CopyDepthBuffer
-====================
-*/
-void idRenderBackend::GL_CopyDepthBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight ) {
-
-}
-
-/*
 ========================
 idRenderBackend::GL_Clear
 ========================

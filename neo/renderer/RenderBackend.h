@@ -240,7 +240,6 @@ private:
 	void				GL_BindTexture( idImage * image );
 
 	void				GL_CopyFrameBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight );
-	void				GL_CopyDepthBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight );
 	void				GL_Clear( bool color, bool depth, bool stencil, byte stencilValue, float r, float g, float b, float a );
 
 	void				GL_DepthBoundsTest( const float zmin, const float zmax );
