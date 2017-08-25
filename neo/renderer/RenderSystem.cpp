@@ -1338,10 +1338,6 @@ idRenderSystemLocal::SwapCommandBuffers_FinishRendering
 void idRenderSystemLocal::SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming )  {
 	SCOPED_PROFILE_EVENT( "SwapCommandBuffers_FinishRendering" );
 
-	if ( frameTiming != NULL ) {
-		frameTiming->gpuTime = 0;		// until shown otherwise
-	}
-
 	if ( !m_bInitialized ) {
 		return;
 	}
@@ -1360,6 +1356,7 @@ void idRenderSystemLocal::SwapCommandBuffers_FinishRendering( frameTiming_t * fr
 		frameTiming->depthTime = m_backend.m_pc.depthMicroSec;
 		frameTiming->interactionTime = m_backend.m_pc.interactionMicroSec;
 		frameTiming->shaderTime = m_backend.m_pc.shaderPassMicroSec;
+		frameTiming->gpuTime = m_backend.m_pc.gpuMicroSec;
 	}
 
 	// print any other statistics and clear all of them

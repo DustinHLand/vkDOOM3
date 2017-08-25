@@ -56,7 +56,8 @@ struct backEndCounters_t {
 		totalMicroSec( 0 ),
 		shadowMicroSec( 0 ),
 		interactionMicroSec( 0 ),
-		shaderPassMicroSec( 0 ) {
+		shaderPassMicroSec( 0 ),
+		gpuMicroSec( 0 ) {
 	}
 
 	int		c_surfaces;
@@ -77,6 +78,7 @@ struct backEndCounters_t {
 	uint64	depthMicroSec;
 	uint64	interactionMicroSec;
 	uint64	shaderPassMicroSec;
+	uint64	gpuMicroSec;
 };
 
 struct gfxImpParms_t {
@@ -266,6 +268,8 @@ private:
 
 	void				CreateSemaphores();
 
+	void				CreateQueryPool();
+
 	void				CreateSurface();
 
 	void				CreateSwapChain();
@@ -369,6 +373,10 @@ private:
 	idArray< VkFramebuffer, NUM_FRAME_DATA >	m_frameBuffers;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_acquireSemaphores;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_renderCompleteSemaphores;
+
+	idArray< uint32, NUM_FRAME_DATA >			m_queryIndex;
+	idArray< idArray< uint64, NUM_TIMESTAMP_QUERIES >, NUM_FRAME_DATA >	m_queryResults;
+	idArray< VkQueryPool, NUM_FRAME_DATA >		m_queryPools;
 };
 
 #endif

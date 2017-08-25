@@ -863,6 +863,22 @@ void idRenderBackend::CreateSemaphores() {
 }
 
 /*
+===============
+idRenderBackend::CreateQueryPool
+===============
+*/
+void idRenderBackend::CreateQueryPool() {
+	VkQueryPoolCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+	createInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
+	createInfo.queryCount = NUM_TIMESTAMP_QUERIES;
+
+	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
+		ID_VK_CHECK( vkCreateQueryPool( vkcontext.device, &createInfo, NULL, &m_queryPools[ i ] ) );
+	}
+}
+
+/*
 =============
 idRenderBackend::CreateRenderTargets
 =============
@@ -1165,7 +1181,7 @@ idRenderBackend::Clear
 void idRenderBackend::Clear() {
 	m_instance = VK_NULL_HANDLE;
 	m_physicalDevice = VK_NULL_HANDLE;
-	
+
 	debugReportCallback = VK_NULL_HANDLE;
 	m_instanceExtensions.Clear();
 	m_deviceExtensions.Clear();
@@ -1184,6 +1200,12 @@ void idRenderBackend::Clear() {
 	m_frameBuffers.Zero();
 	m_acquireSemaphores.Zero();
 	m_renderCompleteSemaphores.Zero();
+
+	m_queryIndex.Zero();
+	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
+		m_queryResults[ i ].Zero();
+	}
+	m_queryPools.Zero();
 }
 
 /*
@@ -1227,6 +1249,9 @@ void idRenderBackend::Init() {
 
 	// Create semaphores for image acquisition and rendering completion
 	CreateSemaphores();
+
+	// Create Query Pool
+	CreateQueryPool();
 
 	// Create Command Pool
 	CreateCommandPool();
@@ -1316,6 +1341,11 @@ void idRenderBackend::Shutdown() {
 
 	// Destroy Command Pool
 	vkDestroyCommandPool( vkcontext.device, vkcontext.commandPool, NULL );
+
+	// Destroy Query Pools
+	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
+		vkDestroyQueryPool( vkcontext.device, m_queryPools[ i ], NULL );
+	}
 
 	// Destroy Semaphores
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
@@ -1555,9 +1585,27 @@ void idRenderBackend::GL_StartFrame() {
 	stagingManager.Flush();
 	renderProgManager.StartFrame();
 
+	VkCommandBuffer cmdBuffer = vkcontext.commandBuffer[ vkcontext.currentFrameData ];
+	VkQueryPool queryPool = m_queryPools[ vkcontext.currentFrameData ];
+	idArray< uint64, NUM_TIMESTAMP_QUERIES > & results = m_queryResults[ vkcontext.currentFrameData ];
+
+	if ( m_queryIndex[ vkcontext.currentFrameData ] > 0 ) {
+		vkGetQueryPoolResults( vkcontext.device, queryPool, 0, 2, 
+			results.ByteSize(), results.Ptr(), sizeof( uint64 ), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT );
+
+		const uint64 gpuStart = results[ 0 ];
+		const uint64 gpuEnd = results[ 1 ];
+		const uint64 tick = ( 1000 * 1000 * 1000 ) / vkcontext.gpu->props.limits.timestampPeriod;
+		m_pc.gpuMicroSec = ( ( gpuEnd - gpuStart ) * 1000 * 1000 ) / tick;
+
+		m_queryIndex[ vkcontext.currentFrameData ] = 0;
+	}
+
 	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
 	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	ID_VK_CHECK( vkBeginCommandBuffer( vkcontext.commandBuffer[ vkcontext.currentFrameData ], &commandBufferBeginInfo ) );
+	ID_VK_CHECK( vkBeginCommandBuffer( cmdBuffer, &commandBufferBeginInfo ) );
+
+	vkCmdResetQueryPool( cmdBuffer, queryPool, 0, NUM_TIMESTAMP_QUERIES );
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1565,7 +1613,9 @@ void idRenderBackend::GL_StartFrame() {
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
 
-	vkCmdBeginRenderPass( vkcontext.commandBuffer[ vkcontext.currentFrameData ], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
+	vkCmdBeginRenderPass( cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
+
+	vkCmdWriteTimestamp( cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ vkcontext.currentFrameData ]++ );
 }
 
 /*
@@ -1574,7 +1624,11 @@ idRenderBackend::GL_EndFrame
 ==================
 */
 void idRenderBackend::GL_EndFrame() {
-	vkCmdEndRenderPass( vkcontext.commandBuffer[ vkcontext.currentFrameData ] );
+	VkCommandBuffer cmdBuffer = vkcontext.commandBuffer[ vkcontext.currentFrameData ];
+
+	vkCmdWriteTimestamp( cmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ vkcontext.currentFrameData ], m_queryIndex[ vkcontext.currentFrameData ]++ );
+
+	vkCmdEndRenderPass( cmdBuffer );
 
 	// Transition our swap image to present.
 	// Do this instead of having the renderpass do the transition
@@ -1601,7 +1655,7 @@ void idRenderBackend::GL_EndFrame() {
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 		0, 0, NULL, 0, NULL, 1, &barrier );
 
-	ID_VK_CHECK( vkEndCommandBuffer( vkcontext.commandBuffer[ vkcontext.currentFrameData ] ) )
+	ID_VK_CHECK( vkEndCommandBuffer( cmdBuffer ) )
 	vkcontext.commandBufferRecorded[ vkcontext.currentFrameData ] = true;
 
 	VkSemaphore * acquire = &m_acquireSemaphores[ vkcontext.currentFrameData ];
@@ -1612,7 +1666,7 @@ void idRenderBackend::GL_EndFrame() {
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &vkcontext.commandBuffer[ vkcontext.currentFrameData ];
+	submitInfo.pCommandBuffers = &cmdBuffer;
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = acquire;
 	submitInfo.signalSemaphoreCount = 1;
