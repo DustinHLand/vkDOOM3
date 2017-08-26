@@ -1149,7 +1149,6 @@ static void ClearContext() {
 	vkcontext.pipelineCache = VK_NULL_HANDLE;
 	vkcontext.sampleCount = VK_SAMPLE_COUNT_1_BIT;
 	vkcontext.supersampling = false;
-	vkcontext.currentImageParm = 0;
 	vkcontext.imageParms.Zero();
 }
 
@@ -1708,28 +1707,13 @@ void idRenderBackend::GL_State( uint64 stateBits, bool forceGlState ) {
 
 /*
 ====================
-idRenderBackend::GL_SelectTexture
-====================
-*/
-void idRenderBackend::GL_SelectTexture( int index ) {
-	if ( vkcontext.currentImageParm == index ) {
-		return;
-	}
-
-	RENDERLOG_PRINTF( "GL_SelectTexture( %d );\n", index );
-
-	vkcontext.currentImageParm = index;
-}
-
-/*
-====================
 idRenderBackend::GL_BindTexture
 ====================
 */
-void idRenderBackend::GL_BindTexture( idImage * image ) {
-	RENDERLOG_PRINTF( "GL_BindTexture( %s )\n", image->GetName() );
+void idRenderBackend::GL_BindTexture( int index, idImage * image ) {
+	RENDERLOG_PRINTF( "GL_BindTexture( %d, %s )\n", index, image->GetName() );
 
-	vkcontext.imageParms[ vkcontext.currentImageParm ] = image;
+	vkcontext.imageParms[ index ] = image;
 }
 
 /*

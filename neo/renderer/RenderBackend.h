@@ -170,8 +170,7 @@ struct vulkanContext_t {
 	VkSampleCountFlagBits			sampleCount;
 	bool							supersampling;
 
-	int											currentImageParm;
-	idArray< idImage *, MAX_IMAGE_PARMS >		imageParms;
+	idArray< idImage *, MAX_IMAGE_PARMS > imageParms;
 };
 
 extern vulkanContext_t vkcontext;
@@ -211,7 +210,6 @@ private:
 
 	void				BindVariableStageImage( const textureStage_t * texture, const float * shaderRegisters );
 	void				PrepareStageTexturing( const shaderStage_t * pStage, const drawSurf_t * surf );
-	void				FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *surf );
 
 	void				FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int numDrawSurfs );
 	void				FillDepthBufferFast( drawSurf_t ** drawSurfs, int numDrawSurfs );
@@ -239,8 +237,7 @@ private:
 	void				GL_SetDefaultState();
 	void				GL_State( uint64 stateBits, bool forceGlState = false );
 
-	void				GL_SelectTexture( int unit );
-	void				GL_BindTexture( idImage * image );
+	void				GL_BindTexture( int index, idImage * image );
 
 	void				GL_CopyFrameBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight );
 	void				GL_Clear( bool color, bool depth, bool stencil, byte stencilValue, float r, float g, float b, float a );
