@@ -909,15 +909,8 @@ void idRenderProgManager::CommitCurrent( uint64 stateBits ) {
 
 	vkUpdateDescriptorSets( vkcontext.device, writeIndex, writes, 0, NULL );
 
-	vkCmdBindDescriptorSets( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
-		VK_PIPELINE_BIND_POINT_GRAPHICS, 
-		prog.pipelineLayout, 0, 1, &descSet, 
-		0, NULL );
-	vkCmdBindPipeline( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
-		VK_PIPELINE_BIND_POINT_GRAPHICS, 
-		pipeline );
+	vkCmdBindDescriptorSets( vkcontext.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, prog.pipelineLayout, 0, 1, &descSet, 0, NULL );
+	vkCmdBindPipeline( vkcontext.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
 }
 
 /*

@@ -837,7 +837,7 @@ static void CreateCommandBuffer() {
 	commandBufferAllocateInfo.commandPool = vkcontext.commandPool;
 	commandBufferAllocateInfo.commandBufferCount = NUM_FRAME_DATA;
 
-	ID_VK_CHECK( vkAllocateCommandBuffers( vkcontext.device, &commandBufferAllocateInfo, vkcontext.commandBuffer.Ptr() ) );
+	ID_VK_CHECK( vkAllocateCommandBuffers( vkcontext.device, &commandBufferAllocateInfo, vkcontext.commandBuffers.Ptr() ) );
 
 	VkFenceCreateInfo fenceCreateInfo = {};
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -1140,7 +1140,8 @@ static void ClearContext() {
 	vkcontext.graphicsQueue = VK_NULL_HANDLE;
 	vkcontext.presentQueue = VK_NULL_HANDLE;
 	vkcontext.commandPool = VK_NULL_HANDLE;
-	vkcontext.commandBuffer.Zero();
+	vkcontext.commandBuffer = VK_NULL_HANDLE;
+	vkcontext.commandBuffers.Zero();
 	vkcontext.commandBufferFences.Zero();
 	vkcontext.commandBufferRecorded.Zero();
 	vkcontext.depthFormat = VK_FORMAT_UNDEFINED;
@@ -1334,7 +1335,7 @@ void idRenderBackend::Shutdown() {
 	stagingManager.Shutdown();
 
 	// Destroy Command Buffer
-	vkFreeCommandBuffers( vkcontext.device, vkcontext.commandPool, NUM_FRAME_DATA, vkcontext.commandBuffer.Ptr() );
+	vkFreeCommandBuffers( vkcontext.device, vkcontext.commandPool, NUM_FRAME_DATA, vkcontext.commandBuffers.Ptr() );
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
 		vkDestroyFence( vkcontext.device, vkcontext.commandBufferFences[ i ], NULL );
 	}
@@ -1549,17 +1550,15 @@ void idRenderBackend::DrawElementsWithCounters( const drawSurf_t * surf ) {
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
 		const VkDeviceSize offset = indexBuffer->GetOffset();
-		vkCmdBindIndexBuffer( vkcontext.commandBuffer[ vkcontext.currentFrameData ], buffer, offset, VK_INDEX_TYPE_UINT16 );
+		vkCmdBindIndexBuffer( vkcontext.commandBuffer, buffer, offset, VK_INDEX_TYPE_UINT16 );
 	}
 	{
 		const VkBuffer buffer = vertexBuffer->GetAPIObject();
 		const VkDeviceSize offset = vertexBuffer->GetOffset();
-		vkCmdBindVertexBuffers( vkcontext.commandBuffer[ vkcontext.currentFrameData ], 0, 1, &buffer, &offset );
+		vkCmdBindVertexBuffers( vkcontext.commandBuffer, 0, 1, &buffer, &offset );
 	}
 
-	vkCmdDrawIndexed( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
-		surf->numIndexes, 1, ( indexOffset >> 1 ), vertOffset / sizeof( idDrawVert ), 0 );
+	vkCmdDrawIndexed( vkcontext.commandBuffer, surf->numIndexes, 1, ( indexOffset >> 1 ), vertOffset / sizeof( idDrawVert ), 0 );
 }
 
 /*
@@ -1576,6 +1575,8 @@ idRenderBackend::GL_StartFrame
 ==================
 */
 void idRenderBackend::GL_StartFrame() {
+	vkcontext.commandBuffer = vkcontext.commandBuffers[ vkcontext.currentFrameData ];
+
 	ID_VK_CHECK( vkAcquireNextImageKHR( vkcontext.device, m_swapchain, UINT64_MAX, m_acquireSemaphores[ vkcontext.currentFrameData ], VK_NULL_HANDLE, &m_currentSwapIndex ) );
 
 	idImage::EmptyGarbage();
@@ -1585,7 +1586,6 @@ void idRenderBackend::GL_StartFrame() {
 	stagingManager.Flush();
 	renderProgManager.StartFrame();
 
-	VkCommandBuffer cmdBuffer = vkcontext.commandBuffer[ vkcontext.currentFrameData ];
 	VkQueryPool queryPool = m_queryPools[ vkcontext.currentFrameData ];
 	idArray< uint64, NUM_TIMESTAMP_QUERIES > & results = m_queryResults[ vkcontext.currentFrameData ];
 
@@ -1603,9 +1603,9 @@ void idRenderBackend::GL_StartFrame() {
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
 	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	ID_VK_CHECK( vkBeginCommandBuffer( cmdBuffer, &commandBufferBeginInfo ) );
+	ID_VK_CHECK( vkBeginCommandBuffer( vkcontext.commandBuffer, &commandBufferBeginInfo ) );
 
-	vkCmdResetQueryPool( cmdBuffer, queryPool, 0, NUM_TIMESTAMP_QUERIES );
+	vkCmdResetQueryPool( vkcontext.commandBuffer, queryPool, 0, NUM_TIMESTAMP_QUERIES );
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1613,9 +1613,9 @@ void idRenderBackend::GL_StartFrame() {
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
 
-	vkCmdBeginRenderPass( cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
+	vkCmdBeginRenderPass( vkcontext.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
 
-	vkCmdWriteTimestamp( cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ vkcontext.currentFrameData ]++ );
+	vkCmdWriteTimestamp( vkcontext.commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ vkcontext.currentFrameData ]++ );
 }
 
 /*
@@ -1624,11 +1624,9 @@ idRenderBackend::GL_EndFrame
 ==================
 */
 void idRenderBackend::GL_EndFrame() {
-	VkCommandBuffer cmdBuffer = vkcontext.commandBuffer[ vkcontext.currentFrameData ];
+	vkCmdWriteTimestamp( vkcontext.commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ vkcontext.currentFrameData ], m_queryIndex[ vkcontext.currentFrameData ]++ );
 
-	vkCmdWriteTimestamp( cmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ vkcontext.currentFrameData ], m_queryIndex[ vkcontext.currentFrameData ]++ );
-
-	vkCmdEndRenderPass( cmdBuffer );
+	vkCmdEndRenderPass( vkcontext.commandBuffer );
 
 	// Transition our swap image to present.
 	// Do this instead of having the renderpass do the transition
@@ -1650,12 +1648,12 @@ void idRenderBackend::GL_EndFrame() {
 	barrier.dstAccessMask = 0;
 
 	vkCmdPipelineBarrier( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
+		vkcontext.commandBuffer, 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 		0, 0, NULL, 0, NULL, 1, &barrier );
 
-	ID_VK_CHECK( vkEndCommandBuffer( cmdBuffer ) )
+	ID_VK_CHECK( vkEndCommandBuffer( vkcontext.commandBuffer ) )
 	vkcontext.commandBufferRecorded[ vkcontext.currentFrameData ] = true;
 
 	VkSemaphore * acquire = &m_acquireSemaphores[ vkcontext.currentFrameData ];
@@ -1666,7 +1664,7 @@ void idRenderBackend::GL_EndFrame() {
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmdBuffer;
+	submitInfo.pCommandBuffers = &vkcontext.commandBuffer;
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = acquire;
 	submitInfo.signalSemaphoreCount = 1;
@@ -1740,10 +1738,7 @@ idRenderBackend::GL_CopyFrameBuffer
 ====================
 */
 void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight ) {
-
-	VkCommandBuffer cmdBuffer = vkcontext.commandBuffer[ vkcontext.currentFrameData ];
-
-	vkCmdEndRenderPass( cmdBuffer );
+	vkCmdEndRenderPass( vkcontext.commandBuffer );
 
 	VkImageMemoryBarrier dstBarrier = {};
 	dstBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1764,7 +1759,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 		dstBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		dstBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		vkCmdPipelineBarrier( 
-			cmdBuffer, 
+			vkcontext.commandBuffer, 
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, 
 			0, 0, NULL, 0, NULL, 1, &dstBarrier );
@@ -1786,7 +1781,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 		region.dstOffsets[ 1 ] = { imageWidth, imageHeight, 1 };
 
 		vkCmdBlitImage( 
-			vkcontext.commandBuffer[ vkcontext.currentFrameData ], 
+			vkcontext.commandBuffer, 
 			m_swapchainImages[ m_currentSwapIndex ], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			image->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &region, VK_FILTER_NEAREST );
@@ -1800,7 +1795,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 		dstBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		dstBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		vkCmdPipelineBarrier( 
-			cmdBuffer, 
+			vkcontext.commandBuffer, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, 
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
 			0, 0, NULL, 0, NULL, 1, &dstBarrier );
@@ -1812,7 +1807,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
 
-	vkCmdBeginRenderPass( cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
+	vkCmdBeginRenderPass( vkcontext.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
 }
 
 /*
@@ -1856,7 +1851,7 @@ void idRenderBackend::GL_Clear( bool color, bool depth, bool stencil, byte stenc
 	clearRect.layerCount = 1;
 	clearRect.rect.extent = m_swapchainExtent;
 
-	vkCmdClearAttachments( vkcontext.commandBuffer[ vkcontext.currentFrameData ], numAttachments, attachments, 1, &clearRect );
+	vkCmdClearAttachments( vkcontext.commandBuffer, numAttachments, attachments, 1, &clearRect );
 }
 
 /*
@@ -1873,7 +1868,7 @@ void idRenderBackend::GL_DepthBoundsTest( const float zmin, const float zmax ) {
 		m_glStateBits = m_glStateBits & ~GLS_DEPTH_TEST_MASK;
 	} else {
 		m_glStateBits |= GLS_DEPTH_TEST_MASK;
-		vkCmdSetDepthBounds( vkcontext.commandBuffer[ vkcontext.currentFrameData ], zmin, zmax );
+		vkCmdSetDepthBounds( vkcontext.commandBuffer, zmin, zmax );
 	}
 
 	RENDERLOG_PRINTF( "GL_DepthBoundsTest( zmin=%f, zmax=%f )\n", zmin, zmax );
@@ -1885,7 +1880,7 @@ idRenderBackend::GL_PolygonOffset
 ====================
 */
 void idRenderBackend::GL_PolygonOffset( float scale, float bias ) {
-	vkCmdSetDepthBias( vkcontext.commandBuffer[ vkcontext.currentFrameData ], bias, 0.0f, scale );
+	vkCmdSetDepthBias( vkcontext.commandBuffer, bias, 0.0f, scale );
 
 	RENDERLOG_PRINTF( "GL_PolygonOffset( scale=%f, bias=%f )\n", scale, bias );
 }
@@ -1901,7 +1896,7 @@ void idRenderBackend::GL_Scissor( int x /* left*/, int y /* bottom */, int w, in
 	scissor.offset.y = y;
 	scissor.extent.width = w;
 	scissor.extent.height = h;
-	vkCmdSetScissor( vkcontext.commandBuffer[ vkcontext.currentFrameData ], 0, 1, &scissor );
+	vkCmdSetScissor( vkcontext.commandBuffer, 0, 1, &scissor );
 }
 
 /*
@@ -1917,7 +1912,7 @@ void idRenderBackend::GL_Viewport( int x /* left */, int y /* bottom */, int w, 
 	viewport.height = h;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport( vkcontext.commandBuffer[ vkcontext.currentFrameData ], 0, 1, &viewport );
+	vkCmdSetViewport( vkcontext.commandBuffer, 0, 1, &viewport );
 }
 
 /*
@@ -1988,19 +1983,17 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
 		const VkDeviceSize offset = indexBuffer->GetOffset();
-		vkCmdBindIndexBuffer( vkcontext.commandBuffer[ vkcontext.currentFrameData ], buffer, offset, VK_INDEX_TYPE_UINT16 );
+		vkCmdBindIndexBuffer( vkcontext.commandBuffer, buffer, offset, VK_INDEX_TYPE_UINT16 );
 	}
 	{
 		const VkBuffer buffer = vertexBuffer->GetAPIObject();
 		const VkDeviceSize offset = vertexBuffer->GetOffset();
-		vkCmdBindVertexBuffers( vkcontext.commandBuffer[ vkcontext.currentFrameData ], 0, 1, &buffer, &offset );
+		vkCmdBindVertexBuffers( vkcontext.commandBuffer, 0, 1, &buffer, &offset );
 	}
 
 	const int baseVertex = vertOffset / ( drawSurf->jointCache ? sizeof( idShadowVertSkinned ) : sizeof( idShadowVert ) );
 
-	vkCmdDrawIndexed( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ],
-		drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
+	vkCmdDrawIndexed( vkcontext.commandBuffer, drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
 
 	if ( !renderZPass && r_useStencilShadowPreload.GetBool() ) {
 		// render again with Z-pass
@@ -2011,8 +2004,6 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 		PrintState( m_glStateBits );
 		renderProgManager.CommitCurrent( m_glStateBits );
 
-		vkCmdDrawIndexed( 
-		vkcontext.commandBuffer[ vkcontext.currentFrameData ],
-		drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
+		vkCmdDrawIndexed( vkcontext.commandBuffer, drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
 	}
 }

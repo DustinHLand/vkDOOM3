@@ -159,7 +159,8 @@ struct vulkanContext_t {
 	VkQueue							presentQueue;
 
 	VkCommandPool					commandPool;
-	idArray< VkCommandBuffer, NUM_FRAME_DATA >	commandBuffer;
+	VkCommandBuffer					commandBuffer;
+	idArray< VkCommandBuffer, NUM_FRAME_DATA >	commandBuffers;
 	idArray< VkFence, NUM_FRAME_DATA >			commandBufferFences;
 	idArray< bool, NUM_FRAME_DATA >				commandBufferRecorded;
 
