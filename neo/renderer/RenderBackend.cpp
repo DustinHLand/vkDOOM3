@@ -2295,8 +2295,6 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 	if ( useLightDepthBounds && lightDepthBoundsDisabled ) {
 		GL_DepthBoundsTest( vLight->scissorRect.zmin, vLight->scissorRect.zmax );
 	}
-
-	renderProgManager.Unbind();
 }
 
 /*
@@ -2637,8 +2635,6 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 					renderProgManager.SetRenderParm( RENDERPARM_ENABLE_SKINNING, skinningParm.ToFloatPtr() );
 				}
 
-				renderProgManager.Unbind();
-
 				renderLog.CloseBlock();
 				continue;
 			}
@@ -2854,7 +2850,6 @@ void idRenderBackend::BlendLight( const drawSurf_t *drawSurfs, const drawSurf_t 
 		T_BlendLight( drawSurfs2, vLight );
 	}
 
-	renderProgManager.Unbind();
 	renderLog.CloseBlock();
 }
 
@@ -3007,8 +3002,6 @@ void idRenderBackend::FogPass( const drawSurf_t * drawSurfs,  const drawSurf_t *
 	T_BasicFog( &m_zeroOneCubeSurface, fogPlanes, &vLight->inverseBaseLightProject );
 
 	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
-
-	renderProgManager.Unbind();
 
 	renderLog.CloseBlock();
 }
@@ -3254,8 +3247,6 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 
 	// reset stencil state
 	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
-
-	renderProgManager.Unbind();
 
 	// unset the depthbounds
 	GL_DepthBoundsTest( 0.0f, 0.0f );

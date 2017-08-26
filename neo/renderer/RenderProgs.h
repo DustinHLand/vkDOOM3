@@ -262,7 +262,6 @@ public:
 	const renderProg_t & GetCurrentRenderProg() const { return m_renderProgs[ m_current ]; }
 	int		FindShader( const char * name, rpStage_t stage );
 	void	BindProgram( int index );
-	void	Unbind();
 
 	void	CommitCurrent( uint64 stateBits );
 	int		FindProgram( const char * name, int vIndex, int fIndex );

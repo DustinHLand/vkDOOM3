@@ -765,15 +765,6 @@ void idRenderProgManager::BindProgram( int index ) {
 
 /*
 ========================
-idRenderProgManager::Unbind
-========================
-*/
-void idRenderProgManager::Unbind() {
-	m_current = -1;
-}
-
-/*
-========================
 idRenderProgManager::AllocParmBlockBuffer
 ========================
 */
