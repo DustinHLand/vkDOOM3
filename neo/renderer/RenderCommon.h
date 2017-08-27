@@ -754,12 +754,6 @@ struct copyRenderCommand_t {
 	bool		clearColorAfterCopy;
 };
 
-struct postProcessCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
-	viewDef_t *	viewDef;
-};
-
 /*
 ===========================================================================
 
