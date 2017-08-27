@@ -725,32 +725,34 @@ TR_CMDS
 ===========================================================================
 */
 
-enum rcmd_t {
+enum renderOp_t {
 	RC_NOP,
 	RC_DRAW_VIEW,
 	RC_COPY_RENDER,
 };
 
 struct renderCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
-};
+	renderCommand_t() :
+		op( RC_NOP ),
+		viewDef( NULL ),
+		x( 0 ), 
+		y( 0 ),
+		imageWidth( 0 ),
+		imageHeight( 0 ),
+		cubeFace( 0 ),
+		clearColorAfterCopy( false ) {
+		
+	}
 
-struct drawSurfsCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
+	renderOp_t	op;
 	viewDef_t *	viewDef;
-};
 
-struct copyRenderCommand_t {
-	rcmd_t		commandId;
-	rcmd_t *	next;
 	int			x;
 	int			y;
 	int			imageWidth;
 	int			imageHeight;
-	idImage	*	image;
-	int			cubeFace;					// when copying to a cubeMap
+	idImage *	image;
+	int			cubeFace; // when copying to a cubeMap
 	bool		clearColorAfterCopy;
 };
 
@@ -769,6 +771,17 @@ on an SMP machine.
 
 class idFrameData {
 public:
+	idFrameData() :
+		frameMemory( NULL ),
+		highWaterAllocated( 0 ),
+		highWaterUsed( 0 ),
+		renderCommandIndex( 0 ) {
+
+		frameMemoryAllocated.SetValue( 0 );
+		frameMemoryUsed.SetValue( 0 );
+		renderCommands.Zero();
+	}
+
 	idSysInterlockedInteger	frameMemoryAllocated;
 	idSysInterlockedInteger	frameMemoryUsed;
 	byte *					frameMemory;
@@ -776,10 +789,8 @@ public:
 	int						highWaterAllocated;	// max used on any frame
 	int						highWaterUsed;
 
-	// the currently building command list commands can be inserted
-	// at the front if needed, as required for dynamically generated textures
-	renderCommand_t *		cmdHead;	// may be of other command type based on commandId
-	renderCommand_t *		cmdTail;
+	int						renderCommandIndex;
+	idArray< renderCommand_t, 16 > renderCommands;
 };
 
 /*

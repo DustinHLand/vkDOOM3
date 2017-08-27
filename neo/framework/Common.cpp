@@ -790,9 +790,7 @@ void idCommonLocal::RenderSplash() {
 	}
 	renderSystem->SetColor4( 1, 1, 1, 1 );
 	renderSystem->DrawStretchPic( barWidth, barHeight, SCREEN_WIDTH - barWidth * 2.0f, SCREEN_HEIGHT - barHeight * 2.0f, 0, 0, 1, 1, splashScreen );
-
-	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
-	renderSystem->RenderCommandBuffers( cmd );
+	renderSystem->SwapAndRenderCommandBuffers( &m_frameTiming );
 }
 
 /*
@@ -817,8 +815,7 @@ void idCommonLocal::RenderBink( const char * path ) {
 
 	while ( Sys_Milliseconds() <= material->GetCinematicStartTime() + material->CinematicLength() ) {
 		renderSystem->DrawStretchPic( chop, 0, imageWidth, SCREEN_HEIGHT, 0, 0, 1, 1, material );
-		const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
-		renderSystem->RenderCommandBuffers( cmd );
+		renderSystem->SwapAndRenderCommandBuffers( &m_frameTiming );
 		Sys_GenerateEvents();
 		Sys_Sleep( 10 );
 	}

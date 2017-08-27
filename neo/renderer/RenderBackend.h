@@ -192,7 +192,7 @@ public:
 	void				Init();
 	void				Shutdown();
 
-	void				ExecuteBackEndCommands( const renderCommand_t *cmds );
+	void				ExecuteBackEndCommands( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
 
 	void				Print();
@@ -205,8 +205,8 @@ private:
 	void				CheckCVars();
 	void				ResizeImages();
 
-	void				DrawView( const void * data );
-	void				CopyRender( const void * data );
+	void				DrawView( const renderCommand_t & cmd );
+	void				CopyRender( const renderCommand_t & cmd );
 
 	void				BindVariableStageImage( const textureStage_t * texture, const float * shaderRegisters );
 	void				PrepareStageTexturing( const shaderStage_t * pStage, const drawSurf_t * surf );

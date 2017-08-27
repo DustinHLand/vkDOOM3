@@ -295,10 +295,8 @@ void idCommonLocal::UpdateScreen() {
 	Draw();
 
 	// this should exit right after vsync, with the GPU idle and ready to draw
-	const renderCommand_t * cmd = renderSystem->SwapCommandBuffers( &m_frameTiming );
-
 	// get the GPU busy with new commands
-	renderSystem->RenderCommandBuffers( cmd );
+	renderSystem->SwapAndRenderCommandBuffers( &m_frameTiming );
 
 	insideUpdateScreen = false;
 }
@@ -401,9 +399,8 @@ void idCommonLocal::Frame() {
 		// this should exit right after vsync, with the GPU idle and ready to draw
 		// This may block if the GPU isn't finished renderng the previous frame.
 		m_frameTiming.startSyncTime = Sys_Microseconds();
-		const renderCommand_t * renderCommands = NULL;
 		if ( com_smp.GetBool() ) {
-			renderCommands = renderSystem->SwapCommandBuffers( &m_frameTiming );
+			renderSystem->SwapCommandBuffers( &m_frameTiming );
 		} else {
 			// the GPU will stay idle through command generation for minimal
 			// input latency
@@ -596,7 +593,7 @@ void idCommonLocal::Frame() {
 		if ( !com_smp.GetBool() ) {
 			// in non-smp mode, run the commands we just generated, instead of
 			// frame-delayed ones from a background thread
-			renderCommands = renderSystem->SwapCommandBuffers_FinishCommandBuffers();
+			renderSystem->SwapCommandBuffers_FinishCommandBuffers();
 		}
 
 		//----------------------------------------
@@ -604,7 +601,7 @@ void idCommonLocal::Frame() {
 		// ASAP to minimize the pipeline bubble.
 		//----------------------------------------
 		m_frameTiming.startRenderTime = Sys_Microseconds();
-		renderSystem->RenderCommandBuffers( renderCommands );
+		renderSystem->RenderCommandBuffers();
 		if ( com_sleepRender.GetInteger() > 0 ) {
 			// debug tool to test frame adaption
 			Sys_Sleep( com_sleepRender.GetInteger() );

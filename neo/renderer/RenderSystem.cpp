@@ -489,7 +489,9 @@ idRenderSystemLocal::idRenderSystemLocal() :
 	m_bInitialized( false ),
 	m_unitSquareTriangles( NULL ),
 	m_zeroOneCubeTriangles( NULL ),
-	m_testImageTriangles( NULL ) {
+	m_testImageTriangles( NULL ),
+	m_frameData( NULL ),
+	m_smpFrame( 0 ) {
 
 	Clear();
 }
@@ -897,10 +899,9 @@ void idRenderSystemLocal::ToggleSmpFrame() {
 	}
 #endif
 
-	// clear the command chain and make a RC_NOP command the only thing on the list
-	m_frameData->cmdHead = m_frameData->cmdTail = (renderCommand_t *)FrameAlloc( sizeof( *m_frameData->cmdHead ), FRAME_ALLOC_DRAW_COMMAND );
-	m_frameData->cmdHead->commandId = RC_NOP;
-	m_frameData->cmdHead->next = NULL;
+	// clear the command chain
+	m_frameData->renderCommandIndex = 0;
+	m_frameData->renderCommands.Zero();
 }
 
 /*
@@ -935,26 +936,6 @@ void idRenderSystemLocal::ShutdownFrameData() {
 }
 
 /*
-============
-idRenderSystemLocal::GetCommandBuffer
-
-Returns memory for a command buffer (stretchPicCommand_t, 
-drawSurfsCommand_t, etc) and links it to the end of the
-current command chain.
-============
-*/
-void * idRenderSystemLocal::GetCommandBuffer( int bytes ) {
-	renderCommand_t	* cmd;
-
-	cmd = (renderCommand_t *)FrameAlloc( bytes, FRAME_ALLOC_DRAW_COMMAND );
-	cmd->next = NULL;
-	m_frameData->cmdTail->next = &cmd->commandId;
-	m_frameData->cmdTail = cmd;
-
-	return (void *)cmd;
-}
-
-/*
 =============
 idRenderSystemLocal::AddDrawViewCmd
 
@@ -963,12 +944,9 @@ have multiple views if a mirror, portal, or dynamic texture is present.
 =============
 */
 void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms, bool guiOnly ) {
-	drawSurfsCommand_t	*cmd;
-
-	cmd = (drawSurfsCommand_t *)GetCommandBuffer( sizeof( *cmd ) );
-	cmd->commandId = RC_DRAW_VIEW;
-
-	cmd->viewDef = parms;
+	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
+	cmd.op = RC_DRAW_VIEW;
+	cmd.viewDef = parms;
 
 	pc.c_numViews++;
 
@@ -1323,11 +1301,19 @@ After this is called, new command buffers can be built up in parallel
 with the rendering of the closed off command buffers by RenderCommandBuffers()
 ====================
 */
-const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers( frameTiming_t * frameTiming )  {
-
+void idRenderSystemLocal::SwapCommandBuffers( frameTiming_t * frameTiming )  {
 	SwapCommandBuffers_FinishRendering( frameTiming );
+	SwapCommandBuffers_FinishCommandBuffers();
+}
 
-	return SwapCommandBuffers_FinishCommandBuffers();
+/*
+=====================
+idRenderSystemLocal::SwapAndRenderCommandBuffers
+=====================
+*/
+void idRenderSystemLocal::SwapAndRenderCommandBuffers( frameTiming_t * frameTiming ) {
+	SwapCommandBuffers( frameTiming );
+	RenderCommandBuffers();
 }
 
 /*
@@ -1369,9 +1355,9 @@ idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuffers
 =====================
 */
 void R_InitDrawSurfFromTri( drawSurf_t & ds, srfTriangles_t & tri );
-const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuffers() {
+void idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuffers() {
 	if ( !m_bInitialized ) {
-		return NULL;
+		return;
 	}
 
 	// close any gui drawing
@@ -1379,9 +1365,6 @@ const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuf
 
 	// unmap the buffer objects so they can be used by the GPU
 	vertexCache.BeginBackEnd();
-
-	// save off this command buffer
-	const renderCommand_t * commandBufferHead = m_frameData->cmdHead;
 
 	// copy the code-used drawsurfs that were
 	// allocated at the start of the buffer memory to the m_backend referenced locations
@@ -1425,7 +1408,6 @@ const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuf
 
 	// the old command buffer can now be rendered, while the new one can
 	// be built in parallel
-	return commandBufferHead;
 }
 
 /*
@@ -1433,16 +1415,15 @@ const renderCommand_t * idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuf
 idRenderSystemLocal::RenderCommandBuffers
 ====================
 */
-void idRenderSystemLocal::RenderCommandBuffers( const renderCommand_t * const cmdHead ) {
+void idRenderSystemLocal::RenderCommandBuffers() {
+	// Use the previous smp frame data as the current is being written to.
+	idFrameData & frameData = m_smpFrameData[ ( m_smpFrame - 1 ) % NUM_FRAME_DATA ];
+
 	// if there isn't a draw view command, do nothing to avoid swapping a bad frame
-	bool hasView = false;
-	for ( const renderCommand_t * cmd = cmdHead ; cmd ; cmd = (const renderCommand_t *)cmd->next ) {
-		if ( cmd->commandId == RC_DRAW_VIEW ) {
-			hasView = true;
-			break;
-		}
+	if ( frameData.renderCommandIndex == 0 ) {
+		return;
 	}
-	if ( !hasView ) {
+	if ( frameData.renderCommands[ 0 ].op == RC_NOP ) {
 		return;
 	}
 
@@ -1451,11 +1432,8 @@ void idRenderSystemLocal::RenderCommandBuffers( const renderCommand_t * const cm
 	// nothing will be drawn to the screen.  If the prints
 	// are going to a file, or r_skipBackEnd is later disabled,
 	// usefull data can be received.
-
-	// r_skipRender is usually more usefull, because it will still
-	// draw 2D graphics
 	if ( !r_skipBackEnd.GetBool() ) {
-		m_backend.ExecuteBackEndCommands( cmdHead );
+		m_backend.ExecuteBackEndCommands( frameData.renderCommandIndex, frameData.renderCommands );
 	}
 
 	// pass in null for now - we may need to do some map specific hackery in the future
@@ -1559,14 +1537,14 @@ void idRenderSystemLocal::CaptureRenderToImage( const char *imageName, bool clea
 
 	idScreenRect & rc = m_renderCrops[ m_currentRenderCrop ];
 
-	copyRenderCommand_t *cmd = (copyRenderCommand_t *)GetCommandBuffer( sizeof( *cmd ) );
-	cmd->commandId = RC_COPY_RENDER;
-	cmd->x = rc.x1;
-	cmd->y = rc.y1;
-	cmd->imageWidth = rc.GetWidth();
-	cmd->imageHeight = rc.GetHeight();
-	cmd->image = image;
-	cmd->clearColorAfterCopy = clearColorAfterCopy;
+	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
+	cmd.op = RC_COPY_RENDER;
+	cmd.x = rc.x1;
+	cmd.y = rc.y1;
+	cmd.imageWidth = rc.GetWidth();
+	cmd.imageHeight = rc.GetHeight();
+	cmd.image = image;
+	cmd.clearColorAfterCopy = clearColorAfterCopy;
 
 	m_guiModel->Clear();
 }

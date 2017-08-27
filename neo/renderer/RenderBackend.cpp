@@ -1183,12 +1183,12 @@ This function will be called syncronously if running without
 smp extensions, or asyncronously by another thread.
 =============
 */
-void idRenderBackend::ExecuteBackEndCommands( const renderCommand_t *cmds ) {
+void idRenderBackend::ExecuteBackEndCommands( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands ) {
 	CheckCVars();
 
 	resolutionScale.SetCurrentGPUFrameTime( commonLocal.m_mainFrameTiming.gpuTime );
 
-	if ( cmds->commandId == RC_NOP && !cmds->next ) {
+	if ( numCmds == 0 ) {
 		return;
 	}
 
@@ -1202,15 +1202,16 @@ void idRenderBackend::ExecuteBackEndCommands( const renderCommand_t *cmds ) {
 	// needed for editor rendering
 	GL_SetDefaultState();
 
-	for ( ; cmds != NULL; cmds = (const renderCommand_t *)cmds->next ) {
-		switch ( cmds->commandId ) {
+	for ( int i = 0; i < numCmds; ++i ) {
+		const renderCommand_t & cmd = renderCommands[ i ];
+		switch ( cmd.op ) {
 			case RC_NOP:
 				break;
 			case RC_DRAW_VIEW:
-				DrawView( cmds );
+				DrawView( cmd );
 				break;
 			case RC_COPY_RENDER:
-				CopyRender( cmds );
+				CopyRender( cmd );
 				break;
 			default:
 				idLib::Error( "ExecuteBackEndCommands: bad commandId" );
@@ -1231,10 +1232,8 @@ void idRenderBackend::ExecuteBackEndCommands( const renderCommand_t *cmds ) {
 idRenderBackend::DrawView
 ==================
 */
-void idRenderBackend::DrawView( const void * data ) {
-	const drawSurfsCommand_t * cmd = (const drawSurfsCommand_t *)data;
-
-	m_viewDef = cmd->viewDef;
+void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
+	m_viewDef = cmd.viewDef;
 
 	// we will need to do a new copyTexSubImage of the screen
 	// when a SS_POST_PROCESS material is used
@@ -1427,20 +1426,18 @@ idRenderBackend::CopyRender
 Copy part of the current framebuffer to an image
 ==================
 */
-void idRenderBackend::CopyRender( const void *data ) {
-	const copyRenderCommand_t * cmd = (const copyRenderCommand_t *)data;
-
+void idRenderBackend::CopyRender( const renderCommand_t & cmd ) {
 	if ( r_skipCopyTexture.GetBool() ) {
 		return;
 	}
 
 	RENDERLOG_PRINTF( "***************** CopyRender *****************\n" );
 
-	if ( cmd->image ) {
-		GL_CopyFrameBuffer( cmd->image, cmd->x, cmd->y, cmd->imageWidth, cmd->imageHeight );
+	if ( cmd.image ) {
+		GL_CopyFrameBuffer( cmd.image, cmd.x, cmd.y, cmd.imageWidth, cmd.imageHeight );
 	}
 
-	if ( cmd->clearColorAfterCopy ) {
+	if ( cmd.clearColorAfterCopy ) {
 		GL_Clear( true, false, false, STENCIL_SHADOW_TEST_VALUE, 0, 0, 0, 0 );
 	}
 }

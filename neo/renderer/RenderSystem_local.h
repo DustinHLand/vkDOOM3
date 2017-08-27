@@ -101,10 +101,11 @@ public:
 	virtual void			DrawBigChar( int x, int y, int ch );
 	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor );
 
-	virtual const renderCommand_t *	SwapCommandBuffers( frameTiming_t * frameTiming );
+	virtual void			SwapCommandBuffers( frameTiming_t * frameTiming );
+	virtual void			SwapAndRenderCommandBuffers( frameTiming_t * frameTiming );
 	virtual void			SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming );
-	virtual const renderCommand_t *	SwapCommandBuffers_FinishCommandBuffers();
-	virtual void			RenderCommandBuffers( const renderCommand_t * commandBuffers );
+	virtual void			SwapCommandBuffers_FinishCommandBuffers();
+	virtual void			RenderCommandBuffers();
 
 	virtual void			TakeScreenshot( int width, int height, const char *fileName, int downSample, renderView_t *ref );
 	virtual void			CropRenderSize( int width, int height );
@@ -130,7 +131,6 @@ private:
 	void					ShutdownFrameData();
 	void					ToggleSmpFrame();
 
-	void *					GetCommandBuffer( int bytes );
 	void					AddDrawViewCmd( viewDef_t * parms, bool guiOnly );
 
 	// Render
