@@ -106,8 +106,6 @@ typedef enum {
 	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
 } cubeFiles_t;
 
-void GL_CheckErrors();
-
 struct vidMode_t {
     int width;
 	int height;
