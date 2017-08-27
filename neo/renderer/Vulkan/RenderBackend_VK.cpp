@@ -1011,7 +1011,7 @@ void idRenderBackend::CreateRenderPass() {
 	VkAttachmentDescription & colorAttachment = attachments[ 0 ];
 	colorAttachment.format = m_swapchainFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -1019,7 +1019,7 @@ void idRenderBackend::CreateRenderPass() {
 	VkAttachmentDescription & depthAttachment = attachments[ 1 ];
 	depthAttachment.format = vkcontext.depthFormat;
 	depthAttachment.samples = vkcontext.sampleCount;
-	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -1606,11 +1606,18 @@ void idRenderBackend::GL_StartFrame() {
 
 	vkCmdResetQueryPool( vkcontext.commandBuffer, queryPool, 0, NUM_TIMESTAMP_QUERIES );
 
+	VkClearValue clearValues[ 2 ];
+	memset( clearValues, 0, sizeof( clearValues ) );
+	clearValues[ 0 ].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+	clearValues[ 1 ].depthStencil = { 1.0f, 128 };
+
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.renderPass = vkcontext.renderPass;
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
 
 	vkCmdBeginRenderPass( vkcontext.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
 
@@ -1785,11 +1792,19 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 			0, 0, NULL, 0, NULL, 1, &dstBarrier );
 	}
 
+	
+	VkClearValue clearValues[ 2 ];
+	memset( clearValues, 0, sizeof( clearValues ) );
+	clearValues[ 0 ].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+	clearValues[ 1 ].depthStencil = { 1.0f, 128 };
+
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.renderPass = vkcontext.renderPass;
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
 
 	vkCmdBeginRenderPass( vkcontext.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
 }
