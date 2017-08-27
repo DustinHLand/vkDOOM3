@@ -85,7 +85,6 @@ idCVar r_skipPostProcess( "r_skipPostProcess", "0", CVAR_RENDERER | CVAR_BOOL, "
 idCVar r_skipInteractions( "r_skipInteractions", "0", CVAR_RENDERER | CVAR_BOOL, "skip all light/surface interaction drawing" );
 idCVar r_skipDynamicTextures( "r_skipDynamicTextures", "0", CVAR_RENDERER | CVAR_BOOL, "don't dynamically create textures" );
 idCVar r_skipCopyTexture( "r_skipCopyTexture", "0", CVAR_RENDERER | CVAR_BOOL, "do all rendering, but don't actually copyTexSubImage2D" );
-idCVar r_skipBackEnd( "r_skipBackEnd", "0", CVAR_RENDERER | CVAR_BOOL, "don't draw anything" );
 idCVar r_skipRender( "r_skipRender", "0", CVAR_RENDERER | CVAR_BOOL, "skip 3D rendering, but pass 2D" );
 idCVar r_skipTranslucent( "r_skipTranslucent", "0", CVAR_RENDERER | CVAR_BOOL, "skip the translucent interaction rendering" );
 idCVar r_skipAmbient( "r_skipAmbient", "0", CVAR_RENDERER | CVAR_BOOL, "bypasses all non-interaction drawing" );
@@ -1427,14 +1426,7 @@ void idRenderSystemLocal::RenderCommandBuffers() {
 		return;
 	}
 
-	// r_skipBackEnd allows the entire time of the back end
-	// to be removed from performance measurements, although
-	// nothing will be drawn to the screen.  If the prints
-	// are going to a file, or r_skipBackEnd is later disabled,
-	// usefull data can be received.
-	if ( !r_skipBackEnd.GetBool() ) {
-		m_backend.ExecuteBackEndCommands( frameData.renderCommandIndex, frameData.renderCommands );
-	}
+	m_backend.ExecuteBackEndCommands( frameData.renderCommandIndex, frameData.renderCommands );
 
 	// pass in null for now - we may need to do some map specific hackery in the future
 	resolutionScale.InitForMap( NULL );
