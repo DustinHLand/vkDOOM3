@@ -1627,7 +1627,6 @@ FullscreenFXManager::Process
 */
 void FullscreenFXManager::Process( const renderView_t *view ) {
 	bool allpass = false;
-	bool atLeastOneFX = false;
 
 	if ( g_testFullscreenFX.GetInteger() == -2 ) {
 		allpass = true;
@@ -1650,8 +1649,6 @@ void FullscreenFXManager::Process( const renderView_t *view ) {
 
 		// do the actual drawing
 		if ( drawIt ) {
-			atLeastOneFX = true;
-
 			// we need to dump to _currentRender
 			renderSystem->CaptureRenderToImage( "_currentRender" );
 
