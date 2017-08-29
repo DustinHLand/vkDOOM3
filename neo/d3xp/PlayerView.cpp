@@ -1572,10 +1572,7 @@ void FullscreenFXManager::Initialize( idPlayerView *pv ) {
 	CreateFX( "bloom", "bloom", 0 );
 
 	// pre-cache the texture grab so we dont hitch
-	renderSystem->CropRenderSize( 512, 512 );
 	renderSystem->CaptureRenderToImage( "_accum" );
-	renderSystem->UnCrop();
-
 	renderSystem->CaptureRenderToImage( "_currentRender" );
 }
 
@@ -1654,11 +1651,8 @@ void FullscreenFXManager::Process( const renderView_t *view ) {
 
 			// handle the accum pass if we have one
 			if ( pfx->HasAccum() ) {
-				// we need to crop the accum pass
-				renderSystem->CropRenderSize( 512, 512 );
 				pfx->AccumPass( view );
 				renderSystem->CaptureRenderToImage( "_accum" );
-				renderSystem->UnCrop();
 			}
 
 			// do the high quality pass
