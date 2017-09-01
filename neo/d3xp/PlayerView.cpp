@@ -1572,10 +1572,7 @@ void FullscreenFXManager::Initialize( idPlayerView *pv ) {
 	CreateFX( "bloom", "bloom", 0 );
 
 	// pre-cache the texture grab so we dont hitch
-	renderSystem->CropRenderSize( 512, 512 );
 	renderSystem->CaptureRenderToImage( "_accum" );
-	renderSystem->UnCrop();
-
 	renderSystem->CaptureRenderToImage( "_currentRender" );
 }
 
@@ -1627,7 +1624,6 @@ FullscreenFXManager::Process
 */
 void FullscreenFXManager::Process( const renderView_t *view ) {
 	bool allpass = false;
-	bool atLeastOneFX = false;
 
 	if ( g_testFullscreenFX.GetInteger() == -2 ) {
 		allpass = true;
@@ -1650,18 +1646,13 @@ void FullscreenFXManager::Process( const renderView_t *view ) {
 
 		// do the actual drawing
 		if ( drawIt ) {
-			atLeastOneFX = true;
-
 			// we need to dump to _currentRender
 			renderSystem->CaptureRenderToImage( "_currentRender" );
 
 			// handle the accum pass if we have one
 			if ( pfx->HasAccum() ) {
-				// we need to crop the accum pass
-				renderSystem->CropRenderSize( 512, 512 );
 				pfx->AccumPass( view );
 				renderSystem->CaptureRenderToImage( "_accum" );
-				renderSystem->UnCrop();
 			}
 
 			// do the high quality pass

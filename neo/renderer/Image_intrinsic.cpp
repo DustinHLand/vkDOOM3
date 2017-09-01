@@ -439,6 +439,6 @@ void idImageManager::CreateIntrinsicImages() {
 	m_currentDepthImage = ImageFromFunction( "_currentDepth", R_DepthImage );
 	m_accumImage = ImageFromFunction( "_accum", R_RGBA8Image );
 
-	m_loadingIconImage = ImageFromFile("textures/loadingicon2", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
-	m_hellLoadingIconImage = ImageFromFile("textures/loadingicon3", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
+	m_loadingIconImage = ImageFromFile( "textures/loadingicon2", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
+	m_hellLoadingIconImage = ImageFromFile( "textures/loadingicon3", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
 }
