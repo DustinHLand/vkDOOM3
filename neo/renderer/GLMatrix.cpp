@@ -438,6 +438,5 @@ void R_SetupProjectionMatrix( viewDef_t *viewDef ) {
 
 	if ( viewDef->renderView.flipProjection ) {
 		viewDef->projectionMatrix[1*4+1] = -viewDef->projectionMatrix[1*4+1];
-		viewDef->projectionMatrix[1*4+3] = -viewDef->projectionMatrix[1*4+3];
 	}
 }
