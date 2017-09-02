@@ -460,7 +460,12 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 				}
 				if ( fade ) {
 					renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, fade );
-					renderSystem->DrawStretchPic( blob->x, blob->y, blob->w, blob->h,blob->s1, blob->t1, blob->s2, blob->t2, blob->material );
+					renderSystem->DrawStretchPic( 
+						blob->x, blob->y, 
+						blob->w, blob->h,
+						blob->s1, blob->t1, 
+						blob->s2, blob->t2, 
+						blob->material );
 				}
 			}
 		}
@@ -475,7 +480,12 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 
 		if ( armorPulse > 0.0f && armorPulse < 1.0f ) {
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f - armorPulse );
-			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, armorMaterial );
+			renderSystem->DrawStretchPic( 
+				0.0f, 0.0f, 
+				SCREEN_WIDTH, SCREEN_HEIGHT, 
+				0.0f, 0.0f, 
+				1.0f, 1.0f, 
+				armorMaterial );
 		}
 
 		// tunnel vision
@@ -495,12 +505,22 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 
 		if ( alpha < 1.0f  ) {
 			renderSystem->SetColor4( ( player->health <= 0.0f ) ? MS2SEC( gameLocal.slow.time ) : lastDamageTime, 1.0f, 1.0f, ( player->health <= 0.0f ) ? 0.0f : alpha );
-			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, tunnelMaterial );
+			renderSystem->DrawStretchPic( 
+				0.0f, 0.0f, 
+				SCREEN_WIDTH, SCREEN_HEIGHT, 
+				0.0f, 0.0f, 
+				1.0f, 1.0f, 
+				tunnelMaterial );
 		}
 
 		if ( bfgVision ) {
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
+			renderSystem->DrawStretchPic( 
+				0.0f, 0.0f, 
+				SCREEN_WIDTH, SCREEN_HEIGHT, 
+				0.0f, 0.0f, 
+				1.0f, 1.0f, 
+				bfgMaterial );
 		}
 	}
 
@@ -512,7 +532,12 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 			g_testPostProcess.SetString( "" );
 		} else {
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, mtr );
+			renderSystem->DrawStretchPic( 
+				0.0f, 0.0f, 
+				SCREEN_WIDTH, SCREEN_HEIGHT, 
+				0.0f, 0.0f, 
+				1.0f, 1.0f, 
+				mtr );
 		}
 	}
 }
@@ -588,7 +613,12 @@ void idPlayerView::ScreenFade() {
 
 	if ( fadeColor[ 3 ] != 0.0f ) {
 		renderSystem->SetColor4( fadeColor[ 0 ], fadeColor[ 1 ], fadeColor[ 2 ], fadeColor[ 3 ] );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, declManager->FindMaterial( "_white" ) );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, 0.0f, 
+			1.0f, 1.0f, 
+			declManager->FindMaterial( "_white" ) );
 	}
 }
 
@@ -840,9 +870,19 @@ void FullscreenFX_Helltime::AccumPass( const renderView_t *view ) {
 	// capture pass
 	if ( clearAccumBuffer ) {
 		clearAccumBuffer = false;
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, initMaterial );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, t0, 
+			1.0f, t1, 
+			initMaterial );
 	} else {
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, captureMaterials[level] );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, t0, 
+			1.0f, t1, 
+			captureMaterials[ level ] );
 	}
 }
 
@@ -852,11 +892,15 @@ FullscreenFX_Helltime::HighQuality
 ==================
 */
 void FullscreenFX_Helltime::HighQuality() {
-	float t0 = 1.0f;
-	float t1 = 0.0f;
+	float t1 = 1.0f;
+	float t2 = 0.0f;
 
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-	renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, drawMaterial );
+	renderSystem->DrawStretchFX( 
+		0.0f, 0.0f, 
+		SCREEN_WIDTH, SCREEN_HEIGHT, 
+		0.0f, t1, 
+		1.0f, t2, drawMaterial );
 }
 
 /*
@@ -956,9 +1000,19 @@ void FullscreenFX_Multiplayer::AccumPass( const renderView_t *view ) {
 	// capture pass
 	if ( clearAccumBuffer ) {
 		clearAccumBuffer = false;
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, initMaterial );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, t0, 
+			1.0f, t1, 
+			initMaterial );
 	} else {
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, captureMaterial );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, t0, 
+			1.0f, t1, 
+			captureMaterial );
 	}
 }
 
@@ -968,11 +1022,16 @@ FullscreenFX_Multiplayer::HighQuality
 ==================
 */
 void FullscreenFX_Multiplayer::HighQuality() {
-	float t0 = 1.0f;
-	float t1 = 0.0f;
+	float t1 = 1.0f;
+	float t2 = 0.0f;
 
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-	renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, t0, 1.0f, t1, drawMaterial );
+	renderSystem->DrawStretchFX( 
+		0.0f, 0.0f, 
+		SCREEN_WIDTH, SCREEN_HEIGHT, 
+		0.0f, t1, 
+		1.0f, t2, 
+		drawMaterial );
 }
 
 /*
@@ -1179,11 +1238,16 @@ FullscreenFX_EnviroSuit::HighQuality
 */
 void FullscreenFX_EnviroSuit::HighQuality() {
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-	float s0 = 0.0f;
-	float t0 = 1.0f;
-	float s1 = 1.0f;
-	float t1 = 0.0f;
-	renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, s0, t0, s1, t1, material );
+	float s1 = 0.0f;
+	float t1 = 1.0f;
+	float s2 = 1.0f;
+	float t2 = 0.0f;
+	renderSystem->DrawStretchFX( 
+		0.0f, 0.0f, 
+		SCREEN_WIDTH, SCREEN_HEIGHT, 
+		s1, t1, 
+		s2, t2, 
+		material );
 }
 
 /*
@@ -1265,22 +1329,31 @@ void FullscreenFX_DoubleVision::HighQuality() {
 	}
 
 	// uv coordinates
-	float s0 = shift;
-	float t0 = 1.0f;
-	float s1 = 1.0f;
-	float t1 = 0.0f;
-
+	float s1 = shift;
+	float t1 = 1.0f;
+	float s2 = 1.0f;
+	float t2 = 0.0f;
 
 	renderSystem->SetColor4( color.x, color.y, color.z, 1.0f );
-	renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, s0, t0, s1, t1, material );
+	renderSystem->DrawStretchFX( 
+		0.0f, 0.0f, 
+		SCREEN_WIDTH, SCREEN_HEIGHT, 
+		s1, t1, 
+		s2, t2, 
+		material );
 
 	renderSystem->SetColor4( color.x, color.y, color.z, 0.5f );
-	s0 = 0.0f;
-	t0 = 1.0f;
-	s1 = ( 1.0-shift );
-	t1 = 0.0f;
+	s1 = 0.0f;
+	t1 = 1.0f;
+	s2 = ( 1.0-shift );
+	t2 = 0.0f;
 
-	renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, s0, t0, s1, t1, material );
+	renderSystem->DrawStretchFX( 
+		0.0f, 0.0f, 
+		SCREEN_WIDTH, SCREEN_HEIGHT, 
+		s1, t1, 
+		s2, t2, 
+		material );
 }
 
 /*
@@ -1325,7 +1398,7 @@ void FullscreenFX_InfluenceVision::HighQuality() {
 	float pct = 1.0f;
 	idPlayer * player = fxman->GetPlayer();
 
-	if( player == NULL ) {
+	if ( player == NULL ) {
 		return;
 	}
 
@@ -1339,7 +1412,12 @@ void FullscreenFX_InfluenceVision::HighQuality() {
 
 	if ( player->GetInfluenceMaterial() ) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, pct );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, player->GetInfluenceMaterial() );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			0.0f, 0.0f, 
+			1.0f, 1.0f, 
+			player->GetInfluenceMaterial() );
 	} else if ( player->GetInfluenceEntity() == NULL ) {
 		return;
 	} else {
@@ -1443,11 +1521,15 @@ void FullscreenFX_Bloom::HighQuality() {
 			alpha = 1 - (float)i / ( num - 1 );
 		}
 
-
 		float yScale = 1.0f;
 
 		renderSystem->SetColor4( alpha, alpha, alpha, 1 );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, s1, t2 * yScale, s2, t1 * yScale, drawMaterial );
+		renderSystem->DrawStretchPic( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			s1, t2 * yScale, 
+			s2, t1 * yScale, 
+			drawMaterial );
 
 		shift += currentIntensity;
 	}
@@ -1585,11 +1667,16 @@ void FullscreenFXManager::Blendback( float alpha ) {
 	// alpha fade
 	if ( alpha < 1.f ) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f - alpha );
-		float s0 = 0.0f;
-		float t0 = 1.0f;
-		float s1 = 1.0f;
-		float t1 = 0.0f;
-		renderSystem->DrawStretchFX( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, s0, t0, s1, t1, blendBackMaterial );
+		float s1 = 0.0f;
+		float t1 = 1.0f;
+		float s2 = 1.0f;
+		float t2 = 0.0f;
+		renderSystem->DrawStretchFX( 
+			0.0f, 0.0f, 
+			SCREEN_WIDTH, SCREEN_HEIGHT, 
+			s1, t1, 
+			s2, t2, 
+			blendBackMaterial );
 	}
 }
 

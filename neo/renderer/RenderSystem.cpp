@@ -1020,12 +1020,28 @@ void idRenderSystemLocal::DrawStretchPic( float x, float y, float w, float h, fl
 idRenderSystemLocal::DrawStretchFX
 =============
 */
-void idRenderSystemLocal::DrawStretchFX( float x, float y, float w, float h, float s1, float t1, float s2, float t2, const idMaterial *material ) {
+void idRenderSystemLocal::DrawStretchFX( 
+	float x, float y, 
+	float w, float h, 
+	float s1, float t1, 
+	float s2, float t2, 
+	const idMaterial *material ) {
+
 #if defined( ID_VULKAN )
 	SwapValues( t1, t2 );
-	DrawStretchPic( idVec4( x, y, s1, t1 ), idVec4( x+w, y, s2, t1 ), idVec4( x+w, y+h, s2, t2 ), idVec4( x, y+h, s1, t2 ), material );
+	DrawStretchPic( 
+		idVec4( x, y, s1, t1 ), 
+		idVec4( x+w, y, s2, t1 ), 
+		idVec4( x+w, y+h, s2, t2 ), 
+		idVec4( x, y+h, s1, t2 ), 
+		material );
 #else
-	DrawStretchPic( idVec4( x, y, s1, t1 ), idVec4( x+w, y, s2, t1 ), idVec4( x+w, y+h, s2, t2 ), idVec4( x, y+h, s1, t2 ), material );
+	DrawStretchPic( 
+		idVec4( x, y, s1, t1 ), 
+		idVec4( x+w, y, s2, t1 ), 
+		idVec4( x+w, y+h, s2, t2 ), 
+		idVec4( x, y+h, s1, t2 ), 
+		material );
 #endif
 }
 
