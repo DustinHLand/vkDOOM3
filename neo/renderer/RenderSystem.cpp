@@ -1027,22 +1027,12 @@ void idRenderSystemLocal::DrawStretchFX(
 	float s2, float t2, 
 	const idMaterial *material ) {
 
-#if defined( ID_VULKAN )
-	SwapValues( t1, t2 );
 	DrawStretchPic( 
-		idVec4( x, y, s1, t1 ), 
-		idVec4( x+w, y, s2, t1 ), 
-		idVec4( x+w, y+h, s2, t2 ), 
-		idVec4( x, y+h, s1, t2 ), 
+		idVec4( x, y, s1, t1 ),		// TL
+		idVec4( x+w, y, s2, t1 ),	// TR
+		idVec4( x+w, y+h, s2, t2 ), // BR
+		idVec4( x, y+h, s1, t2 ),	// BL
 		material );
-#else
-	DrawStretchPic( 
-		idVec4( x, y, s1, t1 ), 
-		idVec4( x+w, y, s2, t1 ), 
-		idVec4( x+w, y+h, s2, t2 ), 
-		idVec4( x, y+h, s1, t2 ), 
-		material );
-#endif
 }
 
 /*

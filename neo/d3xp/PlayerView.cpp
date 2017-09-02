@@ -892,15 +892,13 @@ FullscreenFX_Helltime::HighQuality
 ==================
 */
 void FullscreenFX_Helltime::HighQuality() {
-	float t1 = 1.0f;
-	float t2 = 0.0f;
-
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchFX( 
 		0.0f, 0.0f, 
 		SCREEN_WIDTH, SCREEN_HEIGHT, 
-		0.0f, t1, 
-		1.0f, t2, drawMaterial );
+		0.0f, 0.0f, 
+		1.0f, 1.0f, 
+		drawMaterial );
 }
 
 /*
@@ -1022,15 +1020,12 @@ FullscreenFX_Multiplayer::HighQuality
 ==================
 */
 void FullscreenFX_Multiplayer::HighQuality() {
-	float t1 = 1.0f;
-	float t2 = 0.0f;
-
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchFX( 
 		0.0f, 0.0f, 
 		SCREEN_WIDTH, SCREEN_HEIGHT, 
-		0.0f, t1, 
-		1.0f, t2, 
+		0.0f, 0.0f, 
+		1.0f, 1.0f, 
 		drawMaterial );
 }
 
@@ -1239,9 +1234,9 @@ FullscreenFX_EnviroSuit::HighQuality
 void FullscreenFX_EnviroSuit::HighQuality() {
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	float s1 = 0.0f;
-	float t1 = 1.0f;
+	float t1 = 0.0f;
 	float s2 = 1.0f;
-	float t2 = 0.0f;
+	float t2 = 1.0f;
 	renderSystem->DrawStretchFX( 
 		0.0f, 0.0f, 
 		SCREEN_WIDTH, SCREEN_HEIGHT, 
@@ -1330,9 +1325,9 @@ void FullscreenFX_DoubleVision::HighQuality() {
 
 	// uv coordinates
 	float s1 = shift;
-	float t1 = 1.0f;
+	float t1 = 0.0f;
 	float s2 = 1.0f;
-	float t2 = 0.0f;
+	float t2 = 1.0f;
 
 	renderSystem->SetColor4( color.x, color.y, color.z, 1.0f );
 	renderSystem->DrawStretchFX( 
@@ -1344,9 +1339,9 @@ void FullscreenFX_DoubleVision::HighQuality() {
 
 	renderSystem->SetColor4( color.x, color.y, color.z, 0.5f );
 	s1 = 0.0f;
-	t1 = 1.0f;
+	t1 = 0.0f;
 	s2 = ( 1.0-shift );
-	t2 = 0.0f;
+	t2 = 1.0f;
 
 	renderSystem->DrawStretchFX( 
 		0.0f, 0.0f, 
@@ -1668,9 +1663,9 @@ void FullscreenFXManager::Blendback( float alpha ) {
 	if ( alpha < 1.f ) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f - alpha );
 		float s1 = 0.0f;
-		float t1 = 1.0f;
+		float t1 = 0.0f;
 		float s2 = 1.0f;
-		float t2 = 0.0f;
+		float t2 = 1.0f;
 		renderSystem->DrawStretchFX( 
 			0.0f, 0.0f, 
 			SCREEN_WIDTH, SCREEN_HEIGHT, 
