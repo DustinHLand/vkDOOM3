@@ -298,7 +298,6 @@ void idRenderSystemLocal::RemoteRender( const drawSurf_t *surf, textureStage_t *
 	parms->isSubview = true;
 	parms->isMirror = false;
 
-
 	CropRenderSize( stageWidth, stageHeight );
 
 	GetCroppedViewport( &parms->viewport );
