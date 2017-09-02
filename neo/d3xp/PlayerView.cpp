@@ -992,8 +992,8 @@ FullscreenFX_Multiplayer::AccumPass
 void FullscreenFX_Multiplayer::AccumPass( const renderView_t *view ) {
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	
-	float t0 = 1.0f;
-	float t1 = 0.0f;
+	float t0 = 0.0f;
+	float t1 = 1.0f;
 
 	// capture pass
 	if ( clearAccumBuffer ) {
