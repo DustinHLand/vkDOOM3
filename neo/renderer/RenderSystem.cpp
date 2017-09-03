@@ -1475,7 +1475,7 @@ void idRenderSystemLocal::CaptureRenderToImage( const char *imageName, bool clea
 	}
 
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
-	cmd.image = image;
+	cmd.target = image;
 
 	m_guiModel->Clear();
 }

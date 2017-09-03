@@ -1428,13 +1428,13 @@ void idRenderBackend::CopyRender( const renderCommand_t & cmd ) {
 
 	RENDERLOG_PRINTF( "***************** CopyRender *****************\n" );
 
-	if ( cmd.image ) {
+	/*if ( cmd.image ) {
 		GL_CopyFrameBuffer( cmd.image, cmd.x, cmd.y, cmd.imageWidth, cmd.imageHeight );
-	}
+	}*/
 
-	//if ( cmd.clearColorAfterCopy ) {
-	//	GL_Clear( true, false, false, STENCIL_SHADOW_TEST_VALUE, 0, 0, 0, 0 );
-	//}
+	/*if ( cmd.clearColorAfterCopy ) {
+		GL_Clear( true, false, false, STENCIL_SHADOW_TEST_VALUE, 0, 0, 0, 0 );
+	}*/
 }
 
 /*

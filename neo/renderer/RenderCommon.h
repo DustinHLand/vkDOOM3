@@ -714,9 +714,7 @@ struct deformInfo_t {
 /*
 ===========================================================================
 
-RENDERER BACK END COMMAND QUEUE
-
-TR_CMDS
+idRenderBackend commands
 
 ===========================================================================
 */
@@ -724,20 +722,11 @@ TR_CMDS
 struct renderCommand_t {
 	renderCommand_t() :
 		viewDef( NULL ),
-		x( 0 ), 
-		y( 0 ),
-		imageWidth( 0 ),
-		imageHeight( 0 ) {
-		
+		target( NULL ) {
 	}
 
 	viewDef_t *	viewDef;
-
-	int			x;
-	int			y;
-	int			imageWidth;
-	int			imageHeight;
-	idImage *	image;
+	idImage *	target;
 };
 
 /*
