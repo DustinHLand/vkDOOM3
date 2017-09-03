@@ -233,6 +233,9 @@ private:
 	void				GL_StartFrame();
 	void				GL_EndFrame();
 
+	void				GL_StartRenderPass();
+	void				GL_EndRenderPass();
+
 	uint64				GL_GetCurrentStateMinusStencil() const;
 	void				GL_SetDefaultState();
 	void				GL_State( uint64 stateBits, bool forceGlState = false );

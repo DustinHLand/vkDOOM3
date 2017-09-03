@@ -1203,6 +1203,10 @@ void idRenderBackend::ExecuteBackEndCommands( const int numCmds, const idArray< 
 	GL_SetDefaultState();
 
 	for ( int i = 0; i < numCmds; ++i ) {
+		// TEMP
+		if ( renderCommands[ i ].viewDef == NULL ) {
+			continue;
+		}
 		DrawView( renderCommands[ i ] );
 	}
 
@@ -1238,6 +1242,8 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 	}
 
 	m_pc.c_surfaces += m_viewDef->numDrawSurfs;
+
+	GL_StartRenderPass();
 
 	DBG_ShowOverdraw();
 
@@ -1404,6 +1410,8 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 
 		renderLog.CloseBlock();
 	}
+
+	GL_EndRenderPass();
 }
 
 /*
@@ -1424,9 +1432,9 @@ void idRenderBackend::CopyRender( const renderCommand_t & cmd ) {
 		GL_CopyFrameBuffer( cmd.image, cmd.x, cmd.y, cmd.imageWidth, cmd.imageHeight );
 	}
 
-	if ( cmd.clearColorAfterCopy ) {
-		GL_Clear( true, false, false, STENCIL_SHADOW_TEST_VALUE, 0, 0, 0, 0 );
-	}
+	//if ( cmd.clearColorAfterCopy ) {
+	//	GL_Clear( true, false, false, STENCIL_SHADOW_TEST_VALUE, 0, 0, 0, 0 );
+	//}
 }
 
 /*

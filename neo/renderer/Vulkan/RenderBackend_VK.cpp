@@ -1606,14 +1606,6 @@ void idRenderBackend::GL_StartFrame() {
 
 	vkCmdResetQueryPool( vkcontext.commandBuffer, queryPool, 0, NUM_TIMESTAMP_QUERIES );
 
-	VkRenderPassBeginInfo renderPassBeginInfo = {};
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.renderPass = vkcontext.renderPass;
-	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
-	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
-
-	vkCmdBeginRenderPass( vkcontext.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
-
 	vkCmdWriteTimestamp( vkcontext.commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ vkcontext.currentFrameData ]++ );
 }
 
@@ -1624,8 +1616,6 @@ idRenderBackend::GL_EndFrame
 */
 void idRenderBackend::GL_EndFrame() {
 	vkCmdWriteTimestamp( vkcontext.commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ vkcontext.currentFrameData ], m_queryIndex[ vkcontext.currentFrameData ]++ );
-
-	vkCmdEndRenderPass( vkcontext.commandBuffer );
 
 	// Transition our swap image to present.
 	// Do this instead of having the renderpass do the transition
@@ -1671,6 +1661,30 @@ void idRenderBackend::GL_EndFrame() {
 	submitInfo.pWaitDstStageMask = &dstStageMask;
 
 	ID_VK_CHECK( vkQueueSubmit( vkcontext.graphicsQueue, 1, &submitInfo, vkcontext.commandBufferFences[ vkcontext.currentFrameData ] ) );
+}
+
+/*
+========================
+idRenderBackend::GL_StartRenderPass
+========================
+*/
+void idRenderBackend::GL_StartRenderPass() {
+	VkRenderPassBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	beginInfo.renderPass = vkcontext.renderPass;
+	beginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
+	beginInfo.renderArea.extent = m_swapchainExtent;
+
+	vkCmdBeginRenderPass( vkcontext.commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE );
+}
+
+/*
+========================
+idRenderBackend::GL_EndRenderPass
+========================
+*/
+void idRenderBackend::GL_EndRenderPass() {
+	vkCmdEndRenderPass( vkcontext.commandBuffer );
 }
 
 /*
