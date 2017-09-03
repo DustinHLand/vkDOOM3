@@ -723,26 +723,17 @@ TR_CMDS
 ===========================================================================
 */
 
-enum renderOp_t {
-	RC_NOP,
-	RC_DRAW_VIEW,
-	RC_COPY_RENDER,
-};
-
 struct renderCommand_t {
 	renderCommand_t() :
-		op( RC_NOP ),
 		viewDef( NULL ),
 		x( 0 ), 
 		y( 0 ),
 		imageWidth( 0 ),
 		imageHeight( 0 ),
-		cubeFace( 0 ),
-		clearColorAfterCopy( false ) {
+		cubeFace( 0 ) {
 		
 	}
 
-	renderOp_t	op;
 	viewDef_t *	viewDef;
 
 	int			x;
@@ -751,7 +742,6 @@ struct renderCommand_t {
 	int			imageHeight;
 	idImage *	image;
 	int			cubeFace; // when copying to a cubeMap
-	bool		clearColorAfterCopy;
 };
 
 /*

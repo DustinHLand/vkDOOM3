@@ -1203,20 +1203,7 @@ void idRenderBackend::ExecuteBackEndCommands( const int numCmds, const idArray< 
 	GL_SetDefaultState();
 
 	for ( int i = 0; i < numCmds; ++i ) {
-		const renderCommand_t & cmd = renderCommands[ i ];
-		switch ( cmd.op ) {
-			case RC_NOP:
-				break;
-			case RC_DRAW_VIEW:
-				DrawView( cmd );
-				break;
-			case RC_COPY_RENDER:
-				CopyRender( cmd );
-				break;
-			default:
-				idLib::Error( "ExecuteBackEndCommands: bad commandId" );
-				break;
-		}
+		DrawView( renderCommands[ i ] );
 	}
 
 	GL_EndFrame();

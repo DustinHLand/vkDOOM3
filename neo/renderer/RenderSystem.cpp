@@ -944,7 +944,6 @@ have multiple views if a mirror, portal, or dynamic texture is present.
 */
 void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms, bool guiOnly ) {
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
-	cmd.op = RC_DRAW_VIEW;
 	cmd.viewDef = parms;
 
 	pc.c_numViews++;
@@ -1428,9 +1427,6 @@ void idRenderSystemLocal::RenderCommandBuffers() {
 	if ( frameData.renderCommandIndex == 0 ) {
 		return;
 	}
-	if ( frameData.renderCommands[ 0 ].op == RC_NOP ) {
-		return;
-	}
 
 	m_backend.ExecuteBackEndCommands( frameData.renderCommandIndex, frameData.renderCommands );
 
@@ -1536,13 +1532,11 @@ void idRenderSystemLocal::CaptureRenderToImage( const char *imageName, bool clea
 	idScreenRect & rc = m_renderCrops[ m_currentRenderCrop ];
 
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
-	cmd.op = RC_COPY_RENDER;
 	cmd.x = rc.x1;
 	cmd.y = rc.y1;
 	cmd.imageWidth = rc.GetWidth();
 	cmd.imageHeight = rc.GetHeight();
 	cmd.image = image;
-	cmd.clearColorAfterCopy = clearColorAfterCopy;
 
 	m_guiModel->Clear();
 }
