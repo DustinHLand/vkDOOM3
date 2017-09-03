@@ -393,7 +393,6 @@ public:
 	idImage *			m_scratchImage;
 	idImage *			m_scratchImage2;
 	idImage *			m_currentRenderImage;		// for SS_POST_PROCESS shaders
-	idImage *			m_currentDepthImage;		// for motion blur
 	idImage *			m_accumImage;
 	idImage *			m_loadingIconImage;
 	idImage *			m_hellLoadingIconImage;
