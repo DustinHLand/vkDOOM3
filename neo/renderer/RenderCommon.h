@@ -729,8 +729,7 @@ struct renderCommand_t {
 		x( 0 ), 
 		y( 0 ),
 		imageWidth( 0 ),
-		imageHeight( 0 ),
-		cubeFace( 0 ) {
+		imageHeight( 0 ) {
 		
 	}
 
@@ -741,7 +740,6 @@ struct renderCommand_t {
 	int			imageWidth;
 	int			imageHeight;
 	idImage *	image;
-	int			cubeFace; // when copying to a cubeMap
 };
 
 /*
