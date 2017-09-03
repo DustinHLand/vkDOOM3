@@ -181,7 +181,7 @@ viewDef_t * idGuiModel::EmitFullScreen() {
 
 	viewDef_t * viewDef = (viewDef_t *)renderSystem->ClearedFrameAlloc( sizeof( *viewDef ), FRAME_ALLOC_VIEW_DEF );
 	viewDef->is2Dgui = true;
-	tr.GetCroppedViewport( &viewDef->viewport );
+	tr.GetDefaultViewport( viewDef->viewport );
 
 	viewDef->scissor.x1 = 0;
 	viewDef->scissor.y1 = 0;

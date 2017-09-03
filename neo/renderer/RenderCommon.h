@@ -57,8 +57,6 @@ const int MAX_CLIP_PLANES			= 1;
 // in a given view, but it will automatically grow if needed
 const int INITIAL_DRAWSURFS			= 2048;
 
-static const int MAX_RENDER_CROPS	= 8;
-
 // Guis
 const int MAX_RENDERENTITY_GUI		= 3;
 // default size of the drawSurfs list for guis, will

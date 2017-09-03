@@ -308,8 +308,7 @@ void idRenderSystemLocal::RenderScene( idRenderWorld * world, const renderView_t
 		windowHeight = ( windowHeight * r_screenFraction.GetInteger() ) / 100;
 	}
 
-	CropRenderSize( windowWidth, windowHeight );
-	GetCroppedViewport( &parms->viewport );
+	GetDefaultViewport( parms->viewport );
 
 	// the scissor bounds may be shrunk in subviews even if
 	// the viewport stays the same
@@ -343,8 +342,6 @@ void idRenderSystemLocal::RenderScene( idRenderWorld * world, const renderView_t
 	// this will also cause any necessary entities and lights to be
 	// updated to the demo file
 	RenderView( parms );
-
-	UnCrop();
 
 	int endTime = Sys_Microseconds();
 

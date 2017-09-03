@@ -298,9 +298,11 @@ void idRenderSystemLocal::RemoteRender( const drawSurf_t *surf, textureStage_t *
 	parms->isSubview = true;
 	parms->isMirror = false;
 
-	CropRenderSize( stageWidth, stageHeight );
-
-	GetCroppedViewport( &parms->viewport );
+	idScreenRect & viewport = parms->viewport;
+	viewport.x1 = 0;
+	viewport.y1 = 0;
+	viewport.x2 = stageWidth - 1;
+	viewport.y2 = stageHeight - 1;
 
 	parms->scissor.x1 = 0;
 	parms->scissor.y1 = 0;
@@ -320,7 +322,6 @@ void idRenderSystemLocal::RemoteRender( const drawSurf_t *surf, textureStage_t *
 	}
 
 	CaptureRenderToImage( stage->image->GetName(), true );
-	UnCrop();
 }
 
 /*
@@ -340,9 +341,11 @@ void idRenderSystemLocal::MirrorRender( const drawSurf_t *surf, textureStage_t *
 		return;
 	}
 
-	CropRenderSize( stage->width, stage->height );
-
-	GetCroppedViewport( &parms->viewport );
+	idScreenRect & viewport = parms->viewport;
+	viewport.x1 = 0;
+	viewport.y1 = 0;
+	viewport.x2 = stage->width - 1;
+	viewport.y2 = stage->height - 1;
 
 	parms->scissor.x1 = 0;
 	parms->scissor.y1 = 0;
@@ -363,7 +366,6 @@ void idRenderSystemLocal::MirrorRender( const drawSurf_t *surf, textureStage_t *
 	stage->image = globalImages->m_scratchImage;
 
 	CaptureRenderToImage( stage->image->GetName() );
-	UnCrop();
 }
 
 /*
@@ -386,9 +388,11 @@ void idRenderSystemLocal::XrayRender( const drawSurf_t *surf, textureStage_t *st
 	int stageWidth = stage->width;
 	int stageHeight = stage->height;
 
-	CropRenderSize( stageWidth, stageHeight );
-
-	GetCroppedViewport( &parms->viewport );
+	idScreenRect & viewport = parms->viewport;
+	viewport.x1 = 0;
+	viewport.y1 = 0;
+	viewport.x2 = stageWidth - 1;
+	viewport.y2 = stageHeight - 1;
 
 	parms->scissor.x1 = 0;
 	parms->scissor.y1 = 0;
@@ -409,7 +413,6 @@ void idRenderSystemLocal::XrayRender( const drawSurf_t *surf, textureStage_t *st
 	stage->image = globalImages->m_scratchImage2;
 
 	CaptureRenderToImage( stage->image->GetName(), true );
-	UnCrop();
 }
 
 /*

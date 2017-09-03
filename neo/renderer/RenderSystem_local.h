@@ -108,12 +108,10 @@ public:
 	virtual void			RenderCommandBuffers();
 
 	virtual void			TakeScreenshot( int width, int height, const char *fileName, int downSample, renderView_t *ref );
-	virtual void			CropRenderSize( int width, int height );
 	virtual void			CaptureRenderToImage( const char *imageName, bool clearColorAfterCopy = false );
 	virtual void			CaptureRenderToFile( const char *fileName, bool fixAlpha );
-	virtual void			UnCrop();
 
-	virtual void			GetCroppedViewport( idScreenRect * viewport );
+	virtual void			GetDefaultViewport( idScreenRect & viewport ) const;
 	virtual void			PerformResolutionScaling( int & newWidth, int & newHeight );
 
 	virtual void			ReloadSurface();
@@ -221,9 +219,6 @@ private:
 	drawSurf_t				m_unitSquareSurface;
 	drawSurf_t				m_zeroOneCubeSurface;
 	drawSurf_t				m_testImageSurface;
-
-	idScreenRect			m_renderCrops[ MAX_RENDER_CROPS ];
-	int						m_currentRenderCrop;
 
 	// GUI drawing variables for surface creation
 	int						m_guiRecursionLevel;	// to prevent infinite overruns

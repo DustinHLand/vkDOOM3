@@ -690,8 +690,6 @@ void idRenderSystemLocal::Clear() {
 	defaultMaterial = NULL;
 	m_viewDef = NULL;
 	memset( &pc, 0, sizeof( pc ) );
-	memset( m_renderCrops, 0, sizeof( m_renderCrops ) );
-	m_currentRenderCrop = 0;
 	m_currentColorNativeBytesOrder = 0xFFFFFFFF;
 	m_currentGLState = 0;
 	m_guiRecursionLevel = 0;
@@ -1396,13 +1394,6 @@ void idRenderSystemLocal::SwapCommandBuffers_FinishCommandBuffers() {
 	R_InitDrawSurfFromTri( m_zeroOneCubeSurface, *m_zeroOneCubeTriangles );
 	R_InitDrawSurfFromTri( m_testImageSurface, *m_testImageTriangles );
 
-	// Reset render crop to be the full screen
-	m_renderCrops[0].x1 = 0;
-	m_renderCrops[0].y1 = 0;
-	m_renderCrops[0].x2 = GetWidth() - 1;
-	m_renderCrops[0].y2 = GetHeight() - 1;
-	m_currentRenderCrop = 0;
-
 	// this is the ONLY place this is modified
 	frameCount++;
 
@@ -1436,13 +1427,16 @@ void idRenderSystemLocal::RenderCommandBuffers() {
 
 /*
 =====================
-idRenderSystemLocal::GetCroppedViewport
+idRenderSystemLocal::GetDefaultViewport
 
 Returns the current cropped pixel coordinates
 =====================
 */
-void idRenderSystemLocal::GetCroppedViewport( idScreenRect * viewport ) {
-	*viewport = m_renderCrops[ m_currentRenderCrop ];
+void idRenderSystemLocal::GetDefaultViewport( idScreenRect & viewport ) const {
+	viewport.x1 = 0;
+	viewport.y1 = 0;
+	viewport.x2 = GetWidth() - 1;
+	viewport.y2 = GetHeight() - 1;
 }
 
 /*
@@ -1466,55 +1460,6 @@ void idRenderSystemLocal::PerformResolutionScaling( int& newWidth, int& newHeigh
 
 /*
 ================
-idRenderSystemLocal::CropRenderSize
-================
-*/
-void idRenderSystemLocal::CropRenderSize( int width, int height ) {
-	if ( !m_bInitialized ) {
-		return;
-	}
-
-	// close any gui drawing before changing the size
-	EmitFullscreenGui();
-
-	if ( width < 1 || height < 1 ) {
-		idLib::Error( "CropRenderSize: bad sizes" );
-	}
-
-	idScreenRect & previous = m_renderCrops[ m_currentRenderCrop ];
-
-	m_currentRenderCrop++;
-
-	idScreenRect & current = m_renderCrops[ m_currentRenderCrop ];
-
-	current.x1 = previous.x1;
-	current.x2 = previous.x1 + width - 1;
-	current.y1 = previous.y2 - height + 1;
-	current.y2 = previous.y2;
-}
-
-/*
-================
-idRenderSystemLocal::UnCrop
-================
-*/
-void idRenderSystemLocal::UnCrop() {
-	if ( !m_bInitialized ) {
-		return;
-	}
-
-	if ( m_currentRenderCrop < 1 ) {
-		idLib::Error( "idRenderSystemLocal::UnCrop: m_currentRenderCrop < 1" );
-	}
-
-	// close any gui drawing
-	EmitFullscreenGui();
-
-	m_currentRenderCrop--;
-}
-
-/*
-================
 idRenderSystemLocal::CaptureRenderToImage
 ================
 */
@@ -1529,13 +1474,7 @@ void idRenderSystemLocal::CaptureRenderToImage( const char *imageName, bool clea
 		image = globalImages->AllocImage( imageName );
 	}
 
-	idScreenRect & rc = m_renderCrops[ m_currentRenderCrop ];
-
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
-	cmd.x = rc.x1;
-	cmd.y = rc.y1;
-	cmd.imageWidth = rc.GetWidth();
-	cmd.imageHeight = rc.GetHeight();
 	cmd.image = image;
 
 	m_guiModel->Clear();

@@ -193,17 +193,12 @@ public:
 
 	// the x,y,width,height values are in virtual SCREEN_WIDTH / SCREEN_HEIGHT coordinates
 
-	// to render to a texture, first set the crop size with makePowerOfTwo = true,
-	// then perform all desired rendering, then capture to an image
-	// if the specified physical dimensions are larger than the current cropped region, they will be cut down to fit
-	virtual void			CropRenderSize( int width, int height ) = 0;
 	virtual void			CaptureRenderToImage( const char *imageName, bool clearColorAfterCopy = false ) = 0;
 	// fixAlpha will set all the alpha channel values to 0xff, which allows screen captures
 	// to use the default tga loading code without having dimmed down areas in many places
 	virtual void			CaptureRenderToFile( const char *fileName, bool fixAlpha = false ) = 0;
-	virtual void			UnCrop() = 0;
 
-	virtual void			GetCroppedViewport( class idScreenRect * viewport ) = 0;
+	virtual void			GetDefaultViewport( class idScreenRect & viewport ) const = 0;
 	virtual void			PerformResolutionScaling( int & newWidth, int & newHeight ) = 0;
 
 	virtual void			ReloadSurface() = 0;
