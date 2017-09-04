@@ -940,9 +940,10 @@ This is the main 3D rendering command.  A single scene may
 have multiple views if a mirror, portal, or dynamic texture is present.
 =============
 */
-void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms ) {
+void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms, idImage * renderTarget ) {
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
 	cmd.viewDef = parms;
+	cmd.target = renderTarget;
 
 	pc.c_numViews++;
 
@@ -961,7 +962,7 @@ void idRenderSystemLocal::EmitFullscreenGui() {
 	viewDef_t * guiViewDef = m_guiModel->EmitFullScreen();
 	if ( guiViewDef ) {
 		// add the command to draw this view
-		AddDrawViewCmd( guiViewDef );
+		AddDrawViewCmd( guiViewDef, NULL );
 	}
 	m_guiModel->Clear();
 }
@@ -1456,26 +1457,6 @@ void idRenderSystemLocal::PerformResolutionScaling( int& newWidth, int& newHeigh
 
 	newWidth = idMath::Ftoi( GetWidth() * xScale );
 	newHeight = idMath::Ftoi( GetHeight() * yScale );
-}
-
-/*
-================
-idRenderSystemLocal::CaptureRenderToImage
-================
-*/
-void idRenderSystemLocal::CaptureRenderToImage( const char *imageName, bool clearColorAfterCopy ) {
-	if ( !m_bInitialized ) {
-		return;
-	}
-	EmitFullscreenGui();
-
-	idImage	* image = globalImages->GetImage( imageName );
-	if ( image == NULL ) {
-		image = globalImages->AllocImage( imageName );
-	}
-
-	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
-	cmd.target = image;
 }
 
 /*

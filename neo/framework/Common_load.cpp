@@ -107,7 +107,7 @@ void idCommonLocal::StartWipe( const char *_wipeMaterial, bool hold ) {
 
 	Draw();
 
-	renderSystem->CaptureRenderToImage( "_currentRender" );
+	//renderSystem->CaptureRenderToImage( "_currentRender" );
 
 	wipeMaterial = declManager->FindMaterial( _wipeMaterial, false );
 

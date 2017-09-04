@@ -312,16 +312,14 @@ void idRenderSystemLocal::RemoteRender( const drawSurf_t *surf, textureStage_t *
 	parms->superView = m_viewDef;
 	parms->subviewSurface = surf;
 
-	// generate render commands for it
-	RenderView( parms );
-
-	// copy this rendering to the image
-	stage->dynamicFrameCount = frameCount;
 	if ( stage->image == NULL ) {
 		stage->image = globalImages->m_scratchImage;
 	}
 
-	CaptureRenderToImage( stage->image->GetName(), true );
+	// generate render commands for it
+	RenderView( parms, stage->image );
+
+	stage->dynamicFrameCount = frameCount;
 }
 
 /*
@@ -358,14 +356,12 @@ void idRenderSystemLocal::MirrorRender( const drawSurf_t *surf, textureStage_t *
 	// triangle culling order changes with mirroring
 	parms->isMirror = ( ( (int)parms->isMirror ^ (int)m_viewDef->isMirror ) != 0 );
 
-	// generate render commands for it
-	RenderView( parms );
-
-	// copy this rendering to the image
-	stage->dynamicFrameCount = frameCount;
 	stage->image = globalImages->m_scratchImage;
 
-	CaptureRenderToImage( stage->image->GetName() );
+	// generate render commands for it
+	RenderView( parms, stage->image );
+
+	stage->dynamicFrameCount = frameCount;
 }
 
 /*
@@ -405,14 +401,12 @@ void idRenderSystemLocal::XrayRender( const drawSurf_t *surf, textureStage_t *st
 	// triangle culling order changes with mirroring
 	parms->isMirror = ( ( (int)parms->isMirror ^ (int)m_viewDef->isMirror ) != 0 );
 
-	// generate render commands for it
-	RenderView( parms );
-
-	// copy this rendering to the image
-	stage->dynamicFrameCount = frameCount;
 	stage->image = globalImages->m_scratchImage2;
 
-	CaptureRenderToImage( stage->image->GetName(), true );
+	// generate render commands for it
+	RenderView( parms, stage->image );
+
+	stage->dynamicFrameCount = frameCount;
 }
 
 /*

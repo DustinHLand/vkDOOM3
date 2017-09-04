@@ -190,10 +190,8 @@ public:
 	// the render output can be cropped down to a subset of the real screen, as
 	// for save-game reviews and split-screen multiplayer.  Users of the renderer
 	// will not know the actual pixel size of the area they are rendering to
-
 	// the x,y,width,height values are in virtual SCREEN_WIDTH / SCREEN_HEIGHT coordinates
 
-	virtual void			CaptureRenderToImage( const char *imageName, bool clearColorAfterCopy = false ) = 0;
 	// fixAlpha will set all the alpha channel values to 0xff, which allows screen captures
 	// to use the default tga loading code without having dimmed down areas in many places
 	virtual void			CaptureRenderToFile( const char *fileName, bool fixAlpha = false ) = 0;

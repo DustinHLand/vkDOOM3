@@ -427,14 +427,14 @@ void idPlayerView::SingleView( const renderView_t *view, idMenuHandler_HUD * hud
 	renderView_t hackedView = *view;
 	hackedView.viewaxis = hackedView.viewaxis * ShakeAxis();
 
-	if ( gameLocal.portalSkyEnt.GetEntity() && gameLocal.IsPortalSkyAcive() && g_enablePortalSky.GetBool() ) {
-		renderView_t portalView = hackedView;
-		portalView.vieworg = gameLocal.portalSkyEnt.GetEntity()->GetPhysics()->GetOrigin();
-		renderSystem->RenderScene( gameRenderWorld, &portalView );
-		renderSystem->CaptureRenderToImage( "_currentRender" );
+	//if ( gameLocal.portalSkyEnt.GetEntity() && gameLocal.IsPortalSkyAcive() && g_enablePortalSky.GetBool() ) {
+	//	renderView_t portalView = hackedView;
+	//	portalView.vieworg = gameLocal.portalSkyEnt.GetEntity()->GetPhysics()->GetOrigin();
+	//	renderSystem->RenderScene( gameRenderWorld, &portalView );
+	//	renderSystem->CaptureRenderToImage( "_currentRender" );
 
-		hackedView.forceUpdate = true;				// FIX: for smoke particles not drawing when portalSky present
-	}
+	//	hackedView.forceUpdate = true;				// FIX: for smoke particles not drawing when portalSky present
+	//}
 
 	// process the frame
 	fxManager->Process( &hackedView );
@@ -1725,12 +1725,12 @@ void FullscreenFXManager::Process( const renderView_t *view ) {
 		// do the actual drawing
 		if ( drawIt ) {
 			// we need to dump to _currentRender
-			renderSystem->CaptureRenderToImage( "_currentRender" );
+			//renderSystem->CaptureRenderToImage( "_currentRender" );
 
 			// handle the accum pass if we have one
 			if ( pfx->HasAccum() ) {
 				pfx->AccumPass( view );
-				renderSystem->CaptureRenderToImage( "_accum" );
+				//renderSystem->CaptureRenderToImage( "_accum" );
 			}
 
 			// do the high quality pass
