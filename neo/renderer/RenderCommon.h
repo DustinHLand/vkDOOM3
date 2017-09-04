@@ -83,7 +83,7 @@ static const int NUM_TIMESTAMP_QUERIES		= 16;
 typedef uint64 vertCacheHandle_t;
 
 // How is this texture used?  Determines the storage and color format
-typedef enum {
+enum textureUsage_t{
 	TD_SPECULAR,			// may be compressed, and always zeros the alpha channel
 	TD_DIFFUSE,				// may be compressed
 	TD_DEFAULT,				// generic RGBA texture (particles, etc...)
@@ -96,13 +96,13 @@ typedef enum {
 	TD_LOOKUP_TABLE_RGBA,	// RGBA lookup table
 	TD_COVERAGE,			// coverage map for fill depth pass when YCoCG is used
 	TD_DEPTH,				// depth buffer copy for motion blur
-} textureUsage_t;
+};
 
-typedef enum {
+enum cubeFiles_t{
 	CF_2D,			// not a cube map
 	CF_NATIVE,		// _px, _nx, _py, etc, directly sent to GL
 	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
-} cubeFiles_t;
+};
 
 struct vidMode_t {
     int width;
