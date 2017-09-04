@@ -131,7 +131,6 @@ idImage::idImage
 ====================
 */
 idImage::idImage( const char * name ) : m_imgName( name ) {
-	m_bIsSwapChainImage = false;
 	m_internalFormat = VK_FORMAT_UNDEFINED;
 	m_image = VK_NULL_HANDLE;
 	m_view = VK_NULL_HANDLE;
@@ -156,9 +155,7 @@ idImage::~idImage
 ====================
 */
 idImage::~idImage() {
-	if ( !m_bIsSwapChainImage ) {
-		PurgeImage();
-	}
+	PurgeImage();
 }
 
 /*

@@ -286,7 +286,6 @@ private:
 
 	int					m_refCount;				// overall ref count
 
-	bool				m_bIsSwapChainImage;
 	VkFormat			m_internalFormat;
 	VkImage				m_image;
 	VkImageView			m_view;
