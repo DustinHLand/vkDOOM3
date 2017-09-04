@@ -128,10 +128,10 @@ private:
 	void					ShutdownFrameData();
 	void					ToggleSmpFrame();
 
-	void					AddDrawViewCmd( viewDef_t * parms, idImage * renderTarget );
+	void					AddDrawViewCmd( viewDef_t * parms );
 
 	// Render
-	void					RenderView( viewDef_t * parms, idImage * renderTarget = NULL );
+	void					RenderView( viewDef_t * parms );
 	void					RenderGuiSurf( idUserInterface * gui, const drawSurf_t * drawSurf );
 
 	// Lights

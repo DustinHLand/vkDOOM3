@@ -361,7 +361,7 @@ a mirror / remote location, or a 3D view on a gui surface.
 Parms will typically be allocated with R_FrameAlloc
 ================
 */
-void idRenderSystemLocal::RenderView( viewDef_t * parms, idImage * renderTarget ) {
+void idRenderSystemLocal::RenderView( viewDef_t * parms ) {
 	// save view in case we are a subview
 	viewDef_t * oldView = m_viewDef;
 
@@ -422,7 +422,7 @@ void idRenderSystemLocal::RenderView( viewDef_t * parms, idImage * renderTarget 
 	}
 
 	// add the rendering commands for this viewDef
-	AddDrawViewCmd( parms, renderTarget );
+	AddDrawViewCmd( parms );
 
 	// restore view in case we are a subview
 	m_viewDef = oldView;

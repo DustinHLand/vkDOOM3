@@ -581,7 +581,8 @@ struct viewDef_t {
 	idRenderMatrix		projectionRenderMatrix;	// tech5 version of projectionMatrix
 	viewEntity_t		worldSpace;
 
-	idRenderWorld *renderWorld;
+	idRenderWorld *		renderWorld;
+	idImage *			renderTarget;
 
 	idVec3				initialViewAreaOrigin;
 	// Used to find the portalArea that view flooding will take place from.
