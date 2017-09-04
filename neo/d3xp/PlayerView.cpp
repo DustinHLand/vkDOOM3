@@ -1647,10 +1647,6 @@ void FullscreenFXManager::Initialize( idPlayerView *pv ) {
 	CreateFX( "multiplayer", "multiplayer", 1000 );
 	CreateFX( "influencevision", "influencevision", 1000 );
 	CreateFX( "bloom", "bloom", 0 );
-
-	// pre-cache the texture grab so we dont hitch
-	renderSystem->CaptureRenderToImage( "_accum" );
-	renderSystem->CaptureRenderToImage( "_currentRender" );
 }
 
 /*
