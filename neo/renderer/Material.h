@@ -351,9 +351,7 @@ public:
 	//BSM Nerve: Added for material editor
 	bool				Save( const char *fileName = NULL );
 
-						// returns the internal image name for stage 0, which can be used
-						// for the renderer CaptureRenderToImage() call
-						// I'm not really sure why this needs to be virtual...
+						// returns the internal image name for stage 0
 	virtual const char	*ImageName() const;
 
 	void				ReloadImages( bool force ) const;
