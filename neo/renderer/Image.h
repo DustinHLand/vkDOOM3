@@ -208,7 +208,6 @@ public:
 	//---------------------------------------------
 
 #if defined( ID_VULKAN )
-	void		CreateFromSwapImage( VkImage image, VkImageView imageView, VkFormat format, const VkExtent2D & extent );
 	VkImage		GetImage() const { return m_image; }
 	VkImageView	GetView() const { return m_view; }
 	VkImageLayout GetLayout() const { return m_layout; }

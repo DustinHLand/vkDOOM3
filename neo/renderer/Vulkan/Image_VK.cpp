@@ -172,25 +172,6 @@ bool idImage::IsLoaded() const {
 
 /*
 ====================
-idImage::CreateFromSwapImage
-====================
-*/
-void idImage::CreateFromSwapImage( VkImage image, VkImageView imageView, VkFormat format, const VkExtent2D & extent ) {
-	m_image = image;
-	m_view = imageView;
-	m_internalFormat = format;
-	m_opts.textureType = TT_2D;
-	m_opts.format = FMT_RGBA8;
-	m_opts.numLevels = 1;
-	m_opts.width = extent.width;
-	m_opts.height = extent.height;
-	m_bIsSwapChainImage = true;
-
-	// TODO_VK may need to setup more state here.
-}
-
-/*
-====================
 idImage::CreateSampler
 ====================
 */
