@@ -422,7 +422,7 @@ void idRenderSystemLocal::RenderView( viewDef_t * parms ) {
 	}
 
 	// add the rendering commands for this viewDef
-	AddDrawViewCmd( parms, false );
+	AddDrawViewCmd( parms );
 
 	// restore view in case we are a subview
 	m_viewDef = oldView;

@@ -129,7 +129,7 @@ private:
 	void					ShutdownFrameData();
 	void					ToggleSmpFrame();
 
-	void					AddDrawViewCmd( viewDef_t * parms, bool guiOnly );
+	void					AddDrawViewCmd( viewDef_t * parms );
 
 	// Render
 	void					RenderView( viewDef_t * parms );

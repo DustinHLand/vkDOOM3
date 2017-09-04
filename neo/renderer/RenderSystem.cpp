@@ -940,7 +940,7 @@ This is the main 3D rendering command.  A single scene may
 have multiple views if a mirror, portal, or dynamic texture is present.
 =============
 */
-void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms, bool guiOnly ) {
+void idRenderSystemLocal::AddDrawViewCmd( viewDef_t *parms ) {
 	renderCommand_t & cmd = m_frameData->renderCommands[ m_frameData->renderCommandIndex++ ];
 	cmd.viewDef = parms;
 
@@ -961,7 +961,7 @@ void idRenderSystemLocal::EmitFullscreenGui() {
 	viewDef_t * guiViewDef = m_guiModel->EmitFullScreen();
 	if ( guiViewDef ) {
 		// add the command to draw this view
-		AddDrawViewCmd( guiViewDef, true );
+		AddDrawViewCmd( guiViewDef );
 	}
 	m_guiModel->Clear();
 }
