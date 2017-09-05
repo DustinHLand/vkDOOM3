@@ -95,7 +95,8 @@ enum textureUsage_t{
 	TD_LOOKUP_TABLE_RGB1,	// RGB lookup table with a solid white alpha
 	TD_LOOKUP_TABLE_RGBA,	// RGBA lookup table
 	TD_COVERAGE,			// coverage map for fill depth pass when YCoCG is used
-	TD_DEPTH,				// depth buffer copy for motion blur
+	TD_DEPTH,				// depth buffer
+	TD_TARGET				// render target
 };
 
 enum cubeFiles_t{

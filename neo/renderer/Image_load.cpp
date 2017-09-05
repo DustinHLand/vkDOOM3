@@ -93,6 +93,9 @@ ID_INLINE void idImage::DeriveOpts() {
 			case TD_DEPTH:
 				m_opts.format = FMT_DEPTH;
 				break;
+			case TD_TARGET:
+				m_opts.format = FMT_RGBA8;
+				break;
 			case TD_DIFFUSE: 
 				// TD_DIFFUSE gets only set to when its a diffuse texture for an interaction
 				m_opts.gammaMips = true;
