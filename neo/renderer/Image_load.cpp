@@ -85,7 +85,7 @@ ID_INLINE void idImage::DeriveOpts() {
 	if ( m_opts.format == FMT_NONE ) {
 		m_opts.colorFormat = CFM_DEFAULT;
 
-		switch ( m_usage ) {
+		switch ( m_opts.usage ) {
 			case TD_COVERAGE:
 				m_opts.format = FMT_DXT1;
 				m_opts.colorFormat = CFM_GREEN_ALPHA;
@@ -168,7 +168,7 @@ ID_INLINE void idImage::DeriveOpts() {
 idImage::AllocImage
 ========================
 */
-void idImage::AllocImage( const idImageOpts &imgOpts, textureFilter_t tf, textureRepeat_t tr ) {
+void idImage::AllocImage( const idImageOpts & imgOpts, textureFilter_t tf, textureRepeat_t tr ) {
 	m_filter = tf;
 	m_repeat = tr;
 	m_opts = imgOpts;
@@ -224,7 +224,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 			R_LoadCubeImages( GetName(), m_cubeFiles, NULL, NULL, &m_sourceFileTime );
 		} else {
 			m_opts.textureType = TT_2D;
-			R_LoadImageProgram( GetName(), NULL, NULL, NULL, &m_sourceFileTime, &m_usage );
+			R_LoadImageProgram( GetName(), NULL, NULL, NULL, &m_sourceFileTime, &m_opts.usage );
 		}
 	}
 
@@ -232,7 +232,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 	DeriveOpts();
 
 	idStrStatic< MAX_OSPATH > generatedName = GetName();
-	GetGeneratedName( generatedName, m_usage, m_cubeFiles );
+	GetGeneratedName( generatedName, m_opts.usage, m_cubeFiles );
 
 	idBinaryImage im( generatedName );
 	m_binaryFileTime = im.LoadFromGeneratedFile( m_sourceFileTime );
@@ -288,7 +288,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 		m_opts.textureType = (textureType_t)header.textureType;
 		if ( cvarSystem->GetCVarBool( "fs_buildresources" ) ) {
 			// for resource gathering write this image to the preload file for this map
-			fileSystem->AddImagePreload( GetName(), m_filter, m_repeat, m_usage, m_cubeFiles );
+			fileSystem->AddImagePreload( GetName(), m_filter, m_repeat, m_opts.usage, m_cubeFiles );
 		}
 	} else {
 		if ( m_cubeFiles != CF_2D ) {
@@ -319,7 +319,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 			byte * pic;
 
 			// load the full specification, and perform any image program calculations
-			R_LoadImageProgram( GetName(), &pic, &width, &height, &m_sourceFileTime, &m_usage );
+			R_LoadImageProgram( GetName(), &pic, &width, &height, &m_sourceFileTime, &m_opts.usage );
 
 			if ( pic == NULL ) {
 				idLib::Warning( "Couldn't load image: %s : %s", GetName(), generatedName.c_str() );
@@ -527,7 +527,7 @@ void idImage::GenerateImage(
 
 	m_filter = filter;
 	m_repeat = repeat;
-	m_usage = usage;
+	m_opts.usage = usage;
 	m_cubeFiles = CF_2D;
 
 	m_opts.textureType = TT_2D;
@@ -568,7 +568,7 @@ void idImage::GenerateCubeImage(
 
 	m_filter = filter;
 	m_repeat = TR_CLAMP;
-	m_usage = usage;
+	m_opts.usage = usage;
 	m_cubeFiles = CF_NATIVE;
 
 	m_opts.textureType = TT_CUBIC;
@@ -609,7 +609,7 @@ void idImage::UploadScratchImage( const byte * data, int cols, int rows ) {
 			pic[i] = data + cols * rows * 4 * i;
 		}
 
-		if ( m_opts.textureType != TT_CUBIC || m_usage != TD_LOOKUP_TABLE_RGBA ) {
+		if ( m_opts.textureType != TT_CUBIC || m_opts.usage != TD_LOOKUP_TABLE_RGBA ) {
 			GenerateCubeImage( pic, cols, TF_LINEAR, TD_LOOKUP_TABLE_RGBA );
 			return;
 		}
@@ -624,7 +624,7 @@ void idImage::UploadScratchImage( const byte * data, int cols, int rows ) {
 			SubImageUpload( 0, 0, 0, i, m_opts.width, m_opts.height, pic[i] );
 		}
 	} else {
-		if ( m_opts.textureType != TT_2D || m_usage != TD_LOOKUP_TABLE_RGBA ) {
+		if ( m_opts.textureType != TT_2D || m_opts.usage != TD_LOOKUP_TABLE_RGBA ) {
 			GenerateImage( data, cols, rows, TF_LINEAR, TR_REPEAT, TD_LOOKUP_TABLE_RGBA );
 			return;
 		}

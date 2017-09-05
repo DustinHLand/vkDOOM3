@@ -773,13 +773,15 @@ void idRenderBackend::CreateSwapChain() {
 	ID_VK_CHECK( vkGetSwapchainImagesKHR( vkcontext.device, m_swapchain, &numImages, NULL ) );
 	ID_VK_VALIDATE( numImages > 0, "vkGetSwapchainImagesKHR returned a zero image count." );
 
-	ID_VK_CHECK( vkGetSwapchainImagesKHR( vkcontext.device, m_swapchain, &numImages, m_swapchainImages.Ptr() ) );
+	idList< VkImage > swapImages;
+	swapImages.SetNum( numImages );
+	ID_VK_CHECK( vkGetSwapchainImagesKHR( vkcontext.device, m_swapchain, &numImages, swapImages.Ptr() ) );
 	ID_VK_VALIDATE( numImages > 0, "vkGetSwapchainImagesKHR returned a zero image count." );
 
-	for ( uint32 i = 0; i < NUM_FRAME_DATA; ++i ) {
+	for ( uint32 i = 0; i < numImages; ++i ) {
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageViewCreateInfo.image = m_swapchainImages[ i ];
+		imageViewCreateInfo.image = swapImages[ i ];
 		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		imageViewCreateInfo.format = m_swapchainFormat;
 		imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_R;
@@ -793,7 +795,18 @@ void idRenderBackend::CreateSwapChain() {
 		imageViewCreateInfo.subresourceRange.layerCount = 1;
 		imageViewCreateInfo.flags = 0;
 
-		ID_VK_CHECK( vkCreateImageView( vkcontext.device, &imageViewCreateInfo, NULL, &m_swapchainViews[ i ] ) );
+		VkImageView swapImageView = VK_NULL_HANDLE;
+		ID_VK_CHECK( vkCreateImageView( vkcontext.device, &imageViewCreateInfo, NULL, &swapImageView ) );
+
+		idImage * swapImage = new idImage( va( "_swapchain%d", i ) );
+		swapImage->CreateFromSwapImage( 
+			swapImages[ i ], 
+			swapImageView, 
+			m_swapchainFormat, 
+			m_swapchainExtent.width, 
+			m_swapchainExtent.height );
+
+		m_swapchainImages.Append( swapImage );
 	}
 }
 
@@ -803,10 +816,12 @@ idRenderBackend::DestroySwapChain
 =============
 */
 void idRenderBackend::DestroySwapChain() {
-	for ( uint32 i = 0; i < NUM_FRAME_DATA; ++i ) {
-		vkDestroyImageView( vkcontext.device, m_swapchainViews[ i ], NULL );
+	const int numImages = m_swapchainImages.Num();
+	for ( int i = 0; i < numImages; ++i ) {
+		m_swapchainImages[ i ]->DestroySwapImage();
+		delete m_swapchainImages[ i ];
 	}
-	m_swapchainViews.Zero();
+	m_swapchainImages.Clear();
 
 	vkDestroySwapchainKHR( vkcontext.device, m_swapchain, NULL );
 }
@@ -880,192 +895,6 @@ void idRenderBackend::CreateQueryPool() {
 
 /*
 =============
-idRenderBackend::CreateRenderTargets
-=============
-*/
-void idRenderBackend::CreateRenderTargets() {
-	// Determine samples before creating depth
-	VkImageFormatProperties fmtProps = {};
-	vkGetPhysicalDeviceImageFormatProperties( m_physicalDevice, m_swapchainFormat, 
-		VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0, &fmtProps );
-
-	const int samples = r_multiSamples.GetInteger();
-
-	if ( samples >= 16 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_16_BIT ) ) {
-		vkcontext.sampleCount = VK_SAMPLE_COUNT_16_BIT;
-	} else if ( samples >= 8 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_8_BIT ) ) {
-		vkcontext.sampleCount = VK_SAMPLE_COUNT_8_BIT;
-	} else if ( samples >= 4 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_4_BIT ) ) {
-		vkcontext.sampleCount = VK_SAMPLE_COUNT_4_BIT;
-	} else if ( samples >= 2 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_2_BIT ) ) {
-		vkcontext.sampleCount = VK_SAMPLE_COUNT_2_BIT;
-	}
-
-	// Select Depth Format
-	{
-		VkFormat formats[] = {  
-			VK_FORMAT_D32_SFLOAT_S8_UINT, 
-			VK_FORMAT_D24_UNORM_S8_UINT 
-		};
-		vkcontext.depthFormat = ChooseSupportedFormat( 
-			m_physicalDevice,
-			formats, 3, 
-			VK_IMAGE_TILING_OPTIMAL, 
-			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT );
-	}
-
-	idImageOpts depthOptions;
-	depthOptions.format = FMT_DEPTH;
-	depthOptions.width = renderSystem->GetWidth();
-	depthOptions.height = renderSystem->GetHeight();
-	depthOptions.numLevels = 1;
-	depthOptions.samples = static_cast< textureSamples_t >( vkcontext.sampleCount );
-
-	globalImages->ScratchImage( "_viewDepth", depthOptions );
-
-	if ( vkcontext.sampleCount > VK_SAMPLE_COUNT_1_BIT ) {
-		vkcontext.supersampling = m_physicalDeviceFeatures.sampleRateShading == VK_TRUE;
-
-		VkImageCreateInfo createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		createInfo.imageType = VK_IMAGE_TYPE_2D;
-		createInfo.format = m_swapchainFormat;
-		createInfo.extent.width = m_swapchainExtent.width;
-		createInfo.extent.height = m_swapchainExtent.height;
-		createInfo.extent.depth = 1;
-		createInfo.mipLevels = 1;
-		createInfo.arrayLayers = 1;
-		createInfo.samples = vkcontext.sampleCount;
-		createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-		createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-		ID_VK_CHECK( vkCreateImage( vkcontext.device, &createInfo, NULL, &m_msaaImage ) );
-
-#if defined( ID_USE_AMD_ALLOCATOR )
-	VmaMemoryRequirements vmaReq = {};
-	vmaReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-	ID_VK_CHECK( vmaCreateImage( vmaAllocator, &createInfo, &vmaReq, &m_msaaImage, &m_msaaVmaAllocation, &m_msaaAllocation ) );
-#else
-		VkMemoryRequirements memoryRequirements = {};
-		vkGetImageMemoryRequirements( vkcontext.device, m_msaaImage, &memoryRequirements );
-
-		m_msaaAllocation = vulkanAllocator.Allocate( 
-			memoryRequirements.size,
-			memoryRequirements.alignment,
-			memoryRequirements.memoryTypeBits, 
-			VULKAN_MEMORY_USAGE_GPU_ONLY,
-			VULKAN_ALLOCATION_TYPE_IMAGE_OPTIMAL );
-
-		ID_VK_CHECK( vkBindImageMemory( vkcontext.device, m_msaaImage, m_msaaAllocation.deviceMemory, m_msaaAllocation.offset ) );
-#endif
-
-		VkImageViewCreateInfo viewInfo = {};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.format = m_swapchainFormat;
-		viewInfo.image = m_msaaImage;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-
-		ID_VK_CHECK( vkCreateImageView( vkcontext.device, &viewInfo, NULL, &m_msaaImageView ) );
-	}
-}
-
-/*
-=============
-idRenderBackend::DestroyRenderTargets
-=============
-*/
-void idRenderBackend::DestroyRenderTargets() {
-	vkDestroyImageView( vkcontext.device, m_msaaImageView, NULL );
-#if defined( ID_USE_AMD_ALLOCATOR )
-	vmaDestroyImage( vmaAllocator, m_msaaImage, m_msaaVmaAllocation );
-	vkcontext.msaaAllocation = VmaAllocationInfo();
-	vkcontext.msaaVmaAllocation = NULL;
-#else
-	vkDestroyImage( vkcontext.device, m_msaaImage, NULL );
-	vulkanAllocator.Free( m_msaaAllocation );
-	m_msaaAllocation = vulkanAllocation_t();
-#endif
-
-	m_msaaImage = VK_NULL_HANDLE;
-	m_msaaImageView = VK_NULL_HANDLE;
-}
-
-/*
-=============
-idRenderBackend::CreateRenderPass
-=============
-*/
-void idRenderBackend::CreateRenderPass() {
-	VkAttachmentDescription attachments[ 3 ];
-	memset( attachments, 0, sizeof( attachments ) );
-
-	const bool resolve = vkcontext.sampleCount > VK_SAMPLE_COUNT_1_BIT;
-
-	VkAttachmentDescription & colorAttachment = attachments[ 0 ];
-	colorAttachment.format = m_swapchainFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-	VkAttachmentDescription & depthAttachment = attachments[ 1 ];
-	depthAttachment.format = vkcontext.depthFormat;
-	depthAttachment.samples = vkcontext.sampleCount;
-	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentDescription & resolveAttachment = attachments[ 2 ];
-	resolveAttachment.format = m_swapchainFormat;
-	resolveAttachment.samples = vkcontext.sampleCount;
-	resolveAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	resolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	resolveAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-	VkAttachmentReference colorRef = {};
-	colorRef.attachment = resolve ? 2 : 0;
-	colorRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference depthRef = {};
-	depthRef.attachment = 1;
-	depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference resolveRef = {};
-	resolveRef.attachment = 0;
-	resolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorRef;
-	subpass.pDepthStencilAttachment = &depthRef;
-	if ( resolve ) {
-		subpass.pResolveAttachments = &resolveRef;
-	}
-
-	VkRenderPassCreateInfo renderPassCreateInfo = {};
-	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassCreateInfo.attachmentCount = resolve ? 3 : 2;
-	renderPassCreateInfo.pAttachments = attachments;
-	renderPassCreateInfo.subpassCount = 1;
-	renderPassCreateInfo.pSubpasses = &subpass;
-	renderPassCreateInfo.dependencyCount = 0;
-
-	ID_VK_CHECK( vkCreateRenderPass( vkcontext.device, &renderPassCreateInfo, NULL, &vkcontext.renderPass ) );
-}
-
-/*
-=============
 CreatePipelineCache
 =============
 */
@@ -1073,54 +902,6 @@ static void CreatePipelineCache() {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	ID_VK_CHECK( vkCreatePipelineCache( vkcontext.device, &pipelineCacheCreateInfo, NULL, &vkcontext.pipelineCache ) );
-}
-
-/*
-=============
-idRenderBackend::CreateFrameBuffers
-=============
-*/
-void idRenderBackend::CreateFrameBuffers() {
-	VkImageView attachments[ 3 ] = {};
-
-	// depth attachment is the same
-	idImage * depthImg = globalImages->GetImage( "_viewDepth" );
-	if ( depthImg == NULL ) {
-		idLib::FatalError( "CreateFrameBuffers: No _viewDepth image." );
-	} else {
-		attachments[ 1 ] = depthImg->GetView();
-	}
-
-	const bool resolve = vkcontext.sampleCount > VK_SAMPLE_COUNT_1_BIT;
-	if ( resolve ) {
-		attachments[ 2 ] = m_msaaImageView;
-	}
-
-	VkFramebufferCreateInfo frameBufferCreateInfo = {};
-	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	frameBufferCreateInfo.renderPass = vkcontext.renderPass;
-	frameBufferCreateInfo.attachmentCount = resolve ? 3 : 2;
-	frameBufferCreateInfo.pAttachments = attachments;
-	frameBufferCreateInfo.width = renderSystem->GetWidth();
-	frameBufferCreateInfo.height = renderSystem->GetHeight();
-	frameBufferCreateInfo.layers = 1;
-
-	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
-		attachments[ 0 ] = m_swapchainViews[ i ];
-		ID_VK_CHECK( vkCreateFramebuffer( vkcontext.device, &frameBufferCreateInfo, NULL, &m_frameBuffers[ i ] ) );
-	}
-}
-
-/*
-=============
-idRenderBackend::DestroyFrameBuffers
-=============
-*/
-void idRenderBackend::DestroyFrameBuffers() {
-	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
-		vkDestroyFramebuffer( vkcontext.device, m_frameBuffers[ i ], NULL );
-	}
-	m_frameBuffers.Zero();
 }
 
 /*
@@ -1194,10 +975,7 @@ void idRenderBackend::Clear() {
 	m_swapchain = VK_NULL_HANDLE;
 	m_swapchainFormat = VK_FORMAT_UNDEFINED;
 	m_currentSwapIndex = 0;
-	m_msaaImage = VK_NULL_HANDLE;
-	m_msaaImageView = VK_NULL_HANDLE;
-	m_swapchainImages.Zero();
-	m_frameBuffers.Zero();
+	m_swapchainImages.Clear();
 	m_acquireSemaphores.Zero();
 	m_renderCompleteSemaphores.Zero();
 
@@ -1278,20 +1056,43 @@ void idRenderBackend::Init() {
 	// Start the Staging Manager
 	stagingManager.Init();
 
+	// Determine samples before creating depth
+	{
+		VkImageFormatProperties fmtProps = {};
+		vkGetPhysicalDeviceImageFormatProperties( m_physicalDevice, m_swapchainFormat, 
+			VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0, &fmtProps );
+
+		const int samples = r_multiSamples.GetInteger();
+
+		if ( samples >= 16 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_16_BIT ) ) {
+			vkcontext.sampleCount = VK_SAMPLE_COUNT_16_BIT;
+		} else if ( samples >= 8 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_8_BIT ) ) {
+			vkcontext.sampleCount = VK_SAMPLE_COUNT_8_BIT;
+		} else if ( samples >= 4 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_4_BIT ) ) {
+			vkcontext.sampleCount = VK_SAMPLE_COUNT_4_BIT;
+		} else if ( samples >= 2 && ( fmtProps.sampleCounts & VK_SAMPLE_COUNT_2_BIT ) ) {
+			vkcontext.sampleCount = VK_SAMPLE_COUNT_2_BIT;
+		}
+	}
+
+	// Select Depth Format
+	{
+		VkFormat formats[] = {  
+			VK_FORMAT_D32_SFLOAT_S8_UINT, 
+			VK_FORMAT_D24_UNORM_S8_UINT 
+		};
+		vkcontext.depthFormat = ChooseSupportedFormat( 
+			m_physicalDevice,
+			formats, 3, 
+			VK_IMAGE_TILING_OPTIMAL, 
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT );
+	}
+
 	// Create Swap Chain
 	CreateSwapChain();
 
-	// Create Render Targets
-	CreateRenderTargets();
-
-	// Create Render Pass
-	CreateRenderPass();
-
 	// Create Pipeline Cache
 	CreatePipelineCache();
-
-	// Create Frame Buffers
-	CreateFrameBuffers();
 
 	// Init RenderProg Manager
 	renderProgManager.Init();
@@ -1314,9 +1115,6 @@ void idRenderBackend::Shutdown() {
 	for ( int i = 0; i < NUM_FRAME_DATA; ++i ) {
 		idImage::EmptyGarbage();
 	}
-
-	// Detroy Frame Buffers
-	DestroyFrameBuffers();
 
 	// Destroy Pipeline Cache
 	vkDestroyPipelineCache( vkcontext.device, vkcontext.pipelineCache, NULL );
@@ -1398,9 +1196,6 @@ void idRenderBackend::ResizeImages() {
 	
 	idImage::EmptyGarbage();
 
-	// Destroy Frame Buffers
-	DestroyFrameBuffers();
-
 	// Destroy Render Targets
 	DestroyRenderTargets();
 
@@ -1429,12 +1224,6 @@ void idRenderBackend::ResizeImages() {
 
 	// Create New Swap Chain
 	CreateSwapChain();
-
-	// Create New Render Targets
-	CreateRenderTargets();
-
-	// Create New Frame Buffers
-	CreateFrameBuffers();
 }
 
 /*
@@ -1625,7 +1414,7 @@ void idRenderBackend::GL_EndFrame() {
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = m_swapchainImages[ m_currentSwapIndex ];
+	barrier.image = m_swapchainImages[ m_currentSwapIndex ]->GetImage();
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = 1;
@@ -1780,7 +1569,7 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 
 		vkCmdBlitImage( 
 			vkcontext.commandBuffer, 
-			m_swapchainImages[ m_currentSwapIndex ], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			m_swapchainImages[ m_currentSwapIndex ]->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			image->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &region, VK_FILTER_NEAREST );
 	}

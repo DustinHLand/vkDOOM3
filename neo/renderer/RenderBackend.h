@@ -276,14 +276,6 @@ private:
 	void				CreateSwapChain();
 	void				DestroySwapChain();
 
-	void				CreateRenderTargets();
-	void				DestroyRenderTargets();
-
-	void				CreateRenderPass();
-
-	void				CreateFrameBuffers();
-	void				DestroyFrameBuffers();
-
 private:
 	void				DBG_SimpleSurfaceSetup( const drawSurf_t * drawSurf );
 	void				DBG_SimpleWorldSetup();
@@ -361,19 +353,13 @@ private:
 	VkFormat						m_swapchainFormat;
 	VkExtent2D						m_swapchainExtent;
 	uint32							m_currentSwapIndex;
-	VkImage							m_msaaImage;
-	VkImageView						m_msaaImageView;
-#if defined( ID_USE_AMD_ALLOCATOR )
-	VmaAllocation					m_msaaVmaAllocation;
-	VmaAllocationInfo				m_msaaAllocation;
-#else
-	vulkanAllocation_t				m_msaaAllocation;
-#endif
-	idArray< VkImage, NUM_FRAME_DATA >			m_swapchainImages;
-	idArray< VkImageView, NUM_FRAME_DATA >		m_swapchainViews;
-	idArray< VkFramebuffer, NUM_FRAME_DATA >	m_frameBuffers;
+
+	idImage *						m_depthAttachment;
+	idImage *						m_resolveAttachment;
+
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_acquireSemaphores;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_renderCompleteSemaphores;
+	idList< idImage * >							m_swapchainImages;
 
 	idArray< uint32, NUM_FRAME_DATA >			m_queryIndex;
 	idArray< idArray< uint64, NUM_TIMESTAMP_QUERIES >, NUM_FRAME_DATA >	m_queryResults;

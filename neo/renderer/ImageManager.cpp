@@ -301,6 +301,33 @@ idImage *idImageManager::ImageFromFunction( const char *_name, void (*generatorF
 
 /*
 ===============
+PatchUsage
+
+HACK to change usage of images without being able to repackage assets.
+==============
+*/
+static void PatchUsage( const char * name, textureUsage_t & usage ) {
+	if ( idStr::Icmpn( name, "fonts", 5 ) == 0 || idStr::Icmpn( name, "newfonts", 8 ) == 0 ) {
+		usage = TD_FONT;
+	}
+	if ( idStr::Icmpn( name, "lights", 6 ) == 0 ) {
+		usage = TD_LIGHT;
+	}
+
+	static const char * const targetImages[] = {
+		"textures/dynamic/camera1",
+		NULL
+	};
+
+	for ( int i = 0; targetImages[ i ] != NULL; ++i ) {
+		if ( idStr::Icmp( name, targetImages[ i ] ) == 0 ) {
+			usage = TD_TARGET;
+		}
+	}
+}
+
+/*
+===============
 ImageFromFile
 
 Finds or loads the given image, always returning a valid image pointer.
@@ -314,12 +341,8 @@ idImage	*idImageManager::ImageFromFile( const char *_name, textureFilter_t filte
 		declManager->MediaPrint( "DEFAULTED\n" );
 		return globalImages->m_defaultImage;
 	}
-	if ( idStr::Icmpn( _name, "fonts", 5 ) == 0 || idStr::Icmpn( _name, "newfonts", 8 ) == 0 ) {
-		usage = TD_FONT;
-	}
-	if ( idStr::Icmpn( _name, "lights", 6 ) == 0 ) {
-		usage = TD_LIGHT;
-	}
+
+	PatchUsage( _name, usage );
 
 	// strip any .tga file extensions from anywhere in the _name, including image program parameters
 	idStrStatic< MAX_OSPATH > name = _name;
@@ -347,12 +370,12 @@ idImage	*idImageManager::ImageFromFile( const char *_name, textureFilter_t filte
 				// share the image data
 				continue;
 			}
-			if ( image->m_usage != usage ) {
+			if ( image->m_opts.usage != usage ) {
 				// If an image is used differently then we need 2 copies of it because usage affects the way it's compressed and swizzled
 				continue;
 			}
 
-			image->m_usage = usage;
+			image->m_opts.usage = usage;
 			image->m_levelLoadReferenced = true;
 
 			if ( ( !m_insideLevelLoad  || m_preloadingMapImages ) && !image->IsLoaded() ) {
@@ -369,7 +392,7 @@ idImage	*idImageManager::ImageFromFile( const char *_name, textureFilter_t filte
 	//
 	idImage	* image = AllocImage( name );
 	image->m_cubeFiles = cubeMap;
-	image->m_usage = usage;
+	image->m_opts.usage = usage;
 	image->m_filter = filter;
 	image->m_repeat = repeat;
 

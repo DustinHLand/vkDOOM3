@@ -128,11 +128,11 @@ public:
 	textureFormat_t		format;
 	textureColor_t		colorFormat;
 	textureSamples_t	samples;
+	textureUsage_t		usage;			// Used to determine the type of compression to use
 	int					width;
 	int					height;			// not needed for cube maps
 	int					numLevels;		// if 0, will be 1 for NEAREST / LINEAR filters, otherwise based on size
 	bool				gammaMips;		// if true, mips will be generated with gamma correction
-	bool				readback;		// 360 specific - cpu reads back from this texture, so allocate with cached memory
 };
 
 /*
@@ -144,12 +144,12 @@ ID_INLINE idImageOpts::idImageOpts() {
 	format			= FMT_NONE;
 	colorFormat		= CFM_DEFAULT;
 	samples			= SAMPLE_1;
+	usage			= TD_DEFAULT;
 	width			= 0;
 	height			= 0;
 	numLevels		= 0;
 	textureType		= TT_2D;
 	gammaMips		= false;
-	readback		= false;
 
 };
 
@@ -212,6 +212,9 @@ public:
 	VkImageView	GetView() const { return m_view; }
 	VkImageLayout GetLayout() const { return m_layout; }
 	VkSampler	GetSampler() const { return m_sampler; }
+
+	void		CreateFromSwapImage( VkImage image, VkImageView view, VkFormat format, int width, int height );
+	void		DestroySwapImage();
 #endif
 
 	void		AllocImage( const idImageOpts &imgOpts, textureFilter_t filter, textureRepeat_t repeat );
@@ -263,6 +266,7 @@ private:
 
 #if defined( ID_VULKAN )
 	void		CreateSampler();
+	void		CreateFrameBuffer();
 
 	static void EmptyGarbage();
 #endif
@@ -272,7 +276,6 @@ private:
 	idStr				m_imgName;				// game path, including extension (except for cube maps), may be an image program
 	cubeFiles_t			m_cubeFiles;			// If this is a cube map, and if so, what kind
 	void				(*m_generatorFunction)( idImage *image );	// NULL for files
-	textureUsage_t		m_usage;				// Used to determine the type of compression to use
 	idImageOpts			m_opts;					// Parameters that determine the storage method
 
 	// Sampler settings
@@ -286,11 +289,19 @@ private:
 
 	int					m_refCount;				// overall ref count
 
+#if defined( ID_VULKAN )
+	bool				m_bIsSwapimage;
 	VkFormat			m_internalFormat;
 	VkImage				m_image;
 	VkImageView			m_view;
 	VkImageLayout		m_layout;
 	VkSampler			m_sampler;
+	VkRenderPass		m_renderPass;
+	VkFramebuffer		m_frameBuffer;
+
+	idImage *			m_depthAttachment;
+	idImage *			m_resolveAttachment;
+#endif
 
 #if defined( ID_USE_AMD_ALLOCATOR )
 	VmaAllocation		m_allocation;
