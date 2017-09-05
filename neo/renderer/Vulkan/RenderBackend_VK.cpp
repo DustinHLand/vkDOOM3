@@ -985,8 +985,9 @@ void idRenderBackend::DestroyRenderTargets() {
 	vkDestroyImageView( vkcontext.device, m_msaaImageView, NULL );
 #if defined( ID_USE_AMD_ALLOCATOR )
 	vmaDestroyImage( vmaAllocator, m_msaaImage, m_msaaVmaAllocation );
-	vkcontext.msaaAllocation = VmaAllocationInfo();
-	vkcontext.msaaVmaAllocation = NULL;
+	m_msaaAllocation = VmaAllocationInfo();
+	m_msaaVmaAllocation = NULL;
+
 #else
 	vkDestroyImage( vkcontext.device, m_msaaImage, NULL );
 	vulkanAllocator.Free( m_msaaAllocation );
@@ -1265,7 +1266,7 @@ void idRenderBackend::Init() {
 	extern idCVar r_vkDeviceLocalMemoryMB;
 
 	VmaAllocatorCreateInfo createInfo = {};
-	createInfo.physicalDevice = vkcontext.physicalDevice;
+	createInfo.physicalDevice = m_physicalDevice;
 	createInfo.device = vkcontext.device;
 	createInfo.preferredSmallHeapBlockSize = r_vkHostVisibleMemoryMB.GetInteger() * 1024 * 1024;
 	createInfo.preferredLargeHeapBlockSize = r_vkDeviceLocalMemoryMB.GetInteger() * 1024 * 1024;
