@@ -208,13 +208,14 @@ public:
 	//---------------------------------------------
 
 #if defined( ID_VULKAN )
-	VkImage		GetImage() const { return m_image; }
-	VkImageView	GetView() const { return m_view; }
-	VkImageLayout GetLayout() const { return m_layout; }
-	VkSampler	GetSampler() const { return m_sampler; }
+	VkImage			GetImage() const { return m_image; }
+	VkImageView		GetView() const { return m_view; }
+	VkImageLayout	GetLayout() const { return m_layout; }
+	VkSampler		GetSampler() const { return m_sampler; }
+	VkRenderPass	GetRenderPass() const { return m_renderPass; }
+	VkFramebuffer	GetFrameBuffer() const { return m_frameBuffer; }
 
 	void		CreateFromSwapImage( VkImage image, VkImageView view, VkFormat format, int width, int height );
-	void		DestroySwapImage();
 #endif
 
 	void		AllocImage( const idImageOpts &imgOpts, textureFilter_t filter, textureRepeat_t repeat );

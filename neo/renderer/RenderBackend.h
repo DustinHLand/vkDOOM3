@@ -165,7 +165,6 @@ struct vulkanContext_t {
 	idArray< bool, NUM_FRAME_DATA >				commandBufferRecorded;
 
 	VkFormat						depthFormat;
-	VkRenderPass					renderPass;
 	VkPipelineCache					pipelineCache;
 	VkSampleCountFlagBits			sampleCount;
 	bool							supersampling;
