@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERPROGS_H__
 #define __RENDERPROGS_H__
 
-
 #define VERTEX_UNIFORM_ARRAY_NAME			"_va_"
 #define FRAGMENT_UNIFORM_ARRAY_NAME			"_fa_"
 
@@ -195,6 +194,8 @@ enum rpBinding_t {
 	BINDING_TYPE_MAX
 };
 
+class idImage;
+
 struct shader_t {
 	shader_t() : module( VK_NULL_HANDLE ) {}
 
@@ -218,14 +219,16 @@ struct renderProg_t {
 	struct pipelineState_t {
 		pipelineState_t() : 
 					stateBits( 0 ),
+					target( NULL ),
 					pipeline( VK_NULL_HANDLE ) {
 		}
 
 		uint64		stateBits;
+		idImage *	target;
 		VkPipeline	pipeline;
 	};
 
-	VkPipeline GetPipeline( uint64 stateBits, VkShaderModule vertexShader, VkShaderModule fragmentShader );
+	VkPipeline GetPipeline( uint64 stateBits, idImage * target, VkShaderModule vertexShader, VkShaderModule fragmentShader );
 
 	idStr						name;
 	bool						usesJoints;
@@ -246,6 +249,7 @@ idRenderProgManager
 
 ===========================================================================
 */
+
 class idRenderProgManager {
 public:
 	idRenderProgManager();
@@ -263,7 +267,7 @@ public:
 	int		FindShader( const char * name, rpStage_t stage );
 	void	BindProgram( int index );
 
-	void	CommitCurrent( uint64 stateBits );
+	void	CommitCurrent( uint64 stateBits, idImage * target );
 	int		FindProgram( const char * name, int vIndex, int fIndex );
 
 private:

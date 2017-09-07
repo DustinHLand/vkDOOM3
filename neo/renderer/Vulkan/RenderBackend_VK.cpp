@@ -1190,8 +1190,6 @@ void idRenderBackend::ResizeImages() {
 	// Destroy Current Swap Chain
 	DestroySwapChain();
 
-	idImage::EmptyGarbage();
-
 	// Destroy Current Surface
 	vkDestroySurfaceKHR( m_instance, m_surface, NULL );
 
@@ -1214,6 +1212,12 @@ void idRenderBackend::ResizeImages() {
 
 	// Create New Swap Chain
 	CreateSwapChain();
+
+	// Recreate the targets
+	globalImages->ReloadTargets();
+
+	// Clear any image garbage we may have amassed.
+	idImage::EmptyGarbage();
 }
 
 /*
@@ -1323,7 +1327,7 @@ void idRenderBackend::DrawElementsWithCounters( const drawSurf_t * surf ) {
 	vkcontext.jointCacheHandle = surf->jointCache;
 
 	PrintState( m_glStateBits );
-	renderProgManager.CommitCurrent( m_glStateBits );
+	renderProgManager.CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
 
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
@@ -1766,7 +1770,7 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 	vkcontext.jointCacheHandle = drawSurf->jointCache;
 
 	PrintState( m_glStateBits );
-	renderProgManager.CommitCurrent( m_glStateBits );
+	renderProgManager.CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
 
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
@@ -1790,7 +1794,7 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 		GL_State( m_glStateBits & ~GLS_STENCIL_OP_BITS | stencil );
 
 		PrintState( m_glStateBits );
-		renderProgManager.CommitCurrent( m_glStateBits );
+		renderProgManager.CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
 
 		vkCmdDrawIndexed( vkcontext.commandBuffer, drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
 	}

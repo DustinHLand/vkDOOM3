@@ -276,7 +276,7 @@ private:
 	// parameters that define this image
 	idStr				m_imgName;				// game path, including extension (except for cube maps), may be an image program
 	cubeFiles_t			m_cubeFiles;			// If this is a cube map, and if so, what kind
-	void				(*m_generatorFunction)( idImage *image );	// NULL for files
+	void				(*m_generatorFunction)( idImage *image, textureUsage_t usage );	// NULL for files
 	idImageOpts			m_opts;					// Parameters that determine the storage method
 
 	// Sampler settings
@@ -354,13 +354,16 @@ public:
 
 	// The callback will be issued immediately, and later if images are reloaded or vid_restart
 	// The callback function should call one of the idImage::Generate* functions to fill in the data
-	idImage *			ImageFromFunction( const char *name, void (*generatorFunction)( idImage *image ));
+	idImage *			ImageFromFunction( const char *name, void (*generatorFunction)( idImage *image, textureUsage_t usage ), textureUsage_t usage = TD_DEFAULT );
 
 	// purges all the images before a vid_restart
 	void				PurgeAllImages();
 
-	// reloads all apropriate images after a vid_restart
+	// reloads all appropriate images after a vid_restart
 	void				ReloadImages( bool all );
+
+	// reloads all the render targets 
+	void				ReloadTargets();
 
 	// Called only by renderSystem::BeginLevelLoad
 	void				BeginLevelLoad();

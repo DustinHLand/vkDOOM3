@@ -207,7 +207,7 @@ On exit, the idImage will have a valid OpenGL texture number that can be bound
 void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 	// this is the ONLY place m_generatorFunction will ever be called
 	if ( m_generatorFunction ) {
-		m_generatorFunction( this );
+		m_generatorFunction( this, m_opts.usage );
 		return;
 	}
 
@@ -484,8 +484,8 @@ idImage::Reload
 void idImage::Reload( bool force ) {
 	// always regenerate functional images
 	if ( m_generatorFunction ) {
-		common->DPrintf( "regenerating %s.\n", GetName() );
-		m_generatorFunction( this );
+		idLib::Printf( "regenerating %s.\n", GetName() );
+		m_generatorFunction( this, m_opts.usage );
 		return;
 	}
 
@@ -503,7 +503,7 @@ void idImage::Reload( bool force ) {
 		}
 	}
 
-	common->DPrintf( "reloading %s.\n", GetName() );
+	idLib::Printf( "reloading %s.\n", GetName() );
 
 	PurgeImage();
 

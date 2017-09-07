@@ -268,7 +268,7 @@ with a callback which must work at any time, allowing the OpenGL
 system to be completely regenerated if needed.
 ==================
 */
-idImage *idImageManager::ImageFromFunction( const char *_name, void (*generatorFunction)( idImage *image ) ) {
+idImage *idImageManager::ImageFromFunction( const char *_name, void (*generatorFunction)( idImage * image, textureUsage_t usage ), textureUsage_t usage ) {
 
 	// strip any .tga file extensions from anywhere in the _name
 	idStr name = _name;
@@ -291,6 +291,7 @@ idImage *idImageManager::ImageFromFunction( const char *_name, void (*generatorF
 	idImage	* image = AllocImage( name );
 
 	image->m_generatorFunction = generatorFunction;
+	image->m_opts.usage = usage;
 
 	// check for precompressed, load is from the front end
 	image->m_referencedOutsideLevelLoad = true;
@@ -484,6 +485,19 @@ ReloadImages
 void idImageManager::ReloadImages( bool all ) {
 	for ( int i = 0 ; i < m_images.Num() ; i++ ) {
 		m_images[ i ]->Reload( all );
+	}
+}
+
+/*
+===============
+ReloadImages
+===============
+*/
+void idImageManager::ReloadTargets() {
+	for ( int i = 0; i < m_images.Num(); ++i ) {
+		if ( m_images[ i ]->GetOpts().usage == TD_TARGET ) {
+			m_images[ i ]->Reload( true );
+		}
 	}
 }
 

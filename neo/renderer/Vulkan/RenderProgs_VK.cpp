@@ -315,7 +315,8 @@ static VkPipeline CreateGraphicsPipeline(
 		VkShaderModule vertexShader,
 		VkShaderModule fragmentShader,
 		VkPipelineLayout pipelineLayout,
-		uint64 stateBits ) {
+		uint64 stateBits,
+		idImage * target ) {
 
 	// Pipeline
 	vertexLayout_t & vertexLayout = vertexLayouts[ vertexLayoutType ];
@@ -532,7 +533,7 @@ static VkPipeline CreateGraphicsPipeline(
 	VkGraphicsPipelineCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	createInfo.layout = pipelineLayout;
-	createInfo.renderPass = vkcontext.renderPass;
+	createInfo.renderPass = target->GetRenderPass();
 	createInfo.pVertexInputState = &vertexInputState;
 	createInfo.pInputAssemblyState = &assemblyInputState;
 	createInfo.pRasterizationState = &rasterizationState;
@@ -556,18 +557,20 @@ static VkPipeline CreateGraphicsPipeline(
 renderProg_t::GetPipeline
 ========================
 */
-VkPipeline renderProg_t::GetPipeline( uint64 stateBits, VkShaderModule vertexShader, VkShaderModule fragmentShader ) {
+VkPipeline renderProg_t::GetPipeline( uint64 stateBits, idImage * target, VkShaderModule vertexShader, VkShaderModule fragmentShader ) {
 	for ( int i = 0; i < pipelines.Num(); ++i ) {
-		if ( stateBits == pipelines[ i ].stateBits ) {
+		if ( stateBits == pipelines[ i ].stateBits && target == pipelines[ i ].target ) {
 			return pipelines[ i ].pipeline;
 		}
 	}
 
-	VkPipeline pipeline = CreateGraphicsPipeline( vertexLayoutType, vertexShader, fragmentShader, pipelineLayout, stateBits );
+	VkPipeline pipeline = CreateGraphicsPipeline( 
+		vertexLayoutType, vertexShader, fragmentShader, pipelineLayout, stateBits, target );
 
 	pipelineState_t pipelineState;
-	pipelineState.pipeline = pipeline;
 	pipelineState.stateBits = stateBits;
+	pipelineState.target = target;
+	pipelineState.pipeline = pipeline;
 	pipelines.Append( pipelineState );
 
 	return pipeline;
@@ -790,11 +793,11 @@ void idRenderProgManager::AllocParmBlockBuffer( const idList< int > & parmIndice
 idRenderProgManager::CommitCurrent
 ========================
 */
-void idRenderProgManager::CommitCurrent( uint64 stateBits ) {
+void idRenderProgManager::CommitCurrent( uint64 stateBits, idImage * target ) {
 	renderProg_t & prog = m_renderProgs[ m_current ];
 
 	VkPipeline pipeline = prog.GetPipeline( 
-		stateBits,
+		stateBits, target,
 		m_shaders[ prog.vertexShaderIndex ].module,
 		prog.fragmentShaderIndex != -1 ? m_shaders[ prog.fragmentShaderIndex ].module : VK_NULL_HANDLE );
 
