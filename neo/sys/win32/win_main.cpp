@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #pragma hdrstop
 #include "../../idlib/precompiled.h"
-#include "../../renderer/RenderSystem.h"
 
 #include <direct.h>
 #include <io.h>
@@ -52,10 +51,10 @@ Win32Vars_t	win32;
 extern idCVar win_viewlog;
 
 static char sys_cmdline[ MAX_STRING_CHARS ];
-
 static sysMemoryStats_t exeLaunchMemoryStats;
-
 static HANDLE hProcessMutex;
+
+void R_Shutdown();
 
 /*
 ================
@@ -65,7 +64,6 @@ Sys_GetExeLaunchMemoryStatus
 void Sys_GetExeLaunchMemoryStatus( sysMemoryStats_t &stats ) {
 	stats = exeLaunchMemoryStats;
 }
-
 
 #pragma optimize( "", on )
 
@@ -205,7 +203,7 @@ void Sys_Error( const char *error, ... ) {
 
 	Sys_ShutdownInput();
 
-	renderSystem->Shutdown();
+	R_Shutdown();
 
 	extern idCVar com_productionMode;
 	if ( com_productionMode.GetInteger() == 0 ) {

@@ -190,6 +190,14 @@ idSysInterlockedInteger frameAllocTypeCount[ FRAME_ALLOC_MAX ];
 int frameHighWaterTypeCount[ FRAME_ALLOC_MAX ];
 #endif
 
+/*
+=============
+R_Shutdown
+=============
+*/
+void R_Shutdown() {
+	renderSystem->Shutdown();
+}
 
 /*
 =============
