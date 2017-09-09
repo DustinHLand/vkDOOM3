@@ -85,6 +85,14 @@ struct gfxImpParms_t {
 	int		multiSamples;
 };
 
+/*
+===========================================================================
+
+Debug
+
+===========================================================================
+*/
+
 #define MAX_DEBUG_LINES		16384
 #define MAX_DEBUG_TEXT		512
 #define MAX_DEBUG_POLYGONS	8192
@@ -115,15 +123,13 @@ struct debugPolygon_t {
 	int			lifeTime;
 };
 
-void RB_SetMVP( const idRenderMatrix & mvp );
-void RB_SetVertexColorParms( stageVertexColor_t svc );
-void RB_GetShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture, float matrix[16] );
-void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture );
-void RB_BakeTextureMatrixIntoTexgen( idPlane lightProject[3], const float *textureMatrix );
-void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *surfaceRegs, const float lightColor[4], idVec4 matrix[2], float color[4] );
+/*
+===========================================================================
 
-bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
-bool CreateGameWindow( gfxImpParms_t parms );
+Backend Globals
+
+===========================================================================
+*/
 
 struct gpuInfo_t {
 	VkPhysicalDevice					device;
@@ -190,6 +196,9 @@ public:
 	void				Print();
 
 private:
+	bool				OpenWindow();
+	void				CloseWindow();
+
 	void				DrawElementsWithCounters( const drawSurf_t * surf );
 	void				DrawStencilShadowPass( const drawSurf_t * drawSurf, const bool renderZPass );
 

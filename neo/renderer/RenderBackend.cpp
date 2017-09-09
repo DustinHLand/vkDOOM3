@@ -29,6 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #pragma hdrstop
 #include "../framework/precompiled.h"
+#include "../sys/win32/rc/doom_resource.h"
 #include "../sys/win32/win_local.h"
 #include "../framework/Common_local.h"
 #include "RenderSystem_local.h"
@@ -1102,6 +1103,149 @@ bool CreateGameWindow( gfxImpParms_t parms ) {
 	win32.isFullscreen = parms.fullScreen;
 
 	return true;
+}
+
+/*
+====================
+CreateWindowClasses
+====================
+*/
+void CreateWindowClasses() {
+	WNDCLASS wc;
+
+	//
+	// register the window class if necessary
+	//
+	if ( win32.windowClassRegistered ) {
+		return;
+	}
+
+	memset( &wc, 0, sizeof( wc ) );
+
+	wc.style         = 0;
+	wc.lpfnWndProc   = (WNDPROC) MainWndProc;
+	wc.cbClsExtra    = 0;
+	wc.cbWndExtra    = 0;
+	wc.hInstance     = win32.hInstance;
+	wc.hIcon         = LoadIcon( win32.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+	wc.hCursor       = NULL;
+	wc.hbrBackground = (struct HBRUSH__ *)COLOR_GRAYTEXT;
+	wc.lpszMenuName  = 0;
+	wc.lpszClassName = WIN32_WINDOW_CLASS_NAME;
+
+	if ( !RegisterClass( &wc ) ) {
+		idLib::FatalError( "CreateGameWindow: could not register window class" );
+	}
+	idLib::Printf( "...registered window class\n" );
+
+	win32.windowClassRegistered = true;
+}
+
+/*
+=============
+idRenderBackend::OpenWindow
+=============
+*/
+bool idRenderBackend::OpenWindow() {
+	gfxImpParms_t parms = R_GetModeParms();
+
+	idLib::Printf( "Initializing window with multisamples:%d fullscreen:%d\n", 
+		parms.multiSamples, parms.fullScreen );
+
+	// check our desktop attributes
+	{
+		HDC handle = GetDC( GetDesktopWindow() );
+		win32.desktopBitsPixel = GetDeviceCaps( handle, BITSPIXEL );
+		win32.desktopWidth = GetDeviceCaps( handle, HORZRES );
+		win32.desktopHeight = GetDeviceCaps( handle, VERTRES );
+		ReleaseDC( GetDesktopWindow(), handle );
+	}
+
+	// we can't run in a window unless it is 32 bpp
+	if ( win32.desktopBitsPixel < 32 && parms.fullScreen <= 0 ) {
+		idLib::Printf( "^3Windowed mode requires 32 bit desktop depth^0\n" );
+		return false;
+	}
+
+	// save the hardware gamma so it can be
+	// restored on exit
+	{
+		HDC handle = GetDC( GetDesktopWindow() );
+		BOOL success = GetDeviceGammaRamp( handle, win32.oldHardwareGamma );
+		idLib::Printf( "...getting default gamma ramp: %s\n", success ? "success" : "failed" );
+		ReleaseDC( GetDesktopWindow(), handle );
+	}
+
+	// create our window classes if we haven't already
+	CreateWindowClasses();
+
+	// Optionally ChangeDisplaySettings to get a different fullscreen resolution.
+	if ( !ChangeDisplaySettingsIfNeeded( parms ) ) {
+		// XXX error? shutdown?
+		return false;
+	}
+
+	// try to create a window with the correct pixel format
+	if ( !CreateGameWindow( parms ) ) {
+		// XXX error? shutdown?
+		return false;
+	}
+
+	win32.isFullscreen = parms.fullScreen;
+	win32.nativeScreenWidth = parms.width;
+	win32.nativeScreenHeight = parms.height;
+	win32.multisamples = parms.multiSamples;
+	win32.pixelAspect = 1.0f;
+
+	return true;
+}
+
+/*
+=============
+idRenderBackend::CloseWindow
+=============
+*/
+void idRenderBackend::CloseWindow() {
+	const char * success[] = { "failed", "success" };
+	int retVal;
+
+	// release DC
+	if ( win32.hDC ) {
+		retVal = ReleaseDC( win32.hWnd, win32.hDC ) != 0;
+		idLib::Printf( "...releasing DC: %s\n", success[ retVal ] );
+		win32.hDC = NULL;
+	}
+
+	// destroy window
+	if ( win32.hWnd ) {
+		idLib::Printf( "...destroying window\n" );
+		ShowWindow( win32.hWnd, SW_HIDE );
+		DestroyWindow( win32.hWnd );
+		win32.hWnd = NULL;
+	}
+
+	// reset display settings
+	if ( win32.cdsFullscreen ) {
+		idLib::Printf( "...resetting display\n" );
+		ChangeDisplaySettings( 0, 0 );
+		win32.cdsFullscreen = 0;
+	}
+
+	// close the thread so the handle doesn't dangle
+	if ( win32.renderThreadHandle ) {
+		idLib::Printf( "...closing smp thread\n" );
+		CloseHandle( win32.renderThreadHandle );
+		win32.renderThreadHandle = NULL;
+	}
+
+	// restore gamma
+	// if we never read in a reasonable looking table, don't write it out
+	if ( win32.oldHardwareGamma[ 0 ][ 255 ] != 0 ) {
+		HDC hDC = GetDC( GetDesktopWindow() );
+		retVal = SetDeviceGammaRamp( hDC, win32.oldHardwareGamma );
+		idLib::Printf( "...restoring hardware gamma: %s\n", success[ retVal ] );
+		ReleaseDC( GetDesktopWindow(), hDC );
+	}
 }
 
 /*
