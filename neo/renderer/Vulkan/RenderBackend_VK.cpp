@@ -1042,7 +1042,7 @@ void idRenderBackend::Init() {
 	extern idCVar r_vkDeviceLocalMemoryMB;
 
 	VmaAllocatorCreateInfo createInfo = {};
-	createInfo.physicalDevice = vkcontext.physicalDevice;
+	createInfo.physicalDevice = m_physicalDevice;
 	createInfo.device = vkcontext.device;
 	createInfo.preferredSmallHeapBlockSize = r_vkHostVisibleMemoryMB.GetInteger() * 1024 * 1024;
 	createInfo.preferredLargeHeapBlockSize = r_vkDeviceLocalMemoryMB.GetInteger() * 1024 * 1024;

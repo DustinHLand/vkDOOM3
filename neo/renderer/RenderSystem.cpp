@@ -1452,6 +1452,7 @@ void idRenderSystemLocal::PerformResolutionScaling( int& newWidth, int& newHeigh
 
 	float xScale = 1.0f;
 	float yScale = 1.0f;
+	resolutionScale.ResetToFullResolution();
 	resolutionScale.GetCurrentResolutionScale( xScale, yScale );
 
 	newWidth = idMath::Ftoi( GetWidth() * xScale );
