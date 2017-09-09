@@ -561,6 +561,7 @@ private:
 	uint64				m_glStateBits;
 
 	const viewDef_t *	m_viewDef;
+	idImage *			m_currentRenderTarget;
 	
 	const viewEntity_t*	m_currentSpace;			// for detecting when a matrix must change
 	idScreenRect		m_currentScissor;		// for scissor clipping, local inside renderView viewport

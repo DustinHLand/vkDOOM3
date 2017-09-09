@@ -823,6 +823,7 @@ void idRenderBackend::Clear() {
 	m_currentRp = 0;
 	m_currentDescSet = 0;
 	m_currentParmBufferOffset = 0;
+	m_currentRenderTarget = NULL;
 
 	m_instance = VK_NULL_HANDLE;
 	m_physicalDevice = VK_NULL_HANDLE;
@@ -1201,7 +1202,7 @@ void idRenderBackend::DrawElementsWithCounters( const drawSurf_t * surf ) {
 	vkcontext.jointCacheHandle = surf->jointCache;
 
 	PrintState( m_glStateBits );
-	CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
+	CommitCurrent( m_glStateBits, m_currentRenderTarget );
 
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
@@ -1330,22 +1331,20 @@ idRenderBackend::GL_StartRenderPass
 ========================
 */
 void idRenderBackend::GL_StartRenderPass() {
-	idImage * rpImage = NULL;
-
 	if ( m_viewDef->renderTarget ) {
 		// If the view supplied a target, use that.
-		rpImage = m_viewDef->renderTarget;
+		m_currentRenderTarget = m_viewDef->renderTarget;
 	} else {
 		// Use the default target.
-		rpImage = m_swapchainImages[ m_currentSwapIndex ];
+		m_currentRenderTarget = m_swapchainImages[ m_currentSwapIndex ];
 	}
 
 	VkRenderPassBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	beginInfo.renderPass = rpImage->GetRenderPass();
-	beginInfo.framebuffer = rpImage->GetFrameBuffer();
-	beginInfo.renderArea.extent.width = rpImage->GetOpts().width;
-	beginInfo.renderArea.extent.height = rpImage->GetOpts().height;
+	beginInfo.renderPass = m_currentRenderTarget->GetRenderPass();
+	beginInfo.framebuffer = m_currentRenderTarget->GetFrameBuffer();
+	beginInfo.renderArea.extent.width = m_currentRenderTarget->GetOpts().width;
+	beginInfo.renderArea.extent.height = m_currentRenderTarget->GetOpts().height;
 
 	vkCmdBeginRenderPass( vkcontext.commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE );
 }
@@ -1648,7 +1647,7 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 	vkcontext.jointCacheHandle = drawSurf->jointCache;
 
 	PrintState( m_glStateBits );
-	CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
+	CommitCurrent( m_glStateBits, m_currentRenderTarget );
 
 	{
 		const VkBuffer buffer = indexBuffer->GetAPIObject();
@@ -1672,7 +1671,7 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 		GL_State( m_glStateBits & ~GLS_STENCIL_OP_BITS | stencil );
 
 		PrintState( m_glStateBits );
-		CommitCurrent( m_glStateBits, m_viewDef->renderTarget );
+		CommitCurrent( m_glStateBits, m_currentRenderTarget );
 
 		vkCmdDrawIndexed( vkcontext.commandBuffer, drawSurf->numIndexes, 1, ( indexOffset >> 1 ), baseVertex, 0 );
 	}
