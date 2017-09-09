@@ -30,13 +30,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERER_BACKEND_H__
 #define __RENDERER_BACKEND_H__
 
-struct tmu_t {
-	unsigned int	current2DMap;
-	unsigned int	currentCubeMap;
-};
-
-const int MAX_MULTITEXTURE_UNITS =	8;
-
 enum stencilFace_t {
 	STENCIL_FACE_FRONT,
 	STENCIL_FACE_BACK,
