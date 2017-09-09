@@ -113,7 +113,6 @@
     <ClCompile Include="renderer\RenderDebug.cpp" />
     <ClCompile Include="renderer\RenderEntity.cpp" />
     <ClCompile Include="renderer\RenderLog.cpp" />
-    <ClCompile Include="renderer\RenderProgs.cpp" />
     <ClCompile Include="renderer\RenderSystem.cpp" />
     <ClCompile Include="renderer\RenderWorld.cpp" />
     <ClCompile Include="renderer\RenderWorld_defs.cpp" />
@@ -141,7 +140,6 @@
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\RenderBackend_VK.cpp" />
     <ClCompile Include="renderer\Vulkan\RenderDebug_VK.cpp" />
-    <ClCompile Include="renderer\Vulkan\RenderProgs_VK.cpp" />
     <ClCompile Include="renderer\Vulkan\Staging_VK.cpp" />
     <ClCompile Include="renderer\Vulkan\vma.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -300,7 +298,6 @@
     <ClInclude Include="renderer\RenderConfig.h" />
     <ClInclude Include="renderer\RenderContext.h" />
     <ClInclude Include="renderer\RenderLog.h" />
-    <ClInclude Include="renderer\RenderProgs.h" />
     <ClInclude Include="renderer\RenderSystem.h" />
     <ClInclude Include="renderer\RenderTexture.h" />
     <ClInclude Include="renderer\RenderWorld.h" />

@@ -35,7 +35,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "RenderSystem_local.h"
 #include "RenderBackend.h"
 #include "RenderLog.h"
-#include "RenderProgs.h"
 #include "ResolutionScale.h"
 #include "GLState.h"
 #include "GLMatrix.h"
@@ -88,6 +87,234 @@ extern idCVar r_shadowPolygonFactor;
 extern idCVar r_shadowPolygonOffset;
 extern idCVar r_useShadowDepthBounds;
 extern idCVar r_singleTriangle;
+
+// For GLSL we need to have the names for the renderparms so we can look up 
+// their run time indices within the renderprograms
+const char * GLSLParmNames[ RENDERPARM_TOTAL ] = {
+	"rpScreenCorrectionFactor",
+	"rpWindowCoord",
+	"rpDiffuseModifier",
+	"rpSpecularModifier",
+
+	"rpLocalLightOrigin",
+	"rpLocalViewOrigin",
+
+	"rpLightProjectionS",
+	"rpLightProjectionT",
+	"rpLightProjectionQ",
+	"rpLightFalloffS",
+
+	"rpBumpMatrixS",
+	"rpBumpMatrixT",
+
+	"rpDiffuseMatrixS",
+	"rpDiffuseMatrixT",
+
+	"rpSpecularMatrixS",
+	"rpSpecularMatrixT",
+
+	"rpVertexColorModulate",
+	"rpVertexColorAdd",
+
+	"rpColor",
+	"rpViewOrigin",
+	"rpGlobalEyePos",
+
+	"rpMVPmatrixX",
+	"rpMVPmatrixY",
+	"rpMVPmatrixZ",
+	"rpMVPmatrixW",
+
+	"rpModelMatrixX",
+	"rpModelMatrixY",
+	"rpModelMatrixZ",
+	"rpModelMatrixW",
+
+	"rpProjectionMatrixX",
+	"rpProjectionMatrixY",
+	"rpProjectionMatrixZ",
+	"rpProjectionMatrixW",
+
+	"rpModelViewMatrixX",
+	"rpModelViewMatrixY",
+	"rpModelViewMatrixZ",
+	"rpModelViewMatrixW",
+
+	"rpTextureMatrixS",
+	"rpTextureMatrixT",
+
+	"rpTexGen0S",
+	"rpTexGen0T",
+	"rpTexGen0Q",
+	"rpTexGen0Enabled",
+
+	"rpTexGen1S",
+	"rpTexGen1T",
+	"rpTexGen1Q",
+	"rpTexGen1Enabled",
+
+	"rpWobbleSkyX",
+	"rpWobbleSkyY",
+	"rpWobbleSkyZ",
+
+	"rpOverbright",
+	"rpEnableSkinning",
+	"rpAlphaTest",
+
+	"rpUser0",
+	"rpUser1",
+	"rpUser2",
+	"rpUser3",
+	"rpUser4",
+	"rpUser5",
+	"rpUser6",
+	"rpUser7"
+};
+
+/*
+========================
+RpPrintState
+========================
+*/
+void RpPrintState( uint64 stateBits ) {
+
+	// culling
+	idLib::Printf( "Culling: " );
+	switch ( stateBits & GLS_CULL_BITS ) {
+		case GLS_CULL_FRONTSIDED:	idLib::Printf( "FRONTSIDED -> BACK" ); break;
+		case GLS_CULL_BACKSIDED:	idLib::Printf( "BACKSIDED -> FRONT" ); break;
+		case GLS_CULL_TWOSIDED:		idLib::Printf( "TWOSIDED" ); break;
+		default:					idLib::Printf( "NA" ); break;
+	}
+	idLib::Printf( "\n" );
+
+	// polygon mode
+	idLib::Printf( "PolygonMode: %s\n", ( stateBits & GLS_POLYMODE_LINE ) ? "LINE" : "FILL" );
+
+	// color mask
+	idLib::Printf( "ColorMask: " );
+	idLib::Printf( ( stateBits & GLS_REDMASK ) ? "_" : "R" );
+	idLib::Printf( ( stateBits & GLS_GREENMASK ) ? "_" : "G" );
+	idLib::Printf( ( stateBits & GLS_BLUEMASK ) ? "_" : "B" );
+	idLib::Printf( ( stateBits & GLS_ALPHAMASK ) ? "_" : "A" );
+	idLib::Printf( "\n" );
+	
+	// blend
+	idLib::Printf( "Blend: src=" );
+	switch ( stateBits & GLS_SRCBLEND_BITS ) {
+		case GLS_SRCBLEND_ZERO:					idLib::Printf( "ZERO" ); break;
+		case GLS_SRCBLEND_ONE:					idLib::Printf( "ONE" ); break;
+		case GLS_SRCBLEND_DST_COLOR:			idLib::Printf( "DST_COLOR" ); break;
+		case GLS_SRCBLEND_ONE_MINUS_DST_COLOR:	idLib::Printf( "ONE_MINUS_DST_COLOR" ); break;
+		case GLS_SRCBLEND_SRC_ALPHA:			idLib::Printf( "SRC_ALPHA" ); break;
+		case GLS_SRCBLEND_ONE_MINUS_SRC_ALPHA:	idLib::Printf( "ONE_MINUS_SRC_ALPHA" ); break;
+		case GLS_SRCBLEND_DST_ALPHA:			idLib::Printf( "DST_ALPHA" ); break;
+		case GLS_SRCBLEND_ONE_MINUS_DST_ALPHA:	idLib::Printf( "ONE_MINUS_DST_ALPHA" ); break;
+		default:								idLib::Printf( "NA" ); break;
+	}
+	idLib::Printf( ", dst=" );
+	switch ( stateBits & GLS_DSTBLEND_BITS ) {
+		case GLS_DSTBLEND_ZERO:					idLib::Printf( "ZERO" ); break;
+		case GLS_DSTBLEND_ONE:					idLib::Printf( "ONE" ); break;
+		case GLS_DSTBLEND_SRC_COLOR:			idLib::Printf( "SRC_COLOR" ); break;
+		case GLS_DSTBLEND_ONE_MINUS_SRC_COLOR:	idLib::Printf( "ONE_MINUS_SRC_COLOR" ); break;
+		case GLS_DSTBLEND_SRC_ALPHA:			idLib::Printf( "SRC_ALPHA" ); break;
+		case GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA:	idLib::Printf( "ONE_MINUS_SRC_ALPHA" ); break;
+		case GLS_DSTBLEND_DST_ALPHA:			idLib::Printf( "DST_ALPHA" ); break;
+		case GLS_DSTBLEND_ONE_MINUS_DST_ALPHA:	idLib::Printf( "ONE_MINUS_DST_ALPHA" ); break;
+		default:								idLib::Printf( "NA" );
+	}
+	idLib::Printf( "\n" );
+	
+	// depth func
+	idLib::Printf( "DepthFunc: " );
+	switch ( stateBits & GLS_DEPTHFUNC_BITS ) {
+		case GLS_DEPTHFUNC_EQUAL:	idLib::Printf( "EQUAL" ); break;
+		case GLS_DEPTHFUNC_ALWAYS:	idLib::Printf( "ALWAYS" ); break;
+		case GLS_DEPTHFUNC_LESS:	idLib::Printf( "LEQUAL" ); break;
+		case GLS_DEPTHFUNC_GREATER: idLib::Printf( "GEQUAL" ); break;
+		default:					idLib::Printf( "NA" ); break;
+	}
+	idLib::Printf( "\n" );
+	
+	// depth mask
+	idLib::Printf( "DepthWrite: %s\n", ( stateBits & GLS_DEPTHMASK ) ? "FALSE" : "TRUE" );
+
+	// depth bounds
+	idLib::Printf( "DepthBounds: %s\n", ( stateBits & GLS_DEPTH_TEST_MASK ) ? "TRUE" : "FALSE" );
+
+	// depth bias
+	idLib::Printf( "DepthBias: %s\n", ( stateBits & GLS_POLYGON_OFFSET ) ? "TRUE" : "FALSE" );
+
+	// stencil
+	auto printStencil = [&] ( stencilFace_t face, uint64 bits, uint64 mask, uint64 ref ) {
+		idLib::Printf( "Stencil: %s, ", ( bits & ( GLS_STENCIL_FUNC_BITS | GLS_STENCIL_OP_BITS ) ) ? "ON" : "OFF" );
+		idLib::Printf( "Face=" );
+		switch ( face ) {
+			case STENCIL_FACE_FRONT: idLib::Printf( "FRONT" ); break;
+			case STENCIL_FACE_BACK: idLib::Printf( "BACK" ); break;
+		default: idLib::Printf( "BOTH" ); break;
+		}
+		idLib::Printf( ", Func=" );
+		switch ( bits & GLS_STENCIL_FUNC_BITS ) {
+			case GLS_STENCIL_FUNC_NEVER:	idLib::Printf( "NEVER" ); break;
+			case GLS_STENCIL_FUNC_LESS:		idLib::Printf( "LESS" ); break;
+			case GLS_STENCIL_FUNC_EQUAL:	idLib::Printf( "EQUAL" ); break;
+			case GLS_STENCIL_FUNC_LEQUAL:	idLib::Printf( "LEQUAL" ); break;
+			case GLS_STENCIL_FUNC_GREATER:	idLib::Printf( "GREATER" ); break;
+			case GLS_STENCIL_FUNC_NOTEQUAL: idLib::Printf( "NOTEQUAL" ); break;
+			case GLS_STENCIL_FUNC_GEQUAL:	idLib::Printf( "GEQUAL" ); break;
+			case GLS_STENCIL_FUNC_ALWAYS:	idLib::Printf( "ALWAYS" ); break;
+			default:						idLib::Printf( "NA" ); break;
+		}
+		idLib::Printf( ", OpFail=" );
+		switch( bits & GLS_STENCIL_OP_FAIL_BITS ) {
+			case GLS_STENCIL_OP_FAIL_KEEP:		idLib::Printf( "KEEP" ); break;
+			case GLS_STENCIL_OP_FAIL_ZERO:		idLib::Printf( "ZERO" ); break;
+			case GLS_STENCIL_OP_FAIL_REPLACE:	idLib::Printf( "REPLACE" ); break;
+			case GLS_STENCIL_OP_FAIL_INCR:		idLib::Printf( "INCR" ); break;
+			case GLS_STENCIL_OP_FAIL_DECR:		idLib::Printf( "DECR" ); break;
+			case GLS_STENCIL_OP_FAIL_INVERT:	idLib::Printf( "INVERT" ); break;
+			case GLS_STENCIL_OP_FAIL_INCR_WRAP: idLib::Printf( "INCR_WRAP" ); break;
+			case GLS_STENCIL_OP_FAIL_DECR_WRAP: idLib::Printf( "DECR_WRAP" ); break;
+			default:							idLib::Printf( "NA" ); break;
+		}
+		idLib::Printf( ", ZFail=" );
+		switch( bits & GLS_STENCIL_OP_ZFAIL_BITS ) {
+			case GLS_STENCIL_OP_ZFAIL_KEEP:			idLib::Printf( "KEEP" ); break;
+			case GLS_STENCIL_OP_ZFAIL_ZERO:			idLib::Printf( "ZERO" ); break;
+			case GLS_STENCIL_OP_ZFAIL_REPLACE:		idLib::Printf( "REPLACE" ); break;
+			case GLS_STENCIL_OP_ZFAIL_INCR:			idLib::Printf( "INCR" ); break;
+			case GLS_STENCIL_OP_ZFAIL_DECR:			idLib::Printf( "DECR" ); break;
+			case GLS_STENCIL_OP_ZFAIL_INVERT:		idLib::Printf( "INVERT" ); break;
+			case GLS_STENCIL_OP_ZFAIL_INCR_WRAP:	idLib::Printf( "INCR_WRAP" ); break;
+			case GLS_STENCIL_OP_ZFAIL_DECR_WRAP:	idLib::Printf( "DECR_WRAP" ); break;
+			default:								idLib::Printf( "NA" ); break;
+		}
+		idLib::Printf( ", OpPass=" );
+		switch( bits & GLS_STENCIL_OP_PASS_BITS ) {
+			case GLS_STENCIL_OP_PASS_KEEP:			idLib::Printf( "KEEP" ); break;
+			case GLS_STENCIL_OP_PASS_ZERO:			idLib::Printf( "ZERO" ); break;
+			case GLS_STENCIL_OP_PASS_REPLACE:		idLib::Printf( "REPLACE" ); break;
+			case GLS_STENCIL_OP_PASS_INCR:			idLib::Printf( "INCR" ); break;
+			case GLS_STENCIL_OP_PASS_DECR:			idLib::Printf( "DECR" ); break;
+			case GLS_STENCIL_OP_PASS_INVERT:		idLib::Printf( "INVERT" ); break;
+			case GLS_STENCIL_OP_PASS_INCR_WRAP:		idLib::Printf( "INCR_WRAP" ); break;
+			case GLS_STENCIL_OP_PASS_DECR_WRAP:		idLib::Printf( "DECR_WRAP" ); break;
+			default:								idLib::Printf( "NA" ); break;
+		}
+		idLib::Printf( ", mask=%llu, ref=%llu\n", mask, ref );
+	};
+
+	uint32 mask = uint32( ( stateBits & GLS_STENCIL_FUNC_MASK_BITS ) >> GLS_STENCIL_FUNC_MASK_SHIFT );
+	uint32 ref = uint32( ( stateBits & GLS_STENCIL_FUNC_REF_BITS ) >> GLS_STENCIL_FUNC_REF_SHIFT );
+	if ( stateBits & GLS_SEPARATE_STENCIL ) {
+		printStencil( STENCIL_FACE_FRONT, ( stateBits & GLS_STENCIL_FRONT_OPS ), mask, ref );
+		printStencil( STENCIL_FACE_BACK, ( ( stateBits & GLS_STENCIL_BACK_OPS ) >> 12 ), mask, ref );
+	} else {
+		printStencil( STENCIL_FACE_NUM, stateBits, mask, ref );
+	}
+}
 
 /*
 ====================
@@ -241,41 +468,6 @@ void PrintState( uint64 stateBits ) {
 }
 
 /*
-================
-RB_SetMVP
-================
-*/
-void RB_SetMVP( const idRenderMatrix & mvp ) { 
-	renderProgManager.SetRenderParms( RENDERPARM_MVPMATRIX_X, mvp[0], 4 );
-}
-
-static const float zero[4] = { 0, 0, 0, 0 };
-static const float one[4] = { 1, 1, 1, 1 };
-static const float negOne[4] = { -1, -1, -1, -1 };
-
-/*
-================
-RB_SetVertexColorParms
-================
-*/
-void RB_SetVertexColorParms( stageVertexColor_t svc ) {
-	switch ( svc ) {
-		case SVC_IGNORE:
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, zero );
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, one );
-			break;
-		case SVC_MODULATE:
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, one );
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, zero );
-			break;
-		case SVC_INVERSE_MODULATE:
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, negOne );
-			renderProgManager.SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, one );
-			break;
-	}
-}
-
-/*
 ======================
 RB_GetShaderTextureMatrix
 ======================
@@ -309,39 +501,6 @@ void RB_GetShaderTextureMatrix( const float *shaderRegisters, const textureStage
 	matrix[1*4+3] = 0.0f;
 	matrix[2*4+3] = 0.0f;
 	matrix[3*4+3] = 1.0f;
-}
-
-/*
-======================
-RB_LoadShaderTextureMatrix
-======================
-*/
-void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture ) {	
-	float texS[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
-	float texT[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
-
-	if ( texture->hasMatrix ) {
-		float matrix[16];
-		RB_GetShaderTextureMatrix( shaderRegisters, texture, matrix );
-		texS[0] = matrix[0*4+0];
-		texS[1] = matrix[1*4+0];
-		texS[2] = matrix[2*4+0];
-		texS[3] = matrix[3*4+0];
-	
-		texT[0] = matrix[0*4+1];
-		texT[1] = matrix[1*4+1];
-		texT[2] = matrix[2*4+1];
-		texT[3] = matrix[3*4+1];
-
-		RENDERLOG_PRINTF( "Setting Texture Matrix\n");
-		renderLog.Indent();
-		RENDERLOG_PRINTF( "Texture Matrix S : %4.3f, %4.3f, %4.3f, %4.3f\n", texS[0], texS[1], texS[2], texS[3] );
-		RENDERLOG_PRINTF( "Texture Matrix T : %4.3f, %4.3f, %4.3f, %4.3f\n", texT[0], texT[1], texT[2], texT[3] );
-		renderLog.Outdent();
-	} 
-
-	renderProgManager.SetRenderParm( RENDERPARM_TEXTUREMATRIX_S, texS );
-	renderProgManager.SetRenderParm( RENDERPARM_TEXTUREMATRIX_T, texT );
 }
 
 /*
@@ -1290,7 +1449,7 @@ void idRenderBackend::GL_Color( float r, float g, float b, float a ) {
 	parm[1] = idMath::ClampFloat( 0.0f, 1.0f, g );
 	parm[2] = idMath::ClampFloat( 0.0f, 1.0f, b );
 	parm[3] = idMath::ClampFloat( 0.0f, 1.0f, a );
-	renderProgManager.SetRenderParm( RENDERPARM_COLOR, parm );
+	SetRenderParm( RENDERPARM_COLOR, parm );
 }
 
 /*
@@ -1309,6 +1468,127 @@ void idRenderBackend::SetColorMappings() {
 	}
 
 	SetGamma( m_gammaTable, m_gammaTable, m_gammaTable );
+}
+
+/*
+=========================================================================================================
+
+Render Progs
+
+=========================================================================================================
+*/
+
+/*
+========================
+idRenderProgManager::FindShader
+========================
+*/
+int idRenderBackend::FindShader( const char * name, rpStage_t stage ) {
+	idStr shaderName( name );
+	shaderName.StripFileExtension();
+
+	for ( int i = 0; i < m_shaders.Num(); i++ ) {
+		shader_t & shader = m_shaders[ i ];
+		if ( shader.name.Icmp( shaderName.c_str() ) == 0 && shader.stage == stage ) {
+			LoadShader( i );
+			return i;
+		}
+	}
+	shader_t shader;
+	shader.name = shaderName;
+	shader.stage = stage;
+	int index = m_shaders.Append( shader );
+	LoadShader( index );
+	return index;
+}
+
+/*
+========================
+idRenderBackend::GetRenderParm
+========================
+*/
+const idVec4 & idRenderBackend::GetRenderParm( renderParm_t rp ) {
+	return m_uniforms[ rp ];
+}
+
+/*
+========================
+idRenderBackend::SetRenderParm
+========================
+*/
+void idRenderBackend::SetRenderParm( renderParm_t rp, const float * value ) {
+	for ( int i = 0; i < 4; ++i ) {
+		m_uniforms[rp][i] = value[i];
+	}
+}
+
+/*
+========================
+idRenderBackend::SetRenderParms
+========================
+*/
+void idRenderBackend::SetRenderParms( renderParm_t rp, const float * value, int num ) {
+	for ( int i = 0; i < num; ++i ) {
+		SetRenderParm( (renderParm_t)(rp + i), value + ( i * 4 ) );
+	}
+}
+
+/*
+================
+idRenderBackend::SetVertexColorParms
+================
+*/
+static const float zero[4] = { 0, 0, 0, 0 };
+static const float one[4] = { 1, 1, 1, 1 };
+static const float negOne[4] = { -1, -1, -1, -1 };
+void idRenderBackend::SetVertexColorParms( stageVertexColor_t svc ) {
+	switch ( svc ) {
+		case SVC_IGNORE:
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, zero );
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, one );
+			break;
+		case SVC_MODULATE:
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, one );
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, zero );
+			break;
+		case SVC_INVERSE_MODULATE:
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_MODULATE, negOne );
+			SetRenderParm( RENDERPARM_VERTEXCOLOR_ADD, one );
+			break;
+	}
+}
+
+/*
+======================
+idRenderBackend::LoadShaderTextureMatrix
+======================
+*/
+void idRenderBackend::LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture ) {	
+	float texS[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	float texT[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	if ( texture->hasMatrix ) {
+		float matrix[16];
+		RB_GetShaderTextureMatrix( shaderRegisters, texture, matrix );
+		texS[0] = matrix[0*4+0];
+		texS[1] = matrix[1*4+0];
+		texS[2] = matrix[2*4+0];
+		texS[3] = matrix[3*4+0];
+	
+		texT[0] = matrix[0*4+1];
+		texT[1] = matrix[1*4+1];
+		texT[2] = matrix[2*4+1];
+		texT[3] = matrix[3*4+1];
+
+		RENDERLOG_PRINTF( "Setting Texture Matrix\n");
+		renderLog.Indent();
+		RENDERLOG_PRINTF( "Texture Matrix S : %4.3f, %4.3f, %4.3f, %4.3f\n", texS[0], texS[1], texS[2], texS[3] );
+		RENDERLOG_PRINTF( "Texture Matrix T : %4.3f, %4.3f, %4.3f, %4.3f\n", texT[0], texT[1], texT[2], texT[3] );
+		renderLog.Outdent();
+	} 
+
+	SetRenderParm( RENDERPARM_TEXTUREMATRIX_S, texS );
+	SetRenderParm( RENDERPARM_TEXTUREMATRIX_T, texT );
 }
 
 /*
@@ -1451,7 +1731,7 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 			parm[2] = m_viewDef->renderView.vieworg[2];
 			parm[3] = 1.0f;
 
-			renderProgManager.SetRenderParm( RENDERPARM_GLOBALEYEPOS, parm ); // rpGlobalEyePos
+			SetRenderParm( RENDERPARM_GLOBALEYEPOS, parm ); // rpGlobalEyePos
 
 			// sets overbright to make world brighter
 			// This value is baked into the specularScale and diffuseScale values so
@@ -1463,12 +1743,12 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 			parm[1] = overbright;
 			parm[2] = overbright;
 			parm[3] = overbright;
-			renderProgManager.SetRenderParm( RENDERPARM_OVERBRIGHT, parm );
+			SetRenderParm( RENDERPARM_OVERBRIGHT, parm );
 
 			// Set Projection Matrix
 			float projMatrixTranspose[16];
 			R_MatrixTranspose( m_viewDef->projectionMatrix, projMatrixTranspose );
-			renderProgManager.SetRenderParms( RENDERPARM_PROJMATRIX_X, projMatrixTranspose, 4 );
+			SetRenderParms( RENDERPARM_PROJMATRIX_X, projMatrixTranspose, 4 );
 		}
 
 		//-------------------------------------------------
@@ -1531,7 +1811,7 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 			screenCorrectionParm[1] = 1.0f;
 			screenCorrectionParm[2] = 0.0f;
 			screenCorrectionParm[3] = 1.0f;
-			renderProgManager.SetRenderParm( RENDERPARM_SCREENCORRECTIONFACTOR, screenCorrectionParm ); // rpScreenCorrectionFactor
+			SetRenderParm( RENDERPARM_SCREENCORRECTIONFACTOR, screenCorrectionParm ); // rpScreenCorrectionFactor
 
 			// window coord to 0.0 to 1.0 conversion
 			float windowCoordParm[4];
@@ -1539,7 +1819,7 @@ void idRenderBackend::DrawView( const renderCommand_t & cmd ) {
 			windowCoordParm[1] = 1.0f / h;
 			windowCoordParm[2] = 0.0f;
 			windowCoordParm[3] = 1.0f;
-			renderProgManager.SetRenderParm( RENDERPARM_WINDOWCOORD, windowCoordParm ); // rpWindowCoord
+			SetRenderParm( RENDERPARM_WINDOWCOORD, windowCoordParm ); // rpWindowCoord
 
 			// render the remaining surfaces
 			renderLog.OpenMainBlock( MRB_DRAW_SHADER_PASSES_POST );
@@ -1612,7 +1892,7 @@ void idRenderBackend::BindVariableStageImage( const textureStage_t *texture, con
 			// because the shaders may have already been set - we need to make sure we are not using a bink shader which would 
 			// display incorrectly.  We may want to get rid of RB_BindVariableStageImage and inline the code so that the
 			// SWF GUI case is handled better, too
-			renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
+			BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
 		}
 	} else {
 		// FIXME: see why image is invalid
@@ -1631,7 +1911,7 @@ void idRenderBackend::PrepareStageTexturing( const shaderStage_t * pStage,  cons
 	float useTexGenParm[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	// set the texture matrix if needed
-	RB_LoadShaderTextureMatrix( surf->shaderRegisters, &pStage->texture );
+	LoadShaderTextureMatrix( surf->shaderRegisters, &pStage->texture );
 
 	// texgens
 	if ( pStage->texture.texgen == TG_REFLECT_CUBE ) {
@@ -1644,22 +1924,22 @@ void idRenderBackend::PrepareStageTexturing( const shaderStage_t * pStage,  cons
 
 			RENDERLOG_PRINTF( "TexGen: TG_REFLECT_CUBE: Bumpy Environment\n" );
 			if ( surf->jointCache ) {
-				renderProgManager.BindProgram( BUILTIN_BUMPY_ENVIRONMENT_SKINNED );
+				BindProgram( BUILTIN_BUMPY_ENVIRONMENT_SKINNED );
 			} else {
-				renderProgManager.BindProgram( BUILTIN_BUMPY_ENVIRONMENT );
+				BindProgram( BUILTIN_BUMPY_ENVIRONMENT );
 			}
 		} else {
 			RENDERLOG_PRINTF( "TexGen: TG_REFLECT_CUBE: Environment\n" );
 			if ( surf->jointCache ) {
-				renderProgManager.BindProgram( BUILTIN_ENVIRONMENT_SKINNED );
+				BindProgram( BUILTIN_ENVIRONMENT_SKINNED );
 			} else {
-				renderProgManager.BindProgram( BUILTIN_ENVIRONMENT );
+				BindProgram( BUILTIN_ENVIRONMENT );
 			}
 		}
 
 	} else if ( pStage->texture.texgen == TG_SKYBOX_CUBE ) {
 
-		renderProgManager.BindProgram( BUILTIN_SKYBOX );
+		BindProgram( BUILTIN_SKYBOX );
 
 	} else if ( pStage->texture.texgen == TG_WOBBLESKY_CUBE ) {
 
@@ -1714,8 +1994,8 @@ void idRenderBackend::PrepareStageTexturing( const shaderStage_t * pStage,  cons
 		transform[2*4+2] = axis[2][2];
 		transform[2*4+3] = 0.0f;
 
-		renderProgManager.SetRenderParms( RENDERPARM_WOBBLESKY_X, transform, 3 );
-		renderProgManager.BindProgram( BUILTIN_WOBBLESKY );
+		SetRenderParms( RENDERPARM_WOBBLESKY_X, transform, 3 );
+		BindProgram( BUILTIN_WOBBLESKY );
 
 	} else if ( ( pStage->texture.texgen == TG_SCREEN ) || ( pStage->texture.texgen == TG_SCREEN2 ) ) {
 
@@ -1735,21 +2015,21 @@ void idRenderBackend::PrepareStageTexturing( const shaderStage_t * pStage,  cons
 		plane[1] = mat[1*4+0];
 		plane[2] = mat[2*4+0];
 		plane[3] = mat[3*4+0];
-		renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_S, plane );
+		SetRenderParm( RENDERPARM_TEXGEN_0_S, plane );
 		RENDERLOG_PRINTF( "TEXGEN_S = %4.3f, %4.3f, %4.3f, %4.3f\n",  plane[0], plane[1], plane[2], plane[3] );
 
 		plane[0] = mat[0*4+1];
 		plane[1] = mat[1*4+1];
 		plane[2] = mat[2*4+1];
 		plane[3] = mat[3*4+1];
-		renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_T, plane );
+		SetRenderParm( RENDERPARM_TEXGEN_0_T, plane );
 		RENDERLOG_PRINTF( "TEXGEN_T = %4.3f, %4.3f, %4.3f, %4.3f\n",  plane[0], plane[1], plane[2], plane[3] );
 
 		plane[0] = mat[0*4+3];
 		plane[1] = mat[1*4+3];
 		plane[2] = mat[2*4+3];
 		plane[3] = mat[3*4+3];
-		renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_Q, plane );	
+		SetRenderParm( RENDERPARM_TEXGEN_0_Q, plane );	
 		RENDERLOG_PRINTF( "TEXGEN_Q = %4.3f, %4.3f, %4.3f, %4.3f\n",  plane[0], plane[1], plane[2], plane[3] );
 
 		renderLog.Outdent();
@@ -1765,7 +2045,7 @@ void idRenderBackend::PrepareStageTexturing( const shaderStage_t * pStage,  cons
 		idLib::Warning( "Using GlassWarp! Please contact Brian!" );
 	}
 
-	renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_ENABLED, useTexGenParm );
+	SetRenderParm( RENDERPARM_TEXGEN_0_ENABLED, useTexGenParm );
 }
 
 /*
@@ -1810,7 +2090,7 @@ void idRenderBackend::FillDepthBufferGeneric( const drawSurf_t * const * drawSur
 
 		// change the matrix if needed
 		if ( drawSurf->space != m_currentSpace ) {
-			RB_SetMVP( drawSurf->space->mvp );
+			SetRenderParms( RENDERPARM_MVPMATRIX_X, drawSurf->space->mvp[ 0 ], 4 );
 
 			m_currentSpace = drawSurf->space;
 		}
@@ -1887,15 +2167,15 @@ void idRenderBackend::FillDepthBufferGeneric( const drawSurf_t * const * drawSur
 
 				GL_State( stageGLState );
 				idVec4 alphaTestValue( regs[ pStage->alphaTestRegister ] );
-				renderProgManager.SetRenderParm( RENDERPARM_ALPHA_TEST, alphaTestValue.ToFloatPtr() );
+				SetRenderParm( RENDERPARM_ALPHA_TEST, alphaTestValue.ToFloatPtr() );
 
 				if ( drawSurf->jointCache ) {
-					renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
+					BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
 				} else {
-					renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
+					BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
 				}
 
-				RB_SetVertexColorParms( SVC_IGNORE );
+				SetVertexColorParms( SVC_IGNORE );
 
 				// bind the texture
 				GL_BindTexture( 0, pStage->texture.image );
@@ -1923,14 +2203,14 @@ void idRenderBackend::FillDepthBufferGeneric( const drawSurf_t * const * drawSur
 		// draw the entire surface solid
 		if ( drawSolid ) {
 			if ( shader->GetSort() == SS_SUBVIEW ) {
-				renderProgManager.BindProgram( BUILTIN_COLOR );
+				BindProgram( BUILTIN_COLOR );
 				GL_Color( color );
 				GL_State( surfGLState );
 			} else {
 				if ( drawSurf->jointCache ) {
-					renderProgManager.BindProgram( BUILTIN_DEPTH_SKINNED );
+					BindProgram( BUILTIN_DEPTH_SKINNED );
 				} else {
-					renderProgManager.BindProgram( BUILTIN_DEPTH );
+					BindProgram( BUILTIN_DEPTH );
 				}
 				GL_State( surfGLState | GLS_ALPHAMASK );
 			}
@@ -1945,7 +2225,7 @@ void idRenderBackend::FillDepthBufferGeneric( const drawSurf_t * const * drawSur
 		renderLog.CloseBlock();
 	}
 
-	renderProgManager.SetRenderParm( RENDERPARM_ALPHA_TEST, vec4_zero.ToFloatPtr() );
+	SetRenderParm( RENDERPARM_ALPHA_TEST, vec4_zero.ToFloatPtr() );
 }
 
 /*
@@ -2021,16 +2301,16 @@ void idRenderBackend::FillDepthBufferFast( drawSurf_t **drawSurfs, int numDrawSu
 
 		// set mvp matrix
 		if ( surf->space != m_currentSpace ) {
-			RB_SetMVP( surf->space->mvp );
+			SetRenderParms( RENDERPARM_MVPMATRIX_X, surf->space->mvp[0], 4 );
 			m_currentSpace = surf->space;
 		}
 
 		renderLog.OpenBlock( shader->GetName() );
 
 		if ( surf->jointCache ) {
-			renderProgManager.BindProgram( BUILTIN_DEPTH_SKINNED );
+			BindProgram( BUILTIN_DEPTH_SKINNED );
 		} else {
-			renderProgManager.BindProgram( BUILTIN_DEPTH );
+			BindProgram( BUILTIN_DEPTH );
 		}
 
 		// must render with less-equal for Z-Cull to work properly
@@ -2098,21 +2378,21 @@ void idRenderBackend::DrawSingleInteraction( drawInteraction_t * din ) {
 	}
 
 	// bump matrix
-	renderProgManager.SetRenderParm( RENDERPARM_BUMPMATRIX_S, din->bumpMatrix[0].ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_BUMPMATRIX_T, din->bumpMatrix[1].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_BUMPMATRIX_S, din->bumpMatrix[0].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_BUMPMATRIX_T, din->bumpMatrix[1].ToFloatPtr() );
 
 	// diffuse matrix
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMATRIX_S, din->diffuseMatrix[0].ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMATRIX_T, din->diffuseMatrix[1].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_DIFFUSEMATRIX_S, din->diffuseMatrix[0].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_DIFFUSEMATRIX_T, din->diffuseMatrix[1].ToFloatPtr() );
 
 	// specular matrix
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMATRIX_S, din->specularMatrix[0].ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMATRIX_T, din->specularMatrix[1].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_SPECULARMATRIX_S, din->specularMatrix[0].ToFloatPtr() );
+	SetRenderParm( RENDERPARM_SPECULARMATRIX_T, din->specularMatrix[1].ToFloatPtr() );
 
-	RB_SetVertexColorParms( din->vertexColor );
+	SetVertexColorParms( din->vertexColor );
 
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMODIFIER, din->diffuseColor.ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMODIFIER, din->specularColor.ToFloatPtr() );
+	SetRenderParm( RENDERPARM_DIFFUSEMODIFIER, din->diffuseColor.ToFloatPtr() );
+	SetRenderParm( RENDERPARM_SPECULARMODIFIER, din->specularColor.ToFloatPtr() );
 
 	// texture 0 will be the per-surface bump map
 	GL_BindTexture( INTERACTION_TEXUNIT_BUMP, din->bumpImage );
@@ -2124,35 +2404,6 @@ void idRenderBackend::DrawSingleInteraction( drawInteraction_t * din ) {
 	GL_BindTexture( INTERACTION_TEXUNIT_SPECULAR, din->specularImage );
 
 	DrawElementsWithCounters( din->surf );
-}
-
-/*
-=================
-RB_SetupForFastPathInteractions
-
-These are common for all fast path surfaces
-=================
-*/
-static void RB_SetupForFastPathInteractions( const idVec4 & diffuseColor, const idVec4 & specularColor ) {
-	const idVec4 sMatrix( 1, 0, 0, 0 );
-	const idVec4 tMatrix( 0, 1, 0, 0 );
-
-	// bump matrix
-	renderProgManager.SetRenderParm( RENDERPARM_BUMPMATRIX_S, sMatrix.ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_BUMPMATRIX_T, tMatrix.ToFloatPtr() );
-
-	// diffuse matrix
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMATRIX_S, sMatrix.ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMATRIX_T, tMatrix.ToFloatPtr() );
-
-	// specular matrix
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMATRIX_S, sMatrix.ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMATRIX_T, tMatrix.ToFloatPtr() );
-
-	RB_SetVertexColorParms( SVC_IGNORE );
-
-	renderProgManager.SetRenderParm( RENDERPARM_DIFFUSEMODIFIER, diffuseColor.ToFloatPtr() );
-	renderProgManager.SetRenderParm( RENDERPARM_SPECULARMODIFIER, specularColor.ToFloatPtr() );
 }
 
 /*
@@ -2266,7 +2517,27 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 		//----------------------------------
 
 		// setup renderparms assuming we will be drawing trivial surfaces first
-		RB_SetupForFastPathInteractions( diffuseColor, specularColor );
+		{
+			const idVec4 sMatrix( 1, 0, 0, 0 );
+			const idVec4 tMatrix( 0, 1, 0, 0 );
+
+			// bump matrix
+			SetRenderParm( RENDERPARM_BUMPMATRIX_S, sMatrix.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_BUMPMATRIX_T, tMatrix.ToFloatPtr() );
+
+			// diffuse matrix
+			SetRenderParm( RENDERPARM_DIFFUSEMATRIX_S, sMatrix.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_DIFFUSEMATRIX_T, tMatrix.ToFloatPtr() );
+
+			// specular matrix
+			SetRenderParm( RENDERPARM_SPECULARMATRIX_S, sMatrix.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_SPECULARMATRIX_T, tMatrix.ToFloatPtr() );
+
+			SetVertexColorParms( SVC_IGNORE );
+
+			SetRenderParm( RENDERPARM_DIFFUSEMODIFIER, diffuseColor.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_SPECULARMODIFIER, specularColor.ToFloatPtr() );
+		}
 
 		// even if the space does not change between light stages, each light stage may need a different lightTextureMatrix baked in
 		m_currentSpace = NULL;
@@ -2277,15 +2548,15 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 			// select the render prog
 			if ( lightShader->IsAmbientLight() ) {
 				if ( surf->jointCache ) {
-					renderProgManager.BindProgram( BUILTIN_INTERACTION_AMBIENT_SKINNED );
+					BindProgram( BUILTIN_INTERACTION_AMBIENT_SKINNED );
 				} else {
-					renderProgManager.BindProgram( BUILTIN_INTERACTION_AMBIENT );
+					BindProgram( BUILTIN_INTERACTION_AMBIENT );
 				}
 			} else {
 				if ( surf->jointCache ) {
-					renderProgManager.BindProgram( BUILTIN_INTERACTION_SKINNED );
+					BindProgram( BUILTIN_INTERACTION_SKINNED );
 				} else {
-					renderProgManager.BindProgram( BUILTIN_INTERACTION );
+					BindProgram( BUILTIN_INTERACTION );
 				}
 			}
 
@@ -2314,7 +2585,7 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 				}
 
 				// model-view-projection
-				RB_SetMVP( surf->space->mvp );
+				SetRenderParms( RENDERPARM_MVPMATRIX_X, surf->space->mvp[0], 4 );
 
 				// tranform the light/view origin into model local space
 				idVec4 localLightOrigin( 0.0f );
@@ -2323,8 +2594,8 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 				R_GlobalPointToLocal( surf->space->modelMatrix, m_viewDef->renderView.vieworg, localViewOrigin.ToVec3() );
 
 				// set the local light/view origin
-				renderProgManager.SetRenderParm( RENDERPARM_LOCALLIGHTORIGIN, localLightOrigin.ToFloatPtr() );
-				renderProgManager.SetRenderParm( RENDERPARM_LOCALVIEWORIGIN, localViewOrigin.ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LOCALLIGHTORIGIN, localLightOrigin.ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LOCALVIEWORIGIN, localViewOrigin.ToFloatPtr() );
 
 				// transform the light project into model local space
 				idPlane lightProjection[4];
@@ -2338,10 +2609,10 @@ void idRenderBackend::RenderInteractions( const drawSurf_t *surfList, const view
 				}
 
 				// set the light projection
-				renderProgManager.SetRenderParm( RENDERPARM_LIGHTPROJECTION_S, lightProjection[0].ToFloatPtr() );
-				renderProgManager.SetRenderParm( RENDERPARM_LIGHTPROJECTION_T, lightProjection[1].ToFloatPtr() );
-				renderProgManager.SetRenderParm( RENDERPARM_LIGHTPROJECTION_Q, lightProjection[2].ToFloatPtr() );
-				renderProgManager.SetRenderParm( RENDERPARM_LIGHTFALLOFF_S, lightProjection[3].ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LIGHTPROJECTION_S, lightProjection[0].ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LIGHTPROJECTION_T, lightProjection[1].ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LIGHTPROJECTION_Q, lightProjection[2].ToFloatPtr() );
+				SetRenderParm( RENDERPARM_LIGHTFALLOFF_S, lightProjection[3].ToFloatPtr() );
 			}
 			
 			renderLog.OpenBlock( surf->material->GetName() );
@@ -2640,22 +2911,22 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 
 			const viewEntity_t *space = m_currentSpace;
 
-			RB_SetMVP( space->mvp );
+			SetRenderParms( RENDERPARM_MVPMATRIX_X, space->mvp[0], 4 );
 
 			// set eye position in local space
 			idVec4 localViewOrigin( 1.0f );
 			R_GlobalPointToLocal( space->modelMatrix, m_viewDef->renderView.vieworg, localViewOrigin.ToVec3() );
-			renderProgManager.SetRenderParm( RENDERPARM_LOCALVIEWORIGIN, localViewOrigin.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_LOCALVIEWORIGIN, localViewOrigin.ToFloatPtr() );
 
 			// set model Matrix
 			float modelMatrixTranspose[16];
 			R_MatrixTranspose( space->modelMatrix, modelMatrixTranspose );
-			renderProgManager.SetRenderParms( RENDERPARM_MODELMATRIX_X, modelMatrixTranspose, 4 );
+			SetRenderParms( RENDERPARM_MODELMATRIX_X, modelMatrixTranspose, 4 );
 
 			// Set ModelView Matrix
 			float modelViewMatrixTranspose[16];
 			R_MatrixTranspose( space->modelViewMatrix, modelViewMatrixTranspose );
-			renderProgManager.SetRenderParms( RENDERPARM_MODELVIEWMATRIX_X, modelViewMatrixTranspose, 4 );
+			SetRenderParms( RENDERPARM_MODELVIEWMATRIX_X, modelViewMatrixTranspose, 4 );
 		}
 
 		// change the scissor if needed
@@ -2735,7 +3006,7 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 
 				GL_State( stageGLState );
 			
-				renderProgManager.BindProgram( newStage->glslProgram );
+				BindProgram( newStage->glslProgram );
 
 				for ( int j = 0; j < newStage->numVertexParms; j++ ) {
 					float parm[4];
@@ -2743,15 +3014,15 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 					parm[1] = regs[ newStage->vertexParms[j][1] ];
 					parm[2] = regs[ newStage->vertexParms[j][2] ];
 					parm[3] = regs[ newStage->vertexParms[j][3] ];
-					renderProgManager.SetRenderParm( (renderParm_t)( RENDERPARM_USER0 + j ), parm );
+					SetRenderParm( (renderParm_t)( RENDERPARM_USER0 + j ), parm );
 				}
 
-				const renderProg_t & prog = renderProgManager.GetCurrentRenderProg();
+				const renderProg_t & prog = GetCurrentRenderProg();
 
 				// set rpEnableSkinning if the shader has optional support for skinning
 				if ( surf->jointCache && prog.optionalSkinning ) {
 					const idVec4 skinningParm( 1.0f );
-					renderProgManager.SetRenderParm( RENDERPARM_ENABLE_SKINNING, skinningParm.ToFloatPtr() );
+					SetRenderParm( RENDERPARM_ENABLE_SKINNING, skinningParm.ToFloatPtr() );
 				}
 
 				// bind texture units
@@ -2768,7 +3039,7 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 				// clear rpEnableSkinning if it was set
 				if ( surf->jointCache && prog.optionalSkinning ) {
 					const idVec4 skinningParm( 0.0f );
-					renderProgManager.SetRenderParm( RENDERPARM_ENABLE_SKINNING, skinningParm.ToFloatPtr() );
+					SetRenderParm( RENDERPARM_ENABLE_SKINNING, skinningParm.ToFloatPtr() );
 				}
 
 				renderLog.CloseBlock();
@@ -2814,36 +3085,36 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 					if ( ( stageGLState & GLS_OVERRIDE ) != 0 ) {
 						// This is a hack... Only SWF Guis set GLS_OVERRIDE
 						// Old style guis do not, and we don't want them to use the new GUI renederProg
-						renderProgManager.BindProgram( BUILTIN_BINK_GUI );
+						BindProgram( BUILTIN_BINK_GUI );
 					} else {
-						renderProgManager.BindProgram( BUILTIN_BINK );
+						BindProgram( BUILTIN_BINK );
 					}
 				} else {
 					if ( ( stageGLState & GLS_OVERRIDE ) != 0 ) {
 						// This is a hack... Only SWF Guis set GLS_OVERRIDE
 						// Old style guis do not, and we don't want them to use the new GUI renderProg
-						renderProgManager.BindProgram( BUILTIN_GUI );
+						BindProgram( BUILTIN_GUI );
 					} else {
 						if ( surf->jointCache ) {
-							renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
+							BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
 						} else {
-							renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
+							BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
 						}
 					}
 				}
 			} else if ( ( pStage->texture.texgen == TG_SCREEN ) || ( pStage->texture.texgen == TG_SCREEN2 ) ) {
-				renderProgManager.BindProgram( BUILTIN_TEXTURE_TEXGEN_VERTEXCOLOR );
+				BindProgram( BUILTIN_TEXTURE_TEXGEN_VERTEXCOLOR );
 			} else if ( pStage->texture.cinematic ) {
-				renderProgManager.BindProgram( BUILTIN_BINK );
+				BindProgram( BUILTIN_BINK );
 			} else {
 				if ( surf->jointCache ) {
-					renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
+					BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED );
 				} else {
-					renderProgManager.BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
+					BindProgram( BUILTIN_TEXTURE_VERTEXCOLOR );
 				}
 			}
 		
-			RB_SetVertexColorParms( svc );
+			SetVertexColorParms( svc );
 
 			// bind the texture
 			BindVariableStageImage( &pStage->texture, regs );
@@ -2912,7 +3183,7 @@ void idRenderBackend::T_BlendLight( const drawSurf_t *drawSurfs, const viewLight
 
 		if ( drawSurf->space != m_currentSpace ) {
 			// change the matrix
-			RB_SetMVP( drawSurf->space->mvp );
+			SetRenderParms( RENDERPARM_MVPMATRIX_X, drawSurf->space->mvp[0], 4 );
 
 			// change the light projection matrix
 			idPlane	lightProjectInCurrentSpace[4];
@@ -2920,10 +3191,10 @@ void idRenderBackend::T_BlendLight( const drawSurf_t *drawSurfs, const viewLight
 				R_GlobalPlaneToLocal( drawSurf->space->modelMatrix, vLight->lightProject[i], lightProjectInCurrentSpace[i] );
 			}
 
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_S, lightProjectInCurrentSpace[0].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_T, lightProjectInCurrentSpace[1].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_Q, lightProjectInCurrentSpace[2].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_1_S, lightProjectInCurrentSpace[3].ToFloatPtr() );	// falloff
+			SetRenderParm( RENDERPARM_TEXGEN_0_S, lightProjectInCurrentSpace[0].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_0_T, lightProjectInCurrentSpace[1].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_0_Q, lightProjectInCurrentSpace[2].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_1_S, lightProjectInCurrentSpace[3].ToFloatPtr() );	// falloff
 
 			m_currentSpace = drawSurf->space;
 		}
@@ -2957,7 +3228,7 @@ void idRenderBackend::BlendLight( const drawSurf_t *drawSurfs, const drawSurf_t 
 
 	// texture 0 will get the projected texture
 
-	renderProgManager.BindProgram( BUILTIN_BLENDLIGHT );
+	BindProgram( BUILTIN_BLENDLIGHT );
 
 	for ( int i = 0; i < lightShader->GetNumStages(); i++ ) {
 		const shaderStage_t	*stage = lightShader->GetStage(i);
@@ -2971,7 +3242,7 @@ void idRenderBackend::BlendLight( const drawSurf_t *drawSurfs, const drawSurf_t 
 		GL_BindTexture( 0, stage->texture.image );
 
 		if ( stage->texture.hasMatrix ) {
-			RB_LoadShaderTextureMatrix( regs, &stage->texture );
+			LoadShaderTextureMatrix( regs, &stage->texture );
 		}
 
 		// get the modulate values from the light, including alpha, unlike normal lights
@@ -3023,31 +3294,31 @@ void idRenderBackend::T_BasicFog( const drawSurf_t * drawSurfs, const idPlane fo
 		if ( drawSurf->space != m_currentSpace ) {
 			idPlane localFogPlanes[4];
 			if ( inverseBaseLightProject == NULL ) {
-				RB_SetMVP( drawSurf->space->mvp );
+				SetRenderParms( RENDERPARM_MVPMATRIX_X, drawSurf->space->mvp[0], 4 );
 				for ( int i = 0; i < 4; i++ ) {
 					R_GlobalPlaneToLocal( drawSurf->space->modelMatrix, fogPlanes[i], localFogPlanes[i] );
 				}
 			} else {
 				idRenderMatrix invProjectMVPMatrix;
 				idRenderMatrix::Multiply( m_viewDef->worldSpace.mvp, *inverseBaseLightProject, invProjectMVPMatrix );
-				RB_SetMVP( invProjectMVPMatrix );
+				SetRenderParms( RENDERPARM_MVPMATRIX_X, invProjectMVPMatrix[0], 4 );
 				for ( int i = 0; i < 4; i++ ) {
 					inverseBaseLightProject->InverseTransformPlane( fogPlanes[i], localFogPlanes[i], false );
 				}
 			}
 
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_S, localFogPlanes[0].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_0_T, localFogPlanes[1].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_1_T, localFogPlanes[2].ToFloatPtr() );
-			renderProgManager.SetRenderParm( RENDERPARM_TEXGEN_1_S, localFogPlanes[3].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_0_S, localFogPlanes[0].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_0_T, localFogPlanes[1].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_1_T, localFogPlanes[2].ToFloatPtr() );
+			SetRenderParm( RENDERPARM_TEXGEN_1_S, localFogPlanes[3].ToFloatPtr() );
 
 			m_currentSpace = ( inverseBaseLightProject == NULL ) ? drawSurf->space : NULL;
 		}
 
 		if ( drawSurf->jointCache ) {
-			renderProgManager.BindProgram( BUILTIN_FOG_SKINNED );
+			BindProgram( BUILTIN_FOG_SKINNED );
 		} else {
-			renderProgManager.BindProgram( BUILTIN_FOG );
+			BindProgram( BUILTIN_FOG );
 		}
 
 		DrawElementsWithCounters( drawSurf );
@@ -3196,14 +3467,14 @@ void idRenderBackend::StencilShadowPass( const drawSurf_t *drawSurfs, const view
 
 	RENDERLOG_PRINTF( "---------- RB_StencilShadowPass ----------\n" );
 
-	renderProgManager.BindProgram( BUILTIN_SHADOW );
+	BindProgram( BUILTIN_SHADOW );
 
 	uint64 glState = 0;
 
 	// for visualizing the shadows
 	if ( r_showShadows.GetInteger() ) {
 		// set the debug shadow color
-		renderProgManager.SetRenderParm( RENDERPARM_COLOR, colorMagenta.ToFloatPtr() );
+		SetRenderParm( RENDERPARM_COLOR, colorMagenta.ToFloatPtr() );
 		if ( r_showShadows.GetInteger() == 2 ) {
 			// draw filled in
 			glState = GLS_DEPTHMASK | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_LESS;
@@ -3265,27 +3536,27 @@ void idRenderBackend::StencilShadowPass( const drawSurf_t *drawSurfs, const view
 
 		if ( drawSurf->space != m_currentSpace ) {
 			// change the matrix
-			RB_SetMVP( drawSurf->space->mvp );
+			SetRenderParms( RENDERPARM_MVPMATRIX_X, drawSurf->space->mvp[0], 4 );
 
 			// set the local light position to allow the vertex program to project the shadow volume end cap to infinity
 			idVec4 localLight( 0.0f );
 			R_GlobalPointToLocal( drawSurf->space->modelMatrix, vLight->globalLightOrigin, localLight.ToVec3() );
-			renderProgManager.SetRenderParm( RENDERPARM_LOCALLIGHTORIGIN, localLight.ToFloatPtr() );
+			SetRenderParm( RENDERPARM_LOCALLIGHTORIGIN, localLight.ToFloatPtr() );
 
 			m_currentSpace = drawSurf->space;
 		}
 
 		if ( r_showShadows.GetInteger() == 0 ) {
 			if ( drawSurf->jointCache ) {
-				renderProgManager.BindProgram( BUILTIN_SHADOW_SKINNED );
+				BindProgram( BUILTIN_SHADOW_SKINNED );
 			} else {
-				renderProgManager.BindProgram( BUILTIN_SHADOW );
+				BindProgram( BUILTIN_SHADOW );
 			}
 		} else {
 			if ( drawSurf->jointCache ) {
-				renderProgManager.BindProgram( BUILTIN_SHADOW_DEBUG_SKINNED );
+				BindProgram( BUILTIN_SHADOW_DEBUG_SKINNED );
 			} else {
-				renderProgManager.BindProgram( BUILTIN_SHADOW_DEBUG );
+				BindProgram( BUILTIN_SHADOW_DEBUG );
 			}
 		}
 
@@ -3372,12 +3643,12 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 		GLS_STENCIL_MAKE_REF( STENCIL_SHADOW_TEST_VALUE ) | 
 		GLS_STENCIL_MAKE_MASK( STENCIL_SHADOW_MASK_VALUE ) );
 
-	renderProgManager.BindProgram( BUILTIN_DEPTH );
+	BindProgram( BUILTIN_DEPTH );
 
 	// set the matrix for deforming the 'zeroOneCubeModel' into the frustum to exactly cover the light volume
 	idRenderMatrix invProjectMVPMatrix;
 	idRenderMatrix::Multiply( m_viewDef->worldSpace.mvp, vLight->inverseBaseLightProject, invProjectMVPMatrix );
-	RB_SetMVP( invProjectMVPMatrix );
+	SetRenderParms( RENDERPARM_MVPMATRIX_X, invProjectMVPMatrix[0], 4 );
 
 	DrawElementsWithCounters( &m_zeroOneCubeSurface );
 

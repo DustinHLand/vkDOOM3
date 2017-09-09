@@ -597,9 +597,6 @@
     <ClCompile Include="renderer\BufferObject.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\Vulkan\RenderProgs_VK.cpp">
-      <Filter>Renderer\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\Vulkan\RenderDebug_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
     </ClCompile>
@@ -608,9 +605,6 @@
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\Image_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\RenderProgs.cpp">
-      <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\Vulkan\Allocator_VK.cpp">
       <Filter>Renderer\Vulkan</Filter>
@@ -903,9 +897,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RenderLog.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\RenderProgs.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RenderSystem.h">

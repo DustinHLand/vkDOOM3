@@ -1289,6 +1289,31 @@ void idRenderSystemLocal::DrawBigStringExt( int x, int y, const char *string, co
 
 /*
 ====================
+idRenderSystemLocal::GetProgram
+====================
+*/
+int idRenderSystemLocal::GetProgram( const char * name, const int vIndex, const int fIndex ) {
+	return m_backend.FindProgram( name, vIndex, fIndex );
+}
+
+/*
+====================
+idRenderSystemLocal::GetShader
+====================
+*/
+int idRenderSystemLocal::GetShader( const char * name, const rpStage_t pipelineStage ) {
+	switch ( pipelineStage ) {
+	case SHADER_STAGE_VERTEX:
+		return m_backend.FindShader( name, pipelineStage );
+	case SHADER_STAGE_FRAGMENT:
+		return m_backend.FindShader( name, pipelineStage );
+	default:
+		return -1;
+	}
+}
+
+/*
+====================
 idRenderSystemLocal::SwapCommandBuffers
 
 Performs final closeout of any gui models being defined.

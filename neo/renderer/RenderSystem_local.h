@@ -101,6 +101,9 @@ public:
 	virtual void			DrawBigChar( int x, int y, int ch );
 	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor );
 
+	virtual int				GetProgram( const char * name, const int vIndex, const int fIndex );
+	virtual int				GetShader( const char * name, const rpStage_t pipelineStage );
+
 	virtual void			SwapCommandBuffers( frameTiming_t * frameTiming );
 	virtual void			SwapAndRenderCommandBuffers( frameTiming_t * frameTiming );
 	virtual void			SwapCommandBuffers_FinishRendering( frameTiming_t * frameTiming );

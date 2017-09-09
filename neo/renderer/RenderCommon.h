@@ -79,6 +79,12 @@ static const int MAX_UBO_PARMS				= 2;
 static const int NUM_TIMESTAMP_QUERIES		= 16;
 #endif
 
+enum rpStage_t {
+	SHADER_STAGE_VERTEX		= BIT( 0 ),
+	SHADER_STAGE_FRAGMENT	= BIT( 1 ),
+	SHADER_STAGE_ALL		= SHADER_STAGE_VERTEX | SHADER_STAGE_FRAGMENT
+};
+
 // vertCacheHandle_t packs size, offset, and frame number into 64 bits
 typedef uint64 vertCacheHandle_t;
 

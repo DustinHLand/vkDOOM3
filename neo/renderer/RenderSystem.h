@@ -155,6 +155,9 @@ public:
 	virtual void			DrawBigChar( int x, int y, int ch ) = 0;
 	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor ) = 0;
 
+	virtual int				GetProgram( const char * name, const int vIndex, const int fIndex ) = 0;
+	virtual int				GetShader( const char * name, const rpStage_t pipelineStage ) = 0;
+
 	// Performs final closeout of any gui models being defined.
 	//
 	// Waits for the previous GPU rendering to complete and vsync.

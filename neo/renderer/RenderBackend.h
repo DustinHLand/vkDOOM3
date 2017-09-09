@@ -126,6 +126,219 @@ struct debugPolygon_t {
 /*
 ===========================================================================
 
+RenderProgs
+
+===========================================================================
+*/
+
+#define VERTEX_UNIFORM_ARRAY_NAME			"_va_"
+#define FRAGMENT_UNIFORM_ARRAY_NAME			"_fa_"
+
+static const int PC_ATTRIB_INDEX_VERTEX		= 0;
+static const int PC_ATTRIB_INDEX_NORMAL		= 2;
+static const int PC_ATTRIB_INDEX_COLOR		= 3;
+static const int PC_ATTRIB_INDEX_COLOR2		= 4;
+static const int PC_ATTRIB_INDEX_ST			= 8;
+static const int PC_ATTRIB_INDEX_TANGENT	= 9;
+
+enum vertexMask_t {
+	VERTEX_MASK_XYZ			= BIT( PC_ATTRIB_INDEX_VERTEX ),
+	VERTEX_MASK_ST			= BIT( PC_ATTRIB_INDEX_ST ),
+	VERTEX_MASK_NORMAL		= BIT( PC_ATTRIB_INDEX_NORMAL ),
+	VERTEX_MASK_COLOR		= BIT( PC_ATTRIB_INDEX_COLOR ),
+	VERTEX_MASK_TANGENT		= BIT( PC_ATTRIB_INDEX_TANGENT ),
+	VERTEX_MASK_COLOR2		= BIT( PC_ATTRIB_INDEX_COLOR2 ),
+};
+
+enum vertexLayoutType_t {
+	LAYOUT_UNKNOWN = -1,
+	LAYOUT_DRAW_VERT,
+	LAYOUT_DRAW_SHADOW_VERT,
+	LAYOUT_DRAW_SHADOW_VERT_SKINNED,
+	NUM_VERTEX_LAYOUTS
+};
+
+// This enum list corresponds to the global constant register indecies as defined in global.inc for all
+// shaders.  We used a shared pool to keeps things simple.  If something changes here then it also
+// needs to change in global.inc and vice versa
+enum renderParm_t {
+	// For backwards compatibility, do not change the order of the first 17 items
+	RENDERPARM_SCREENCORRECTIONFACTOR = 0,
+	RENDERPARM_WINDOWCOORD,
+	RENDERPARM_DIFFUSEMODIFIER,
+	RENDERPARM_SPECULARMODIFIER,
+
+	RENDERPARM_LOCALLIGHTORIGIN,
+	RENDERPARM_LOCALVIEWORIGIN,
+
+	RENDERPARM_LIGHTPROJECTION_S,
+	RENDERPARM_LIGHTPROJECTION_T,
+	RENDERPARM_LIGHTPROJECTION_Q,
+	RENDERPARM_LIGHTFALLOFF_S,
+
+	RENDERPARM_BUMPMATRIX_S,
+	RENDERPARM_BUMPMATRIX_T,
+
+	RENDERPARM_DIFFUSEMATRIX_S,
+	RENDERPARM_DIFFUSEMATRIX_T,
+
+	RENDERPARM_SPECULARMATRIX_S,
+	RENDERPARM_SPECULARMATRIX_T,
+
+	RENDERPARM_VERTEXCOLOR_MODULATE,
+	RENDERPARM_VERTEXCOLOR_ADD,
+
+	// The following are new and can be in any order
+	
+	RENDERPARM_COLOR,
+	RENDERPARM_VIEWORIGIN,
+	RENDERPARM_GLOBALEYEPOS,
+
+	RENDERPARM_MVPMATRIX_X,
+	RENDERPARM_MVPMATRIX_Y,
+	RENDERPARM_MVPMATRIX_Z,
+	RENDERPARM_MVPMATRIX_W,
+
+	RENDERPARM_MODELMATRIX_X,
+	RENDERPARM_MODELMATRIX_Y,
+	RENDERPARM_MODELMATRIX_Z,
+	RENDERPARM_MODELMATRIX_W,
+
+	RENDERPARM_PROJMATRIX_X,
+	RENDERPARM_PROJMATRIX_Y,
+	RENDERPARM_PROJMATRIX_Z,
+	RENDERPARM_PROJMATRIX_W,
+
+	RENDERPARM_MODELVIEWMATRIX_X,
+	RENDERPARM_MODELVIEWMATRIX_Y,
+	RENDERPARM_MODELVIEWMATRIX_Z,
+	RENDERPARM_MODELVIEWMATRIX_W,
+
+	RENDERPARM_TEXTUREMATRIX_S,
+	RENDERPARM_TEXTUREMATRIX_T,
+
+	RENDERPARM_TEXGEN_0_S,
+	RENDERPARM_TEXGEN_0_T,
+	RENDERPARM_TEXGEN_0_Q,
+	RENDERPARM_TEXGEN_0_ENABLED,
+
+	RENDERPARM_TEXGEN_1_S,
+	RENDERPARM_TEXGEN_1_T,
+	RENDERPARM_TEXGEN_1_Q,
+	RENDERPARM_TEXGEN_1_ENABLED,
+
+	RENDERPARM_WOBBLESKY_X,
+	RENDERPARM_WOBBLESKY_Y,
+	RENDERPARM_WOBBLESKY_Z,
+
+	RENDERPARM_OVERBRIGHT,
+	RENDERPARM_ENABLE_SKINNING,
+	RENDERPARM_ALPHA_TEST,
+
+	RENDERPARM_USER0,
+	RENDERPARM_USER1,
+	RENDERPARM_USER2,
+	RENDERPARM_USER3,
+	RENDERPARM_USER4,
+	RENDERPARM_USER5,
+	RENDERPARM_USER6,
+	RENDERPARM_USER7,
+
+	RENDERPARM_TOTAL
+};
+
+const char * GLSLParmNames[];
+
+enum rpBuiltIn_t {
+	BUILTIN_GUI,
+	BUILTIN_COLOR,
+	BUILTIN_SIMPLESHADE,
+	BUILTIN_TEXTURED,
+	BUILTIN_TEXTURE_VERTEXCOLOR,
+	BUILTIN_TEXTURE_VERTEXCOLOR_SKINNED,
+	BUILTIN_TEXTURE_TEXGEN_VERTEXCOLOR,
+	BUILTIN_INTERACTION,
+	BUILTIN_INTERACTION_SKINNED,
+	BUILTIN_INTERACTION_AMBIENT,
+	BUILTIN_INTERACTION_AMBIENT_SKINNED,
+	BUILTIN_ENVIRONMENT,
+	BUILTIN_ENVIRONMENT_SKINNED,
+	BUILTIN_BUMPY_ENVIRONMENT,
+	BUILTIN_BUMPY_ENVIRONMENT_SKINNED,
+
+	BUILTIN_DEPTH,
+	BUILTIN_DEPTH_SKINNED,
+	BUILTIN_SHADOW,
+	BUILTIN_SHADOW_SKINNED,
+	BUILTIN_SHADOW_DEBUG,
+	BUILTIN_SHADOW_DEBUG_SKINNED,
+
+	BUILTIN_BLENDLIGHT,
+	BUILTIN_FOG,
+	BUILTIN_FOG_SKINNED,
+	BUILTIN_SKYBOX,
+	BUILTIN_WOBBLESKY,
+	BUILTIN_BINK,
+	BUILTIN_BINK_GUI,
+
+	MAX_BUILTINS
+};
+
+enum rpBinding_t {
+	BINDING_TYPE_UNIFORM_BUFFER,
+	BINDING_TYPE_SAMPLER,
+	BINDING_TYPE_MAX
+};
+
+struct shader_t {
+	shader_t() : module( VK_NULL_HANDLE ) {}
+
+	idStr					name;
+	rpStage_t				stage;
+	VkShaderModule			module;
+	idList< rpBinding_t >	bindings;
+	idList< int >			parmIndices;
+};
+
+struct renderProg_t {
+	renderProg_t() :
+					usesJoints( false ),
+					optionalSkinning( false ),
+					vertexShaderIndex( -1 ),
+					fragmentShaderIndex( -1 ),
+					vertexLayoutType( LAYOUT_DRAW_VERT ),
+					pipelineLayout( VK_NULL_HANDLE ),
+					descriptorSetLayout( VK_NULL_HANDLE ) {}
+
+	struct pipelineState_t {
+		pipelineState_t() : 
+					stateBits( 0 ),
+					target( NULL ),
+					pipeline( VK_NULL_HANDLE ) {
+		}
+
+		uint64		stateBits;
+		idImage *	target;
+		VkPipeline	pipeline;
+	};
+
+	VkPipeline GetPipeline( uint64 stateBits, idImage * target, VkShaderModule vertexShader, VkShaderModule fragmentShader );
+
+	idStr						name;
+	bool						usesJoints;
+	bool						optionalSkinning;
+	int							vertexShaderIndex;
+	int							fragmentShaderIndex;
+	vertexLayoutType_t			vertexLayoutType;
+	VkPipelineLayout			pipelineLayout;
+	VkDescriptorSetLayout		descriptorSetLayout;
+	idList< rpBinding_t >		bindings;
+	idList< pipelineState_t >	pipelines;
+};
+
+/*
+===========================================================================
+
 Backend Globals
 
 ===========================================================================
@@ -189,6 +402,10 @@ public:
 
 	void				Init();
 	void				Shutdown();
+
+	const renderProg_t & GetCurrentRenderProg() const { return m_renderProgs[ m_currentRp ]; }
+	int					FindShader( const char * name, rpStage_t stage );
+	int					FindProgram( const char * name, int vIndex, int fIndex );
 
 	void				ExecuteBackEndCommands( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
@@ -259,6 +476,22 @@ private:
 	void				GL_Color( float * color );
 
 private:
+	void				BindProgram( int index );
+	void				CommitCurrent( uint64 stateBits, idImage * target );
+
+	const idVec4 &		GetRenderParm( renderParm_t rp );
+	void				SetRenderParm( renderParm_t rp, const float * value );
+	void				SetRenderParms( renderParm_t rp, const float * values, int numValues );
+
+	void				SetVertexColorParms( stageVertexColor_t svc );
+	void				LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture );
+
+	void				LoadShader( int index );
+	void				LoadShader( shader_t & shader );
+
+	void				AllocParmBlockBuffer( const idList< int > & parmIndices, idUniformBuffer & ubo );
+
+private:
 	void				Clear();
 
 	void				CreateInstance();
@@ -276,6 +509,9 @@ private:
 
 	void				CreateSwapChain();
 	void				DestroySwapChain();
+
+	void				CreateRenderProgs();
+	void				DestroyRenderProgs();
 
 private:
 	void				DBG_SimpleSurfaceSetup( const drawSurf_t * drawSurf );
@@ -337,7 +573,20 @@ private:
 	unsigned short		m_gammaTable[ 256 ];	// brightness / gamma modify this
 
 private:
-	
+	int					m_currentRp;
+	int					m_currentDescSet;
+	int					m_currentParmBufferOffset;
+
+	idList< shader_t, TAG_RENDER >		m_shaders;
+	idList< renderProg_t, TAG_RENDER >	m_renderProgs;
+	idStaticList< idVec4, RENDERPARM_TOTAL > m_uniforms;
+
+	VkDescriptorPool	m_descriptorPools[ NUM_FRAME_DATA ];
+	VkDescriptorSet		m_descriptorSets[ NUM_FRAME_DATA ][ MAX_DESC_SETS ];
+
+	idUniformBuffer *	m_parmBuffers[ NUM_FRAME_DATA ];
+
+private:
 	VkInstance						m_instance;
 	VkPhysicalDevice				m_physicalDevice;
 	VkPhysicalDeviceFeatures		m_physicalDeviceFeatures;

@@ -30,7 +30,6 @@ If you have questions concerning this license or the applicable additional terms
 #pragma hdrstop
 #include "../framework/precompiled.h"
 #include "RenderSystem_local.h"
-#include "RenderProgs.h"
 #include "GLState.h"
 #include "Image.h"
 
@@ -1518,20 +1517,20 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 		}
 		if ( !token.Icmp( "program" ) ) {
 			if ( src.ReadTokenOnLine( &token ) ) {
-				newStage.vertexProgram = renderProgManager.FindShader( token.c_str(), SHADER_STAGE_VERTEX );
-				newStage.fragmentProgram = renderProgManager.FindShader( token.c_str(), SHADER_STAGE_FRAGMENT );
+				newStage.vertexProgram = renderSystem->GetShader( token.c_str(), SHADER_STAGE_VERTEX );
+				newStage.fragmentProgram = renderSystem->GetShader( token.c_str(), SHADER_STAGE_FRAGMENT );
 			}
 			continue;
 		}
 		if ( !token.Icmp( "fragmentProgram" ) ) {
 			if ( src.ReadTokenOnLine( &token ) ) {
-				newStage.fragmentProgram = renderProgManager.FindShader( token.c_str(), SHADER_STAGE_FRAGMENT );
+				newStage.fragmentProgram = renderSystem->GetShader( token.c_str(), SHADER_STAGE_FRAGMENT );
 			}
 			continue;
 		}
 		if ( !token.Icmp( "vertexProgram" ) ) {
 			if ( src.ReadTokenOnLine( &token ) ) {
-				newStage.vertexProgram = renderProgManager.FindShader( token.c_str(), SHADER_STAGE_VERTEX );
+				newStage.vertexProgram = renderSystem->GetShader( token.c_str(), SHADER_STAGE_VERTEX );
 			}
 			continue;
 		}
@@ -1559,7 +1558,8 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 
 	// if we are using newStage, allocate a copy of it
 	if ( newStage.fragmentProgram || newStage.vertexProgram ) {
-		newStage.glslProgram = renderProgManager.FindProgram( GetName(), newStage.vertexProgram, newStage.fragmentProgram );
+		newStage.glslProgram = renderSystem->GetProgram( GetName(), newStage.vertexProgram, newStage.fragmentProgram );
+
 		ss->newStage = (newShaderStage_t *)Mem_Alloc( sizeof( newStage ), TAG_MATERIAL );
 		*(ss->newStage) = newStage;
 	}
