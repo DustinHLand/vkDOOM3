@@ -403,7 +403,6 @@ public:
 	void				Init();
 	void				Shutdown();
 
-	const renderProg_t & GetCurrentRenderProg() const { return m_renderProgs[ m_currentRp ]; }
 	int					FindShader( const char * name, rpStage_t stage );
 	int					FindProgram( const char * name, int vIndex, int fIndex );
 

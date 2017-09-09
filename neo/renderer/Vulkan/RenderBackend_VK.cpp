@@ -1184,7 +1184,7 @@ void idRenderBackend::DrawElementsWithCounters( const drawSurf_t * surf ) {
 
 	RENDERLOG_PRINTF( "Binding Buffers(%d): %p:%i %p:%i\n", surf->numIndexes, vertexBuffer, vertOffset, indexBuffer, indexOffset );
 
-	const renderProg_t & prog = GetCurrentRenderProg();
+	const renderProg_t & prog = m_renderProgs[ m_currentRp ];
 
 	if ( surf->jointCache ) {
 		assert( prog.usesJoints );

@@ -3017,7 +3017,7 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 					SetRenderParm( (renderParm_t)( RENDERPARM_USER0 + j ), parm );
 				}
 
-				const renderProg_t & prog = GetCurrentRenderProg();
+				const renderProg_t & prog = m_renderProgs[ m_currentRp ];
 
 				// set rpEnableSkinning if the shader has optional support for skinning
 				if ( surf->jointCache && prog.optionalSkinning ) {
