@@ -2427,6 +2427,8 @@ idRenderBackend::CommitCurrent
 ========================
 */
 void idRenderBackend::CommitCurrent( uint64 stateBits, idImage * target ) {
+	assert( target != NULL );
+
 	renderProg_t & prog = m_renderProgs[ m_currentRp ];
 
 	VkPipeline pipeline = prog.GetPipeline( 
