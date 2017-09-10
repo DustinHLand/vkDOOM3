@@ -268,6 +268,7 @@ private:
 #if defined( ID_VULKAN )
 	void		CreateSampler();
 	void		CreateFrameBuffer();
+	void		DestroyFrameBuffer();
 
 	static void EmptyGarbage();
 #endif

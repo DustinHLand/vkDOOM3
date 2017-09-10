@@ -509,6 +509,29 @@ void idImage::CreateFrameBuffer() {
 
 /*
 ====================
+idImage::DestroyFrameBuffer
+====================
+*/
+void idImage::DestroyFrameBuffer() {
+	if ( m_depthAttachment ) {
+		m_depthAttachment->PurgeImage();
+	}
+	if ( m_resolveAttachment ) {
+		m_resolveAttachment->PurgeImage();
+	}
+
+	if ( m_renderPass != VK_NULL_HANDLE ) {
+		vkDestroyRenderPass( vkcontext.device, m_renderPass, NULL );
+		m_renderPass = VK_NULL_HANDLE;
+	}
+	if ( m_frameBuffer != VK_NULL_HANDLE ) {
+		vkDestroyFramebuffer( vkcontext.device, m_frameBuffer, NULL );
+		m_frameBuffer = VK_NULL_HANDLE;
+	}
+}
+
+/*
+====================
 idImage::PurgeImage
 ====================
 */
@@ -531,6 +554,10 @@ void idImage::PurgeImage() {
 
 		m_view = VK_NULL_HANDLE;
 		m_image = VK_NULL_HANDLE;
+	}
+
+	if ( m_opts.usage == TD_TARGET ) {
+		DestroyFrameBuffer();
 	}
 }
 
