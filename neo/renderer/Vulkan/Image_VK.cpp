@@ -311,11 +311,11 @@ idImage::AllocImage
 ====================
 */
 void idImage::AllocImage() {
-	PurgeImage();
-
-	if ( m_imgName.Icmp( "textures/dynamic/camera1" ) == 0 ) {
-		__debugbreak();
+	if ( m_bIsSwapimage ) {
+		return;
 	}
+
+	PurgeImage();
 
 	m_internalFormat = VK_GetFormatFromTextureFormat( m_opts.format );
 
@@ -541,7 +541,10 @@ void idImage::PurgeImage() {
 		m_sampler = VK_NULL_HANDLE;
 	}
 
-	if ( m_image != VK_NULL_HANDLE ) {
+	if ( m_bIsSwapimage ) {
+		m_view = VK_NULL_HANDLE;
+		m_image = VK_NULL_HANDLE;
+	} else if ( m_image != VK_NULL_HANDLE ) {
 		m_allocationGarbage[ m_garbageIndex ].Append( m_allocation );
 		m_viewGarbage[ m_garbageIndex ].Append( m_view );
 		m_imageGarbage[ m_garbageIndex ].Append( m_image );
