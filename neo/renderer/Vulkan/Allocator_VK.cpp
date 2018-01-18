@@ -370,6 +370,8 @@ void idVulkanBlock::Free( vulkanAllocation_t & allocation ) {
 		return;
 	}
 
+	current->type = VULKAN_ALLOCATION_TYPE_FREE;
+
 	if ( current->prev && current->prev->type == VULKAN_ALLOCATION_TYPE_FREE ) {
 		chunk_t * prev = current->prev;
 
