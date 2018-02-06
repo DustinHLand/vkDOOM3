@@ -276,7 +276,7 @@ bool idVulkanBlock::Allocate(
 	VkDeviceSize alignedSize = 0;
 
 	for ( current = m_head; current != NULL; previous = current, current = current->next ) {
-		if ( !current->type == VULKAN_ALLOCATION_TYPE_FREE ) {
+		if ( current->type != VULKAN_ALLOCATION_TYPE_FREE ) {
 			continue;
 		}
 
