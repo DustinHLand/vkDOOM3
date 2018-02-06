@@ -136,6 +136,7 @@ struct gpuInfo_t {
 	VkPhysicalDevice					device;
 	VkPhysicalDeviceProperties			props;
 	VkPhysicalDeviceMemoryProperties	memProps;
+	VkPhysicalDeviceFeatures			features;
 	VkSurfaceCapabilitiesKHR			surfaceCaps;
 	idList< VkSurfaceFormatKHR >		surfaceFormats;
 	idList< VkPresentModeKHR >			presentModes;
@@ -344,7 +345,6 @@ private:
 	
 	VkInstance						m_instance;
 	VkPhysicalDevice				m_physicalDevice;
-	VkPhysicalDeviceFeatures		m_physicalDeviceFeatures;
 
 	idList< const char * >			m_instanceExtensions;
 	idList< const char * >			m_deviceExtensions;

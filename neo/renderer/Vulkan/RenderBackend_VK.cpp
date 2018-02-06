@@ -494,6 +494,7 @@ void idRenderBackend::EnumeratePhysicalDevices() {
 
 		vkGetPhysicalDeviceMemoryProperties( gpu.device, &gpu.memProps );
 		vkGetPhysicalDeviceProperties( gpu.device, &gpu.props );
+		vkGetPhysicalDeviceFeatures( gpu.device, &gpu.features );
 	}
 }
 
@@ -593,8 +594,6 @@ void idRenderBackend::SelectPhysicalDevice() {
 			m_physicalDevice = gpu.device;
 			vkcontext.gpu = &gpu;
 
-			vkGetPhysicalDeviceFeatures( m_physicalDevice, &m_physicalDeviceFeatures );
-
 			return;
 		}
 	}
@@ -631,7 +630,7 @@ void idRenderBackend::CreateLogicalDeviceAndQueues() {
 	deviceFeatures.imageCubeArray = VK_TRUE;
 	deviceFeatures.depthClamp = VK_TRUE;
 	deviceFeatures.depthBiasClamp = VK_TRUE;
-	deviceFeatures.depthBounds = VK_TRUE;
+	deviceFeatures.depthBounds = vkcontext.gpu->features.depthBounds;
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
 
 	VkDeviceCreateInfo info = {};
@@ -924,7 +923,7 @@ void idRenderBackend::CreateRenderTargets() {
 	globalImages->ScratchImage( "_viewDepth", depthOptions );
 
 	if ( vkcontext.sampleCount > VK_SAMPLE_COUNT_1_BIT ) {
-		vkcontext.supersampling = m_physicalDeviceFeatures.sampleRateShading == VK_TRUE;
+		vkcontext.supersampling = vkcontext.gpu->features.sampleRateShading == VK_TRUE;
 
 		VkImageCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1845,7 +1844,7 @@ idRenderBackend::GL_DepthBoundsTest
 ========================
 */
 void idRenderBackend::GL_DepthBoundsTest( const float zmin, const float zmax ) {
-	if ( zmin > zmax ) {
+	if ( !vkcontext.gpu->features.depthBounds || zmin > zmax ) {
 		return;
 	}
 

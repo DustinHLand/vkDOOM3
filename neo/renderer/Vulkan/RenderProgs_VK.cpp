@@ -447,9 +447,11 @@ static VkPipeline CreateGraphicsPipeline(
 		depthStencilState.depthTestEnable = VK_TRUE;
 		depthStencilState.depthWriteEnable = ( stateBits & GLS_DEPTHMASK ) == 0;
 		depthStencilState.depthCompareOp = depthCompareOp;
-		depthStencilState.depthBoundsTestEnable = ( stateBits & GLS_DEPTH_TEST_MASK ) != 0;
-		depthStencilState.minDepthBounds = 0.0f;
-		depthStencilState.maxDepthBounds = 1.0f;
+		if ( vkcontext.gpu->features.depthBounds ) {
+			depthStencilState.depthBoundsTestEnable = ( stateBits & GLS_DEPTH_TEST_MASK ) != 0;
+			depthStencilState.minDepthBounds = 0.0f;
+			depthStencilState.maxDepthBounds = 1.0f;
+		}
 		depthStencilState.stencilTestEnable = ( stateBits & ( GLS_STENCIL_FUNC_BITS | GLS_STENCIL_OP_BITS ) ) != 0;
 
 		uint32 ref = uint32( ( stateBits & GLS_STENCIL_FUNC_REF_BITS ) >> GLS_STENCIL_FUNC_REF_SHIFT );
@@ -513,7 +515,7 @@ static VkPipeline CreateGraphicsPipeline(
 		dynamic.Append( VK_DYNAMIC_STATE_DEPTH_BIAS );
 	}
 
-	if ( stateBits & GLS_DEPTH_TEST_MASK ) {
+	if ( vkcontext.gpu->features.depthBounds && ( stateBits & GLS_DEPTH_TEST_MASK ) ) {
 		dynamic.Append( VK_DYNAMIC_STATE_DEPTH_BOUNDS );
 	}
 
