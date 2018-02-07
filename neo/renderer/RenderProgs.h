@@ -263,7 +263,7 @@ public:
 	int		FindShader( const char * name, rpStage_t stage );
 	void	BindProgram( int index );
 
-	void	CommitCurrent( uint64 stateBits );
+	void	CommitCurrent( uint64 stateBits, VkCommandBuffer commandBuffer );
 	int		FindProgram( const char * name, int vIndex, int fIndex );
 
 private:

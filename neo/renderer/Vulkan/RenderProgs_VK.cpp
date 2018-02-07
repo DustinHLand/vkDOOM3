@@ -792,7 +792,7 @@ void idRenderProgManager::AllocParmBlockBuffer( const idList< int > & parmIndice
 idRenderProgManager::CommitCurrent
 ========================
 */
-void idRenderProgManager::CommitCurrent( uint64 stateBits ) {
+void idRenderProgManager::CommitCurrent( uint64 stateBits, VkCommandBuffer commandBuffer ) {
 	renderProg_t & prog = m_renderProgs[ m_current ];
 
 	VkPipeline pipeline = prog.GetPipeline( 
@@ -902,8 +902,8 @@ void idRenderProgManager::CommitCurrent( uint64 stateBits ) {
 
 	vkUpdateDescriptorSets( vkcontext.device, writeIndex, writes, 0, NULL );
 
-	vkCmdBindDescriptorSets( vkcontext.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, prog.pipelineLayout, 0, 1, &descSet, 0, NULL );
-	vkCmdBindPipeline( vkcontext.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
+	vkCmdBindDescriptorSets( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, prog.pipelineLayout, 0, 1, &descSet, 0, NULL );
+	vkCmdBindPipeline( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
 }
 
 /*

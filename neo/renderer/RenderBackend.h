@@ -159,12 +159,6 @@ struct vulkanContext_t {
 	VkQueue							graphicsQueue;
 	VkQueue							presentQueue;
 
-	VkCommandPool					commandPool;
-	VkCommandBuffer					commandBuffer;
-	idArray< VkCommandBuffer, NUM_FRAME_DATA >	commandBuffers;
-	idArray< VkFence, NUM_FRAME_DATA >			commandBufferFences;
-	idArray< bool, NUM_FRAME_DATA >				commandBufferRecorded;
-
 	VkFormat						depthFormat;
 	VkRenderPass					renderPass;
 	VkPipelineCache					pipelineCache;
@@ -271,6 +265,9 @@ private:
 
 	void				CreateSurface();
 
+	void				CreateCommandPool();
+	void				CreateCommandBuffer();
+
 	void				CreateSwapChain();
 	void				DestroySwapChain();
 
@@ -366,9 +363,15 @@ private:
 #else
 	vulkanAllocation_t				m_msaaAllocation;
 #endif
+	VkCommandPool					m_commandPool;
+
 	idArray< VkImage, NUM_FRAME_DATA >			m_swapchainImages;
 	idArray< VkImageView, NUM_FRAME_DATA >		m_swapchainViews;
 	idArray< VkFramebuffer, NUM_FRAME_DATA >	m_frameBuffers;
+	
+	idArray< VkCommandBuffer, NUM_FRAME_DATA >	m_commandBuffers;
+	idArray< VkFence, NUM_FRAME_DATA >			m_commandBufferFences;
+	idArray< bool, NUM_FRAME_DATA >				m_commandBufferRecorded;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_acquireSemaphores;
 	idArray< VkSemaphore, NUM_FRAME_DATA >		m_renderCompleteSemaphores;
 
