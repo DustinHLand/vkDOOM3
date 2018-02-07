@@ -430,10 +430,31 @@ void idRenderBackend::CreateInstance() {
 
 /*
 =============
-idRenderBackend::EnumeratePhysicalDevices
+CheckPhysicalDeviceExtensionSupport
 =============
 */
-void idRenderBackend::EnumeratePhysicalDevices() {
+static bool CheckPhysicalDeviceExtensionSupport( GPUInfo_t & gpu, idList< const char * > & requiredExt ) {
+	int required = requiredExt.Num();
+	int available = 0;
+
+	for ( int i = 0; i < requiredExt.Num(); ++i ) {
+		for ( int j = 0; j < gpu.extensionProps.Num(); ++j ) {
+			if ( idStr::Icmp( requiredExt[ i ], gpu.extensionProps[ j ].extensionName ) == 0 ) {
+				available++;
+				break;
+			}
+		}
+	}
+
+	return available == required;
+}
+
+/*
+=============
+idRenderBackend::SelectSuitablePhysicalDevice
+=============
+*/
+void idRenderBackend::SelectSuitablePhysicalDevice() {
 	uint32 numDevices = 0;
 	ID_VK_CHECK( vkEnumeratePhysicalDevices( m_instance, &numDevices, NULL ) );
 	ID_VK_VALIDATE( numDevices > 0, "vkEnumeratePhysicalDevices returned zero devices." );
@@ -444,10 +465,11 @@ void idRenderBackend::EnumeratePhysicalDevices() {
 	ID_VK_CHECK( vkEnumeratePhysicalDevices( m_instance, &numDevices, devices.Ptr() ) );
 	ID_VK_VALIDATE( numDevices > 0, "vkEnumeratePhysicalDevices returned zero devices." );
 
-	vkcontext.gpus.SetNum( numDevices );
+	idList< GPUInfo_t > gpus;
+	gpus.SetNum( numDevices );
 
 	for ( uint32 i = 0; i < numDevices; ++i ) {
-		gpuInfo_t & gpu = vkcontext.gpus[ i ];
+		GPUInfo_t & gpu = gpus[ i ];
 		gpu.device = devices[ i ];
 
 		{
@@ -496,51 +518,10 @@ void idRenderBackend::EnumeratePhysicalDevices() {
 		vkGetPhysicalDeviceProperties( gpu.device, &gpu.props );
 		vkGetPhysicalDeviceFeatures( gpu.device, &gpu.features );
 	}
-}
 
-/*
-=============
-idRenderBackend::CreateSurface
-=============
-*/
-void idRenderBackend::CreateSurface() {
-	VkWin32SurfaceCreateInfoKHR createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	createInfo.hinstance = win32.hInstance;
-	createInfo.hwnd = win32.hWnd;
-
-	ID_VK_CHECK( vkCreateWin32SurfaceKHR( m_instance, &createInfo, NULL, &m_surface ) );
-}
-
-/*
-=============
-CheckPhysicalDeviceExtensionSupport
-=============
-*/
-static bool CheckPhysicalDeviceExtensionSupport( gpuInfo_t & gpu, idList< const char * > & requiredExt ) {
-	int required = requiredExt.Num();
-	int available = 0;
-
-	for ( int i = 0; i < requiredExt.Num(); ++i ) {
-		for ( int j = 0; j < gpu.extensionProps.Num(); ++j ) {
-			if ( idStr::Icmp( requiredExt[ i ], gpu.extensionProps[ j ].extensionName ) == 0 ) {
-				available++;
-				break;
-			}
-		}
-	}
-
-	return available == required;
-}
-
-/*
-=============
-idRenderBackend::SelectPhysicalDevice
-=============
-*/
-void idRenderBackend::SelectPhysicalDevice() {
-	for ( int i = 0; i < vkcontext.gpus.Num(); ++i ) {
-		gpuInfo_t & gpu = vkcontext.gpus[ i ];
+	// Now try to select one
+	for ( int i = 0; i < gpus.Num(); ++i ) {
+		GPUInfo_t & gpu = gpus[ i ];
 
 		int graphicsIdx = -1;
 		int presentIdx = -1;
@@ -592,7 +573,7 @@ void idRenderBackend::SelectPhysicalDevice() {
 			vkcontext.graphicsFamilyIdx = graphicsIdx;
 			vkcontext.presentFamilyIdx = presentIdx;
 			m_physicalDevice = gpu.device;
-			vkcontext.gpu = &gpu;
+			vkcontext.gpu = gpu;
 
 			return;
 		}
@@ -600,6 +581,20 @@ void idRenderBackend::SelectPhysicalDevice() {
 
 	// If we can't render or present, just bail.
 	idLib::FatalError( "Could not find a physical device which fits our desired profile" );
+}
+
+/*
+=============
+idRenderBackend::CreateSurface
+=============
+*/
+void idRenderBackend::CreateSurface() {
+	VkWin32SurfaceCreateInfoKHR createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	createInfo.hinstance = win32.hInstance;
+	createInfo.hwnd = win32.hWnd;
+
+	ID_VK_CHECK( vkCreateWin32SurfaceKHR( m_instance, &createInfo, NULL, &m_surface ) );
 }
 
 /*
@@ -630,7 +625,7 @@ void idRenderBackend::CreateLogicalDeviceAndQueues() {
 	deviceFeatures.imageCubeArray = VK_TRUE;
 	deviceFeatures.depthClamp = VK_TRUE;
 	deviceFeatures.depthBiasClamp = VK_TRUE;
-	deviceFeatures.depthBounds = vkcontext.gpu->features.depthBounds;
+	deviceFeatures.depthBounds = vkcontext.gpu.features.depthBounds;
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
 
 	VkDeviceCreateInfo info = {};
@@ -730,7 +725,7 @@ idRenderBackend::CreateSwapChain
 =============
 */
 void idRenderBackend::CreateSwapChain() {
-	gpuInfo_t & gpu = *vkcontext.gpu;
+	GPUInfo_t & gpu = vkcontext.gpu;
 
 	VkSurfaceFormatKHR surfaceFormat = ChooseSurfaceFormat( gpu.surfaceFormats );
 	VkPresentModeKHR presentMode = ChoosePresentMode( gpu.presentModes );
@@ -923,7 +918,7 @@ void idRenderBackend::CreateRenderTargets() {
 	globalImages->ScratchImage( "_viewDepth", depthOptions );
 
 	if ( vkcontext.sampleCount > VK_SAMPLE_COUNT_1_BIT ) {
-		vkcontext.supersampling = vkcontext.gpu->features.sampleRateShading == VK_TRUE;
+		vkcontext.supersampling = vkcontext.gpu.features.sampleRateShading == VK_TRUE;
 
 		VkImageCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1132,8 +1127,7 @@ static void ClearContext() {
 	vkcontext.counter = 0;
 	vkcontext.currentFrameData = 0;
 	vkcontext.jointCacheHandle = 0;
-	vkcontext.gpu = NULL;
-	vkcontext.gpus.Clear();
+	vkcontext.gpu = GPUInfo_t();
 	vkcontext.device = VK_NULL_HANDLE;
 	vkcontext.graphicsFamilyIdx = -1;
 	vkcontext.presentFamilyIdx = -1;
@@ -1234,10 +1228,7 @@ void idRenderBackend::Init() {
 	CreateSurface();
 
 	// Enumerate physical devices and get their properties
-	EnumeratePhysicalDevices();
-
-	// Find queue family/families supporting graphics and present.
-	SelectPhysicalDevice();
+	SelectSuitablePhysicalDevice();
 
 	// Create logical device and queues
 	CreateLogicalDeviceAndQueues();
@@ -1292,7 +1283,7 @@ void idRenderBackend::Init() {
 	renderProgManager.Init();
 
 	// Init Vertex Cache
-	vertexCache.Init( vkcontext.gpu->props.limits.minUniformBufferOffsetAlignment );
+	vertexCache.Init( vkcontext.gpu.props.limits.minUniformBufferOffsetAlignment );
 }
 
 /*
@@ -1413,7 +1404,7 @@ void idRenderBackend::ResizeImages() {
 	CreateSurface();
 
 	// Refresh Surface Capabilities
-	ID_VK_CHECK( vkGetPhysicalDeviceSurfaceCapabilitiesKHR( m_physicalDevice, m_surface, &vkcontext.gpu->surfaceCaps ) );
+	ID_VK_CHECK( vkGetPhysicalDeviceSurfaceCapabilitiesKHR( m_physicalDevice, m_surface, &vkcontext.gpu.surfaceCaps ) );
 
 	// Recheck presentation support
 	VkBool32 supportsPresent = VK_FALSE;
@@ -1589,7 +1580,7 @@ void idRenderBackend::GL_StartFrame() {
 
 		const uint64 gpuStart = results[ 0 ];
 		const uint64 gpuEnd = results[ 1 ];
-		const uint64 tick = ( 1000 * 1000 * 1000 ) / vkcontext.gpu->props.limits.timestampPeriod;
+		const uint64 tick = ( 1000 * 1000 * 1000 ) / vkcontext.gpu.props.limits.timestampPeriod;
 		m_pc.gpuMicroSec = ( ( gpuEnd - gpuStart ) * 1000 * 1000 ) / tick;
 
 		m_queryIndex[ vkcontext.currentFrameData ] = 0;
@@ -1845,7 +1836,7 @@ idRenderBackend::GL_DepthBoundsTest
 ========================
 */
 void idRenderBackend::GL_DepthBoundsTest( const float zmin, const float zmax ) {
-	if ( !vkcontext.gpu->features.depthBounds || zmin > zmax ) {
+	if ( !vkcontext.gpu.features.depthBounds || zmin > zmax ) {
 		return;
 	}
 

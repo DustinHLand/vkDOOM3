@@ -57,7 +57,7 @@ FindMemoryTypeIndex
 =============
 */
 uint32 FindMemoryTypeIndex( const uint32 memoryTypeBits, const vulkanMemoryUsage_t usage ) {
-	VkPhysicalDeviceMemoryProperties & physicalMemoryProperties = vkcontext.gpu->memProps;
+	VkPhysicalDeviceMemoryProperties & physicalMemoryProperties = vkcontext.gpu.memProps;
 
 	VkMemoryPropertyFlags required = 0;
 	VkMemoryPropertyFlags preferred = 0;
@@ -492,7 +492,7 @@ idVulkanAllocator::Init
 void idVulkanAllocator::Init() {
 	m_deviceLocalMemoryBytes = r_vkDeviceLocalMemoryMB.GetInteger() * 1024 * 1024;
 	m_hostVisibleMemoryBytes = r_vkHostVisibleMemoryMB.GetInteger() * 1024 * 1024;
-	m_bufferImageGranularity = vkcontext.gpu->props.limits.bufferImageGranularity;
+	m_bufferImageGranularity = vkcontext.gpu.props.limits.bufferImageGranularity;
 }
 
 /*
@@ -617,7 +617,7 @@ void idVulkanAllocator::Print() {
 }
 
 CONSOLE_COMMAND( Vulkan_PrintHeapInfo, "Print out the heap information for this hardware.", 0 ) {
-	VkPhysicalDeviceMemoryProperties & props = vkcontext.gpu->memProps;
+	VkPhysicalDeviceMemoryProperties & props = vkcontext.gpu.memProps;
 
 	idLib::Printf( "Heaps %lu\n------------------------\n", props.memoryHeapCount );
 	for ( uint32 i = 0; i < props.memoryHeapCount; ++i ) {

@@ -447,7 +447,7 @@ static VkPipeline CreateGraphicsPipeline(
 		depthStencilState.depthTestEnable = VK_TRUE;
 		depthStencilState.depthWriteEnable = ( stateBits & GLS_DEPTHMASK ) == 0;
 		depthStencilState.depthCompareOp = depthCompareOp;
-		if ( vkcontext.gpu->features.depthBounds ) {
+		if ( vkcontext.gpu.features.depthBounds ) {
 			depthStencilState.depthBoundsTestEnable = ( stateBits & GLS_DEPTH_TEST_MASK ) != 0;
 			depthStencilState.minDepthBounds = 0.0f;
 			depthStencilState.maxDepthBounds = 1.0f;
@@ -515,7 +515,7 @@ static VkPipeline CreateGraphicsPipeline(
 		dynamic.Append( VK_DYNAMIC_STATE_DEPTH_BIAS );
 	}
 
-	if ( vkcontext.gpu->features.depthBounds && ( stateBits & GLS_DEPTH_TEST_MASK ) ) {
+	if ( vkcontext.gpu.features.depthBounds && ( stateBits & GLS_DEPTH_TEST_MASK ) ) {
 		dynamic.Append( VK_DYNAMIC_STATE_DEPTH_BOUNDS );
 	}
 
@@ -772,7 +772,7 @@ idRenderProgManager::AllocParmBlockBuffer
 */
 void idRenderProgManager::AllocParmBlockBuffer( const idList< int > & parmIndices, idUniformBuffer & ubo ) {
 	const int numParms = parmIndices.Num();
-	const int bytes = ALIGN( numParms * sizeof( idVec4 ), vkcontext.gpu->props.limits.minUniformBufferOffsetAlignment );
+	const int bytes = ALIGN( numParms * sizeof( idVec4 ), vkcontext.gpu.props.limits.minUniformBufferOffsetAlignment );
 
 	ubo.Reference( *m_parmBuffers[ m_currentData ], m_currentParmBufferOffset, bytes );
 
@@ -837,7 +837,7 @@ void idRenderProgManager::CommitCurrent( uint64 stateBits, VkCommandBuffer comma
 			idLib::Error( "idRenderProgManager::CommitCurrent: jointBuffer == NULL" );
 			return;
 		}
-		assert( ( jointBuffer.GetOffset() & ( vkcontext.gpu->props.limits.minUniformBufferOffsetAlignment - 1 ) ) == 0 );
+		assert( ( jointBuffer.GetOffset() & ( vkcontext.gpu.props.limits.minUniformBufferOffsetAlignment - 1 ) ) == 0 );
 
 		ubos[ uboIndex++ ] = &jointBuffer;
 	} else if ( prog.optionalSkinning ) {

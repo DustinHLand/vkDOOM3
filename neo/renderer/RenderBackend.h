@@ -132,7 +132,7 @@ void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *s
 bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
 bool CreateGameWindow( gfxImpParms_t parms );
 
-struct gpuInfo_t {
+struct GPUInfo_t {
 	VkPhysicalDevice					device;
 	VkPhysicalDeviceProperties			props;
 	VkPhysicalDeviceMemoryProperties	memProps;
@@ -150,8 +150,7 @@ struct vulkanContext_t {
 
 	vertCacheHandle_t				jointCacheHandle;
 
-	gpuInfo_t *						gpu;
-	idList< gpuInfo_t >				gpus;
+	GPUInfo_t						gpu;
 
 	VkDevice						device;
 	int								graphicsFamilyIdx;
@@ -254,8 +253,7 @@ private:
 
 	void				CreateInstance();
 
-	void				EnumeratePhysicalDevices();
-	void				SelectPhysicalDevice();
+	void				SelectSuitablePhysicalDevice();
 
 	void				CreateLogicalDeviceAndQueues();
 
