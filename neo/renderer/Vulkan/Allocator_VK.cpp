@@ -342,10 +342,16 @@ bool idVulkanBlock::Allocate(
 
 	if ( bestFit->size > size ) {
 		chunk_t * chunk = new chunk_t();
+		chunk_t * next = bestFit->next;
+
 		chunk->id = m_nextBlockId++;
 		chunk->prev = bestFit;
-		chunk->next = bestFit->next;
 		bestFit->next = chunk;
+
+		chunk->next = next;
+		if ( next ) {
+			next->prev = chunk;
+		}
 
 		chunk->size = bestFit->size - alignedSize;
 		chunk->offset = offset + size;

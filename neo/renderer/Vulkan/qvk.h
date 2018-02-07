@@ -33,7 +33,7 @@ If you have questions concerning this license or the applicable additional terms
 #if defined( ID_VULKAN )
 
 #define VK_USE_PLATFORM_WIN32_KHR
-#define ID_USE_AMD_ALLOCATOR
+//#define ID_USE_AMD_ALLOCATOR
 
 #include <vulkan/vulkan.h>
 
