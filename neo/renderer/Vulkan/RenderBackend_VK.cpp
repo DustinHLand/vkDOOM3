@@ -1124,8 +1124,6 @@ ClearContext
 =============
 */
 static void ClearContext() {
-	vkcontext.counter = 0;
-	vkcontext.currentFrameData = 0;
 	vkcontext.jointCacheHandle = 0;
 	vkcontext.gpu = GPUInfo_t();
 	vkcontext.device = VK_NULL_HANDLE;
@@ -1168,6 +1166,9 @@ idRenderBackend::Clear
 =============
 */
 void idRenderBackend::Clear() {
+	m_counter = 0;
+	m_currentFrameData = 0;
+
 	m_instance = VK_NULL_HANDLE;
 	m_physicalDevice = VK_NULL_HANDLE;
 
@@ -1185,8 +1186,15 @@ void idRenderBackend::Clear() {
 	m_currentSwapIndex = 0;
 	m_msaaImage = VK_NULL_HANDLE;
 	m_msaaImageView = VK_NULL_HANDLE;
+	m_commandPool = VK_NULL_HANDLE;
+
 	m_swapchainImages.Zero();
+	m_swapchainViews.Zero();
 	m_frameBuffers.Zero();
+
+	m_commandBuffers.Zero();
+	m_commandBufferFences.Zero();
+	m_commandBufferRecorded.Zero();
 	m_acquireSemaphores.Zero();
 	m_renderCompleteSemaphores.Zero();
 
@@ -1431,16 +1439,16 @@ idRenderBackend::BlockingSwapBuffers
 void idRenderBackend::BlockingSwapBuffers() {
 	RENDERLOG_PRINTF( "***************** BlockingSwapBuffers *****************\n\n\n" );
 
-	if ( m_commandBufferRecorded[ vkcontext.currentFrameData ] == false ) {
+	if ( m_commandBufferRecorded[ m_currentFrameData ] == false ) {
 		return;
 	}	
 
-	ID_VK_CHECK( vkWaitForFences( vkcontext.device, 1, &m_commandBufferFences[ vkcontext.currentFrameData ], VK_TRUE, UINT64_MAX ) );
+	ID_VK_CHECK( vkWaitForFences( vkcontext.device, 1, &m_commandBufferFences[ m_currentFrameData ], VK_TRUE, UINT64_MAX ) );
 
-	ID_VK_CHECK( vkResetFences( vkcontext.device, 1, &m_commandBufferFences[ vkcontext.currentFrameData ] ) );
-	m_commandBufferRecorded[ vkcontext.currentFrameData ] = false;
+	ID_VK_CHECK( vkResetFences( vkcontext.device, 1, &m_commandBufferFences[ m_currentFrameData ] ) );
+	m_commandBufferRecorded[ m_currentFrameData ] = false;
 		
-	VkSemaphore * finished = &m_renderCompleteSemaphores[ vkcontext.currentFrameData ];
+	VkSemaphore * finished = &m_renderCompleteSemaphores[ m_currentFrameData ];
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1452,8 +1460,8 @@ void idRenderBackend::BlockingSwapBuffers() {
 
 	ID_VK_CHECK( vkQueuePresentKHR( vkcontext.presentQueue, &presentInfo ) );
 
-	vkcontext.counter++;
-	vkcontext.currentFrameData = vkcontext.counter % NUM_FRAME_DATA;
+	m_counter++;
+	m_currentFrameData = m_counter % NUM_FRAME_DATA;
 
 	//vkDeviceWaitIdle( vkcontext.device );
 }
@@ -1529,7 +1537,7 @@ void idRenderBackend::DrawElementsWithCounters( const drawSurf_t * surf ) {
 
 	vkcontext.jointCacheHandle = surf->jointCache;
 
-	VkCommandBuffer commandBuffer = m_commandBuffers[ vkcontext.currentFrameData ];
+	VkCommandBuffer commandBuffer = m_commandBuffers[ m_currentFrameData ];
 
 	PrintState( m_glStateBits );
 	renderProgManager.CommitCurrent( m_glStateBits, commandBuffer );
@@ -1562,7 +1570,7 @@ idRenderBackend::GL_StartFrame
 ==================
 */
 void idRenderBackend::GL_StartFrame() {
-	ID_VK_CHECK( vkAcquireNextImageKHR( vkcontext.device, m_swapchain, UINT64_MAX, m_acquireSemaphores[ vkcontext.currentFrameData ], VK_NULL_HANDLE, &m_currentSwapIndex ) );
+	ID_VK_CHECK( vkAcquireNextImageKHR( vkcontext.device, m_swapchain, UINT64_MAX, m_acquireSemaphores[ m_currentFrameData ], VK_NULL_HANDLE, &m_currentSwapIndex ) );
 
 	idImage::EmptyGarbage();
 #if !defined( ID_USE_AMD_ALLOCATOR )
@@ -1571,10 +1579,10 @@ void idRenderBackend::GL_StartFrame() {
 	stagingManager.Flush();
 	renderProgManager.StartFrame();
 
-	VkQueryPool queryPool = m_queryPools[ vkcontext.currentFrameData ];
-	idArray< uint64, NUM_TIMESTAMP_QUERIES > & results = m_queryResults[ vkcontext.currentFrameData ];
+	VkQueryPool queryPool = m_queryPools[ m_currentFrameData ];
+	idArray< uint64, NUM_TIMESTAMP_QUERIES > & results = m_queryResults[ m_currentFrameData ];
 
-	if ( m_queryIndex[ vkcontext.currentFrameData ] > 0 ) {
+	if ( m_queryIndex[ m_currentFrameData ] > 0 ) {
 		vkGetQueryPoolResults( vkcontext.device, queryPool, 0, 2, 
 			results.ByteSize(), results.Ptr(), sizeof( uint64 ), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT );
 
@@ -1583,10 +1591,10 @@ void idRenderBackend::GL_StartFrame() {
 		const uint64 tick = ( 1000 * 1000 * 1000 ) / vkcontext.gpu.props.limits.timestampPeriod;
 		m_pc.gpuMicroSec = ( ( gpuEnd - gpuStart ) * 1000 * 1000 ) / tick;
 
-		m_queryIndex[ vkcontext.currentFrameData ] = 0;
+		m_queryIndex[ m_currentFrameData ] = 0;
 	}
 
-	VkCommandBuffer commandBuffer = m_commandBuffers[ vkcontext.currentFrameData ];
+	VkCommandBuffer commandBuffer = m_commandBuffers[ m_currentFrameData ];
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
 	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1602,7 +1610,7 @@ void idRenderBackend::GL_StartFrame() {
 
 	vkCmdBeginRenderPass( commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE );
 
-	vkCmdWriteTimestamp( commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ vkcontext.currentFrameData ]++ );
+	vkCmdWriteTimestamp( commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, m_queryIndex[ m_currentFrameData ]++ );
 }
 
 /*
@@ -1611,9 +1619,9 @@ idRenderBackend::GL_EndFrame
 ==================
 */
 void idRenderBackend::GL_EndFrame() {
-	VkCommandBuffer commandBuffer = m_commandBuffers[ vkcontext.currentFrameData ];
+	VkCommandBuffer commandBuffer = m_commandBuffers[ m_currentFrameData ];
 
-	vkCmdWriteTimestamp( commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ vkcontext.currentFrameData ], m_queryIndex[ vkcontext.currentFrameData ]++ );
+	vkCmdWriteTimestamp( commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPools[ m_currentFrameData ], m_queryIndex[ m_currentFrameData ]++ );
 
 	vkCmdEndRenderPass( commandBuffer );
 
@@ -1643,10 +1651,10 @@ void idRenderBackend::GL_EndFrame() {
 		0, 0, NULL, 0, NULL, 1, &barrier );
 
 	ID_VK_CHECK( vkEndCommandBuffer( commandBuffer ) )
-	m_commandBufferRecorded[ vkcontext.currentFrameData ] = true;
+	m_commandBufferRecorded[ m_currentFrameData ] = true;
 
-	VkSemaphore * acquire = &m_acquireSemaphores[ vkcontext.currentFrameData ];
-	VkSemaphore * finished = &m_renderCompleteSemaphores[ vkcontext.currentFrameData ];
+	VkSemaphore * acquire = &m_acquireSemaphores[ m_currentFrameData ];
+	VkSemaphore * finished = &m_renderCompleteSemaphores[ m_currentFrameData ];
 
 	VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -1660,7 +1668,7 @@ void idRenderBackend::GL_EndFrame() {
 	submitInfo.pSignalSemaphores = finished;
 	submitInfo.pWaitDstStageMask = &dstStageMask;
 
-	ID_VK_CHECK( vkQueueSubmit( vkcontext.graphicsQueue, 1, &submitInfo, m_commandBufferFences[ vkcontext.currentFrameData ] ) );
+	ID_VK_CHECK( vkQueueSubmit( vkcontext.graphicsQueue, 1, &submitInfo, m_commandBufferFences[ m_currentFrameData ] ) );
 }
 
 /*
@@ -1712,7 +1720,7 @@ idRenderBackend::GL_CopyFrameBuffer
 ====================
 */
 void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int imageWidth, int imageHeight ) {
-	VkCommandBuffer commandBuffer = m_commandBuffers[ vkcontext.currentFrameData ];
+	VkCommandBuffer commandBuffer = m_commandBuffers[ m_currentFrameData ];
 
 	vkCmdEndRenderPass( commandBuffer );
 
@@ -1827,7 +1835,7 @@ void idRenderBackend::GL_Clear( bool color, bool depth, bool stencil, byte stenc
 	clearRect.layerCount = 1;
 	clearRect.rect.extent = m_swapchainExtent;
 
-	vkCmdClearAttachments( m_commandBuffers[ vkcontext.currentFrameData ], numAttachments, attachments, 1, &clearRect );
+	vkCmdClearAttachments( m_commandBuffers[ m_currentFrameData ], numAttachments, attachments, 1, &clearRect );
 }
 
 /*
@@ -1844,7 +1852,7 @@ void idRenderBackend::GL_DepthBoundsTest( const float zmin, const float zmax ) {
 		m_glStateBits = m_glStateBits & ~GLS_DEPTH_TEST_MASK;
 	} else {
 		m_glStateBits |= GLS_DEPTH_TEST_MASK;
-		vkCmdSetDepthBounds( m_commandBuffers[ vkcontext.currentFrameData ], zmin, zmax );
+		vkCmdSetDepthBounds( m_commandBuffers[ m_currentFrameData ], zmin, zmax );
 	}
 
 	RENDERLOG_PRINTF( "GL_DepthBoundsTest( zmin=%f, zmax=%f )\n", zmin, zmax );
@@ -1856,7 +1864,7 @@ idRenderBackend::GL_PolygonOffset
 ====================
 */
 void idRenderBackend::GL_PolygonOffset( float scale, float bias ) {
-	vkCmdSetDepthBias( m_commandBuffers[ vkcontext.currentFrameData ], bias, 0.0f, scale );
+	vkCmdSetDepthBias( m_commandBuffers[ m_currentFrameData ], bias, 0.0f, scale );
 
 	RENDERLOG_PRINTF( "GL_PolygonOffset( scale=%f, bias=%f )\n", scale, bias );
 }
@@ -1872,7 +1880,7 @@ void idRenderBackend::GL_Scissor( int x /* left*/, int y /* bottom */, int w, in
 	scissor.offset.y = y;
 	scissor.extent.width = w;
 	scissor.extent.height = h;
-	vkCmdSetScissor( m_commandBuffers[ vkcontext.currentFrameData ], 0, 1, &scissor );
+	vkCmdSetScissor( m_commandBuffers[ m_currentFrameData ], 0, 1, &scissor );
 }
 
 /*
@@ -1888,7 +1896,7 @@ void idRenderBackend::GL_Viewport( int x /* left */, int y /* bottom */, int w, 
 	viewport.height = h;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport( m_commandBuffers[ vkcontext.currentFrameData ], 0, 1, &viewport );
+	vkCmdSetViewport( m_commandBuffers[ m_currentFrameData ], 0, 1, &viewport );
 }
 
 /*
@@ -1953,7 +1961,7 @@ void idRenderBackend::DrawStencilShadowPass( const drawSurf_t * drawSurf, const 
 
 	vkcontext.jointCacheHandle = drawSurf->jointCache;
 	
-	VkCommandBuffer commandBuffer = m_commandBuffers[ vkcontext.currentFrameData ];
+	VkCommandBuffer commandBuffer = m_commandBuffers[ m_currentFrameData ];
 	
 	PrintState( m_glStateBits );
 	renderProgManager.CommitCurrent( m_glStateBits, commandBuffer );

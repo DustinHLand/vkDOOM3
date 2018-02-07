@@ -145,9 +145,6 @@ struct GPUInfo_t {
 };
 
 struct vulkanContext_t {
-	uint64							counter;
-	uint32							currentFrameData;
-
 	vertCacheHandle_t				jointCacheHandle;
 
 	GPUInfo_t						gpu;
@@ -337,7 +334,9 @@ private:
 	unsigned short		m_gammaTable[ 256 ];	// brightness / gamma modify this
 
 private:
-	
+	uint64							m_counter;
+	uint32							m_currentFrameData;
+
 	VkInstance						m_instance;
 	VkPhysicalDevice				m_physicalDevice;
 
