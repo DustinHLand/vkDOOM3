@@ -1060,6 +1060,17 @@ CONSOLE_COMMAND( Vulkan_ClearPipelines, "Clear all existing pipelines, forcing t
 	}
 }
 
+CONSOLE_COMMAND( Vulkan_PrintNumPipelines, "Print the number of pipelines available.", 0 ) {
+	int totalPipelines = 0;
+	for ( int i = 0; i < renderProgManager.m_renderProgs.Num(); ++i ) {
+		renderProg_t & prog = renderProgManager.m_renderProgs[ i ];
+		int progPipelines = prog.pipelines.Num();
+		totalPipelines += progPipelines;
+		idLib::Printf( "%s: %d\n", prog.name.c_str(), progPipelines );
+	}
+	idLib::Printf( "TOTAL: %d\n", totalPipelines );
+}
+
 CONSOLE_COMMAND( Vulkan_PrintPipelineStates, "Print the GLState bits associated with each pipeline.", 0 ) {
 	for ( int i = 0; i < renderProgManager.m_renderProgs.Num(); ++i ) {
 		renderProg_t & prog = renderProgManager.m_renderProgs[ i ];
