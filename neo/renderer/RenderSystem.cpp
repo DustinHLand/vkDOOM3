@@ -1432,7 +1432,7 @@ void idRenderSystemLocal::RenderCommandBuffers() {
 		return;
 	}
 
-	m_backend.ExecuteBackEndCommands( frameData.renderCommandIndex, frameData.renderCommands );
+	m_backend.Execute( frameData.renderCommandIndex, frameData.renderCommands );
 
 	// pass in null for now - we may need to do some map specific hackery in the future
 	resolutionScale.InitForMap( NULL );

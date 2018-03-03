@@ -1177,13 +1177,13 @@ BACKEND COMMANDS
 
 /*
 =============
-idRenderBackend::ExecuteBackEndCommands
+idRenderBackend::Execute
 
 This function will be called syncronously if running without
 smp extensions, or asyncronously by another thread.
 =============
 */
-void idRenderBackend::ExecuteBackEndCommands( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands ) {
+void idRenderBackend::Execute( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands ) {
 	CheckCVars();
 
 	resolutionScale.SetCurrentGPUFrameTime( commonLocal.m_mainFrameTiming.gpuTime );
