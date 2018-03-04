@@ -183,7 +183,7 @@ public:
 	void				Init();
 	void				Shutdown();
 
-	void				ExecuteBackEndCommands( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
+	void				Execute( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
 
 	void				Print();
