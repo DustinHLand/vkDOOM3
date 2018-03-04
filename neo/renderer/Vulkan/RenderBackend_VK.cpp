@@ -1439,6 +1439,9 @@ idRenderBackend::BlockingSwapBuffers
 void idRenderBackend::BlockingSwapBuffers() {
 	RENDERLOG_PRINTF( "***************** BlockingSwapBuffers *****************\n\n\n" );
 
+	m_counter++;
+	m_currentFrameData = m_counter % NUM_FRAME_DATA;
+
 	if ( m_commandBufferRecorded[ m_currentFrameData ] == false ) {
 		return;
 	}	
@@ -1447,21 +1450,6 @@ void idRenderBackend::BlockingSwapBuffers() {
 
 	ID_VK_CHECK( vkResetFences( vkcontext.device, 1, &m_commandBufferFences[ m_currentFrameData ] ) );
 	m_commandBufferRecorded[ m_currentFrameData ] = false;
-		
-	VkSemaphore * finished = &m_renderCompleteSemaphores[ m_currentFrameData ];
-
-	VkPresentInfoKHR presentInfo = {};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = finished;
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &m_swapchain;
-	presentInfo.pImageIndices = &m_currentSwapIndex;
-
-	ID_VK_CHECK( vkQueuePresentKHR( vkcontext.presentQueue, &presentInfo ) );
-
-	m_counter++;
-	m_currentFrameData = m_counter % NUM_FRAME_DATA;
 
 	//vkDeviceWaitIdle( vkcontext.device );
 }
@@ -1669,6 +1657,19 @@ void idRenderBackend::GL_EndFrame() {
 	submitInfo.pWaitDstStageMask = &dstStageMask;
 
 	ID_VK_CHECK( vkQueueSubmit( vkcontext.graphicsQueue, 1, &submitInfo, m_commandBufferFences[ m_currentFrameData ] ) );
+
+	VkPresentInfoKHR presentInfo = {}; 
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; 
+	presentInfo.waitSemaphoreCount = 1; 
+	presentInfo.pWaitSemaphores = finished; 
+	presentInfo.swapchainCount = 1; 
+	presentInfo.pSwapchains = &m_swapchain; 
+	presentInfo.pImageIndices = &m_currentSwapIndex; 
+ 
+	ID_VK_CHECK( vkQueuePresentKHR( vkcontext.presentQueue, &presentInfo ) ); 
+ 
+	m_counter++; 
+	m_currentFrameData = m_counter % NUM_FRAME_DATA;
 }
 
 /*
