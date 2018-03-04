@@ -186,8 +186,6 @@ public:
 	void				Execute( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
 
-	void				Print();
-
 private:
 	void				DrawElementsWithCounters( const drawSurf_t * surf );
 	void				DrawStencilShadowPass( const drawSurf_t * drawSurf, const bool renderZPass );

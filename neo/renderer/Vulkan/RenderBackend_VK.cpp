@@ -1207,15 +1207,6 @@ void idRenderBackend::Clear() {
 
 /*
 =============
-idRenderBackend::Print
-=============
-*/
-void idRenderBackend::Print() {
-
-}
-
-/*
-=============
 idRenderBackend::Init
 =============
 */
