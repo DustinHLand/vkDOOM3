@@ -650,7 +650,7 @@ void idCommonLocal::Frame() {
 			FatalError( "idCommon::Frame: the FPU stack is not empty at the end of the frame\n" );
 		}
 
-		m_mainFrameTiming = m_frameTiming;
+		m_mainFrameTiming.Update( m_frameTiming );
 
 		session->GetSaveGameManager().Pump();
 	} catch( idException & ) {

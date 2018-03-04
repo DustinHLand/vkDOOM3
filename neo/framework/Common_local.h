@@ -94,22 +94,58 @@ struct netTimes_t {
 };
 
 struct frameTiming_t {
-	frameTiming_t() : 
-		startSyncTime( 0 ),
-		finishSyncTime( 0 ),
-		startGameTime( 0 ),
-		finishGameTime( 0 ),
-		finishDrawTime( 0 ),
-		startRenderTime( 0 ),
-		finishRenderTime( 0 ),
-		frontendTime( 0 ),
-		backendTime( 0 ),
-		depthTime( 0 ),
-		interactionTime( 0 ),
-		shaderTime( 0 ),
-		shadowTime( 0 ),
-		gpuTime( 0 ) {
+	frameTiming_t() {
+		Reset();
 	}
+
+	void Reset() {
+		startSyncTime		= 0;
+		finishSyncTime		= 0;
+		startGameTime		= 0;
+		finishGameTime		= 0;
+		finishDrawTime		= 0;
+		startRenderTime		= 0;
+		finishRenderTime	= 0;
+		
+		frontendTime		= 0;
+		backendTime			= 0;
+		depthTime			= 0;
+		interactionTime		= 0;
+		shaderTime			= 0;
+		shadowTime			= 0;
+		gpuTime				= 0;
+
+		samples				= 0;
+		backendTotalTime	= 0;
+		gpuTotalTime		= 0;
+		backendTimeAvg		= 0.0;
+		gpuTimeAvg			= 0.0;
+	}
+
+	void Update( frameTiming_t & other ) {
+		startSyncTime		= other.startSyncTime;
+		finishSyncTime		= other.finishSyncTime;
+		startGameTime		= other.startGameTime;
+		finishGameTime		= other.finishGameTime;
+		finishDrawTime		= other.finishDrawTime;
+		startRenderTime		= other.startRenderTime;
+		finishRenderTime	= other.finishRenderTime;
+		
+		frontendTime		= other.frontendTime;
+		backendTime			= other.backendTime;
+		depthTime			= other.depthTime;
+		interactionTime		= other.interactionTime;
+		shaderTime			= other.shaderTime;
+		shadowTime			= other.shadowTime;
+		gpuTime				= other.gpuTime;
+
+		samples++;
+		backendTotalTime	+= backendTime;
+		gpuTotalTime		+= gpuTime;
+		backendTimeAvg		= backendTotalTime / samples;
+		gpuTimeAvg			= gpuTotalTime / samples;
+	}
+
 	uint64	startSyncTime;
 	uint64	finishSyncTime;
 	uint64	startGameTime;
@@ -125,6 +161,12 @@ struct frameTiming_t {
 	uint64	shaderTime;
 	uint64	shadowTime;
 	uint64	gpuTime;
+
+	uint64	samples;
+	uint64	backendTotalTime;
+	uint64	gpuTotalTime;
+	double	backendTimeAvg;
+	double	gpuTimeAvg;
 };
 
 #define	MAX_PRINT_MSG_SIZE	4096

@@ -1715,3 +1715,6 @@ CONSOLE_COMMAND( listDictValues, "lists all values used by dictionaries", NULL )
 CONSOLE_COMMAND( testSIMD, "test SIMD code", NULL ) {
 	idSIMD::Test_f( args );
 }
+CONSOLE_COMMAND( ResetFrameTiming, "", NULL ) {
+	commonLocal.m_mainFrameTiming.Reset();
+}
