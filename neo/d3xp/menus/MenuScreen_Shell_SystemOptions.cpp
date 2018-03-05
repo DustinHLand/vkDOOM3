@@ -37,7 +37,7 @@ extern idCVar r_swapInterval;
 extern idCVar s_volume_dB;
 extern idCVar r_lightScale;
 extern idCVar r_fullscreen;
-extern idCVar r_vidMode;
+extern idCVar r_mode;
 extern idCVar r_lodBias;
 
 /*
@@ -466,11 +466,11 @@ idSWFScriptVar idMenuScreen_Shell_SystemOptions::idMenuDataSource_SystemSettings
 	switch ( fieldIndex ) {
 		case SYSTEM_FIELD_FULLSCREEN: {
 			const int fullscreen = r_fullscreen.GetInteger();
-			const int vidmode = r_vidMode.GetInteger();
+			const int vidmode = r_mode.GetInteger();
 			if ( fullscreen == 0 ) {
 				return "#str_swf_disabled";
 			}
-			if ( fullscreen < 0 || vidmode < 0 || vidmode >= modeList.Num() ) {
+			if ( vidmode < 0 || vidmode >= modeList.Num() ) {
 				return "???";
 			}
 			if ( modeList[vidmode].displayHz == 60 ) {

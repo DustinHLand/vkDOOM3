@@ -47,11 +47,11 @@ idGuiModel * tr_guiModel;
 
 idCVar r_debugContext( "r_debugContext", "0", CVAR_RENDERER, "Enable various levels of context debug." );
 idCVar r_multiSamples( "r_multiSamples", "0", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "number of antialiasing samples" );
-idCVar r_vidMode( "r_vidMode", "0", CVAR_ARCHIVE | CVAR_RENDERER | CVAR_INTEGER, "fullscreen video mode number" );
+idCVar r_mode( "r_mode", "0", CVAR_ARCHIVE | CVAR_RENDERER | CVAR_INTEGER, "fullscreen video mode number" );
 idCVar r_displayRefresh( "r_displayRefresh", "0", CVAR_RENDERER | CVAR_INTEGER | CVAR_NOCHEAT, "optional display refresh rate option for vid mode", 0.0f, 240.0f );
 idCVar r_fullscreen( "r_fullscreen", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "0 = windowed, 1 = full screen on monitor 1, 2 = full screen on monitor 2, etc" );
-idCVar r_customWidth( "r_customWidth", "1280", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "custom screen width. set r_vidMode to -1 to activate" );
-idCVar r_customHeight( "r_customHeight", "720", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "custom screen height. set r_vidMode to -1 to activate" );
+idCVar r_customWidth( "r_customWidth", "1280", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "custom screen width. set r_mode to -1 to activate" );
+idCVar r_customHeight( "r_customHeight", "720", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "custom screen height. set r_mode to -1 to activate" );
 idCVar r_windowX( "r_windowX", "0", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "Non-fullscreen parameter" );
 idCVar r_windowY( "r_windowY", "0", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "Non-fullscreen parameter" );
 idCVar r_windowWidth( "r_windowWidth", "1280", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "Non-fullscreen parameter" );
@@ -387,13 +387,13 @@ SetNewMode
 
 r_fullScreen -1		borderless window at exact desktop coordinates
 r_fullScreen 0		bordered window at exact desktop coordinates
-r_fullScreen 1		fullscreen on monitor 1 at r_vidMode
-r_fullScreen 2		fullscreen on monitor 2 at r_vidMode
+r_fullScreen 1		fullscreen on monitor 1 at r_mode
+r_fullScreen 2		fullscreen on monitor 2 at r_mode
 ...
 
-r_vidMode -1		use r_customWidth / r_customHeight, even if they don't appear on the mode list
-r_vidMode 0			use first mode returned by EnumDisplaySettings()
-r_vidMode 1			use second mode returned by EnumDisplaySettings()
+r_mode -1		use r_customWidth / r_customHeight, even if they don't appear on the mode list
+r_mode 0			use first mode returned by EnumDisplaySettings()
+r_mode 1			use second mode returned by EnumDisplaySettings()
 ...
 
 r_displayRefresh 0	don't specify refresh
@@ -435,20 +435,20 @@ static void SetNewMode() {
 			parms.fullScreen = r_fullscreen.GetInteger();
 
 			// set the parameters we are trying
-			if ( r_vidMode.GetInteger() < 0 ) {
+			if ( r_mode.GetInteger() < 0 ) {
 				// try forcing a specific mode, even if it isn't on the list
 				parms.width = r_customWidth.GetInteger();
 				parms.height = r_customHeight.GetInteger();
 				parms.displayHz = r_displayRefresh.GetInteger();
 			} else {
-				if ( r_vidMode.GetInteger() > modeList.Num() ) {
-					idLib::Printf( "r_vidMode reset from %i to 0.\n", r_vidMode.GetInteger() );
-					r_vidMode.SetInteger( 0 );
+				if ( r_mode.GetInteger() > modeList.Num() ) {
+					idLib::Printf( "r_mode reset from %i to 0.\n", r_mode.GetInteger() );
+					r_mode.SetInteger( 0 );
 				}
 
-				parms.width = modeList[ r_vidMode.GetInteger() ].width;
-				parms.height = modeList[ r_vidMode.GetInteger() ].height;
-				parms.displayHz = modeList[ r_vidMode.GetInteger() ].displayHz;
+				parms.width = modeList[ r_mode.GetInteger() ].width;
+				parms.height = modeList[ r_mode.GetInteger() ].height;
+				parms.displayHz = modeList[ r_mode.GetInteger() ].displayHz;
 			}
 		}
 
@@ -472,7 +472,7 @@ static void SetNewMode() {
 safeMode:
 		// if we failed, set everything back to "safe mode"
 		// and try again
-		r_vidMode.SetInteger( 0 );
+		r_mode.SetInteger( 0 );
 		r_fullscreen.SetInteger( 1 );
 		r_displayRefresh.SetInteger( 0 );
 		r_multiSamples.SetInteger( 0 );

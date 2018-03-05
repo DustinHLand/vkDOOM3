@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "../precompiled.h"
 #include "../Game_local.h"
 
-extern idCVar r_vidMode;
+extern idCVar r_mode;
 extern idCVar r_fullscreen;
 
 const static int NUM_SETTING_OPTIONS = 7;
@@ -142,10 +142,8 @@ idMenuScreen_Shell_Resolution::ShowScreen
 */
 bool R_GetModeListForDisplay( const int displayNum, idList<vidMode_t> & modeList );
 void idMenuScreen_Shell_Resolution::ShowScreen( const mainMenuTransition_t transitionType ) {
-
-
 	originalOption.fullscreen = r_fullscreen.GetInteger();
-	originalOption.vidmode = r_vidMode.GetInteger();
+	originalOption.vidmode = r_mode.GetInteger();
 
 	idList< idList< idStr, TAG_IDLIB_LIST_MENU >, TAG_IDLIB_LIST_MENU > menuOptions;
 	menuOptions.Alloc().Alloc() = "#str_swf_disabled";
@@ -253,7 +251,7 @@ bool idMenuScreen_Shell_Resolution::HandleAction( idWidgetAction & action, const
 				} else {
 					// Changing to fullscreen mode
 					r_fullscreen.SetInteger( currentOption.fullscreen );
-					r_vidMode.SetInteger( currentOption.vidmode );
+					r_mode.SetInteger( currentOption.vidmode );
 					cvarSystem->ClearModifiedFlags( CVAR_ARCHIVE );
 					cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "vid_restart\n" );
 
@@ -274,7 +272,7 @@ bool idMenuScreen_Shell_Resolution::HandleAction( idWidgetAction & action, const
 								}
 							} else {
 								r_fullscreen.SetInteger( optionData.fullscreen );
-								r_vidMode.SetInteger( optionData.vidmode );
+								r_mode.SetInteger( optionData.vidmode );
 								cvarSystem->ClearModifiedFlags( CVAR_ARCHIVE );
 								cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "vid_restart\n" );
 							}

@@ -56,7 +56,7 @@ extern idCVar r_windowX;
 extern idCVar r_windowY;
 extern idCVar r_windowWidth;
 extern idCVar r_windowHeight;
-extern idCVar r_vidMode;
+extern idCVar r_mode;
 extern idCVar r_customWidth;
 extern idCVar r_customHeight;
 extern idCVar r_displayRefresh;
@@ -874,19 +874,9 @@ bool SetScreenParms( gfxImpParms_t parms ) {
 =============================
 R_GetModeParms
 
-r_fullScreen -1		borderless window at exact desktop coordinates
-r_fullScreen 0		bordered window at exact desktop coordinates
-r_fullScreen 1		fullscreen on monitor 1 at r_vidMode
-r_fullScreen 2		fullscreen on monitor 2 at r_vidMode
-...
-
-r_vidMode -1		use r_customWidth / r_customHeight, even if they don't appear on the mode list
-r_vidMode 0			use first mode returned by EnumDisplaySettings()
-r_vidMode 1			use second mode returned by EnumDisplaySettings()
-...
-
-r_displayRefresh 0	don't specify refresh
-r_displayRefresh 70	specify 70 hz, etc
+r_mode -1			use r_customWidth / r_customHeight, even if they don't appear on the mode list
+r_mode 0			use first mode returned by EnumDisplaySettings()
+r_mode 1			use second mode returned by EnumDisplaySettings()
 =============================
 */
 gfxImpParms_t R_GetModeParms() {
@@ -894,7 +884,7 @@ gfxImpParms_t R_GetModeParms() {
 
 	gfxImpParms_t parms;
 
-	if ( r_fullscreen.GetInteger() <= 0 ) {
+	if ( r_fullscreen.GetInteger() == 0 ) {
 		// use explicit position / size for window
 		parms.x = r_windowX.GetInteger();
 		parms.y = r_windowY.GetInteger();
@@ -920,20 +910,20 @@ gfxImpParms_t R_GetModeParms() {
 		parms.fullScreen = r_fullscreen.GetInteger();
 
 		// set the parameters we are trying
-		if ( r_vidMode.GetInteger() < 0 ) {
+		if ( r_mode.GetInteger() < 0 ) {
 			// try forcing a specific mode, even if it isn't on the list
 			parms.width = r_customWidth.GetInteger();
 			parms.height = r_customHeight.GetInteger();
 			parms.displayHz = r_displayRefresh.GetInteger();
 		} else {
-			if ( r_vidMode.GetInteger() > modeList.Num() ) {
-				idLib::Printf( "r_vidMode reset from %i to 0.\n", r_vidMode.GetInteger() );
-				r_vidMode.SetInteger( 0 );
+			if ( r_mode.GetInteger() > modeList.Num() ) {
+				idLib::Printf( "r_mode reset from %i to 0.\n", r_mode.GetInteger() );
+				r_mode.SetInteger( 0 );
 			}
 
-			parms.width = modeList[ r_vidMode.GetInteger() ].width;
-			parms.height = modeList[ r_vidMode.GetInteger() ].height;
-			parms.displayHz = modeList[ r_vidMode.GetInteger() ].displayHz;
+			parms.width = modeList[ r_mode.GetInteger() ].width;
+			parms.height = modeList[ r_mode.GetInteger() ].height;
+			parms.displayHz = modeList[ r_mode.GetInteger() ].displayHz;
 		}
 	}
 

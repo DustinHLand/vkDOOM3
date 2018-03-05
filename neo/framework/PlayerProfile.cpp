@@ -146,7 +146,7 @@ bool idPlayerProfile::Serialize( idSerializer & ser ) {
 	if ( ser.IsReading() ) {
 		// Never sync these cvars with Steam because they require an engine or video restart
 		cvarDict.Delete( "r_fullscreen" );
-		cvarDict.Delete( "r_vidMode" );
+		cvarDict.Delete( "r_mode" );
 		cvarDict.Delete( "r_multisamples" );
 		cvarDict.Delete( "com_engineHz" );
 		cvarSystem->SetCVarsFromDict( cvarDict );
