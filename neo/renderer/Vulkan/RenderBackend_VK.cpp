@@ -41,6 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Allocator_VK.h"
 #include "Staging_VK.h"
 
+void EnumerateMonitors();
 void CreateWindowClasses();
 bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
 bool CreateGameWindow( gfxImpParms_t parms );
@@ -242,6 +243,8 @@ static bool VK_Init() {
 		idLib::Printf( "...getting default gamma ramp: %s\n", success ? "success" : "failed" );
 		ReleaseDC( GetDesktopWindow(), handle );
 	}
+
+	EnumerateMonitors();
 
 	// create our window classes if we haven't already
 	CreateWindowClasses();

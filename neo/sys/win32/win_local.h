@@ -66,6 +66,14 @@ LONG WINAPI MainWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void Conbuf_AppendText( const char *msg );
 
+struct monitor_t {
+	HMONITOR		hMonitor;
+	int				width;				// width at launch
+	int				height;				// height at launch
+	bool			isDefault;
+	idList< uint32 > supportedModes;	// packed 16:16 as width, height
+};
+
 typedef struct {
 	//==================================
 	// OS
@@ -113,6 +121,8 @@ typedef struct {
 	int				desktopHeight;
 
 	int				cdsFullscreen;		// 0 = not fullscreen, otherwise monitor number
+
+	idList< monitor_t > monitors;
 
 	uint16			oldHardwareGamma[ 3 ][ 256 ]; // desktop gamma is saved here for restoration at exit
 

@@ -943,6 +943,71 @@ gfxImpParms_t R_GetModeParms() {
 }
 
 /*
+========================
+MonitorEnumProc
+========================
+*/
+BOOL CALLBACK MonitorEnumProc( HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData ) {
+	MONITORINFOEX mi;
+	ZeroMemory( &mi, sizeof( mi ) );
+	mi.cbSize = sizeof( mi );
+	GetMonitorInfo( hMonitor, &mi );
+	monitor_t & monitor = win32.monitors.Alloc();
+	monitor.hMonitor = hMonitor;
+	return TRUE;
+}
+
+/*
+====================
+EnumerateMonitors
+====================
+*/
+void EnumerateMonitors() {
+	win32.monitors.Clear();
+
+	EnumDisplayMonitors( NULL, NULL, MonitorEnumProc, 0 );
+
+	for ( int i = 0; i < win32.monitors.Num(); ++i ) {
+		monitor_t & monitor = win32.monitors[ i ];
+
+		MONITORINFOEX mi;
+		ZeroMemory( &mi, sizeof( mi ) );
+		mi.cbSize = sizeof( mi );
+		GetMonitorInfo( monitor.hMonitor, &mi );
+		monitor.width = mi.rcMonitor.right - mi.rcMonitor.left;
+		monitor.height = mi.rcMonitor.bottom - mi.rcMonitor.top;
+		monitor.isDefault = mi.dwFlags & MONITORINFOF_PRIMARY;
+
+		DEVMODE devMode;
+		ZeroMemory( &devMode, sizeof( devMode ) );
+		devMode.dmSize = sizeof( devMode );
+
+		int mode = 0;
+		while ( EnumDisplaySettingsEx( mi.szDevice, mode++, &devMode, 0 ) ) {
+			if ( devMode.dmBitsPerPel != 32 ) {
+				continue;
+			}
+
+			if ( devMode.dmPelsHeight < 720 ) {
+				continue;
+			}
+
+			monitor.supportedModes.AddUnique( ( devMode.dmPelsWidth << 16 ) | devMode.dmPelsHeight );
+		}
+
+		monitor.supportedModes.SortWithTemplate();
+
+		if ( monitor.supportedModes.Num() == 0 ) {
+			win32.monitors.RemoveIndex( i );
+		}
+	}
+
+	if ( win32.monitors.Num() == 0 ) {
+		idLib::FatalError( "No valid monitors found." );
+	}
+}
+
+/*
 ====================
 CreateWindowClasses
 ====================
