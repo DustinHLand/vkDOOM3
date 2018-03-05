@@ -42,6 +42,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "Staging_VK.h"
 
 void CreateWindowClasses();
+bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
+bool CreateGameWindow( gfxImpParms_t parms );
 
 vulkanContext_t vkcontext;
 
