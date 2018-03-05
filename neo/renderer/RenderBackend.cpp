@@ -850,20 +850,17 @@ bool SetScreenParms( gfxImpParms_t parms ) {
 		return false;
 	}
 
-	int exstyle;
 	int stylebits;
 
 	if ( parms.fullScreen ) {
-		exstyle = WS_EX_TOPMOST;
 		stylebits = WS_POPUP|WS_VISIBLE|WS_SYSMENU;
 	} else {
-		exstyle = 0;
 		stylebits = WINDOW_STYLE|WS_SYSMENU;
 	}
 
 	SetWindowLong( win32.hWnd, GWL_STYLE, stylebits );
-	SetWindowLong( win32.hWnd, GWL_EXSTYLE, exstyle );
-	SetWindowPos( win32.hWnd, parms.fullScreen ? HWND_TOPMOST : HWND_NOTOPMOST, x, y, w, h, SWP_SHOWWINDOW );
+	SetWindowLong( win32.hWnd, GWL_EXSTYLE, 0 );
+	SetWindowPos( win32.hWnd, HWND_NOTOPMOST, x, y, w, h, SWP_SHOWWINDOW );
 
 	win32.isFullscreen = parms.fullScreen;
 	win32.nativeScreenWidth = parms.width;
@@ -982,18 +979,15 @@ bool CreateGameWindow( gfxImpParms_t parms ) {
 		return false;
 	}
 
-	int				stylebits;
-	int				exstyle;
+	int	stylebits;
 	if ( parms.fullScreen != 0 ) {
-		exstyle = WS_EX_TOPMOST;
 		stylebits = WS_POPUP|WS_VISIBLE|WS_SYSMENU;
 	} else {
-		exstyle = 0;
 		stylebits = WINDOW_STYLE|WS_SYSMENU;
 	}
 
 	win32.hWnd = CreateWindowEx (
-		 exstyle, 
+		 0, 
 		 WIN32_WINDOW_CLASS_NAME,
 		 GAME_NAME,
 		 stylebits,
