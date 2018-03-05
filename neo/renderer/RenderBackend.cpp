@@ -440,7 +440,7 @@ void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *s
 GetDisplayName
 ========================
 */
-const char * GetDisplayName( const int deviceNum ) {
+static const char * GetDisplayName( const int deviceNum ) {
 	static DISPLAY_DEVICE	device;
 	device.cb = sizeof( device );
 	if ( !EnumDisplayDevices(
@@ -458,7 +458,7 @@ const char * GetDisplayName( const int deviceNum ) {
 GetDeviceName
 ========================
 */
-idStr GetDeviceName( const int deviceNum ) {
+static idStr GetDeviceName( const int deviceNum ) {
 	DISPLAY_DEVICE	device = {};
 	device.cb = sizeof( device );
 	if ( !EnumDisplayDevices(
@@ -488,7 +488,7 @@ These are now taken as 16 bit values, so we can take full advantage
 of dacs with >8 bits of precision
 ========================
 */
-void SetGamma( unsigned short red[256], unsigned short green[256], unsigned short blue[256] ) {
+static void SetGamma( unsigned short red[256], unsigned short green[256], unsigned short blue[256] ) {
 	unsigned short table[3][256];
 	int i;
 
@@ -512,7 +512,7 @@ void SetGamma( unsigned short red[256], unsigned short green[256], unsigned shor
 GetDisplayCoordinates
 ========================
 */
-bool GetDisplayCoordinates( const int deviceNum, int & x, int & y, int & width, int & height, int & displayHz ) {
+static bool GetDisplayCoordinates( const int deviceNum, int & x, int & y, int & width, int & height, int & displayHz ) {
 	idStr deviceName = GetDeviceName( deviceNum );
 	if ( deviceName.Length() == 0 ) {
 		return false;
@@ -667,7 +667,7 @@ bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms ) {
 GetWindowDimensions
 ====================
 */
-bool GetWindowDimensions( const gfxImpParms_t parms, int &x, int &y, int &w, int &h ) {
+static bool GetWindowDimensions( const gfxImpParms_t parms, int &x, int &y, int &w, int &h ) {
 	//
 	// compute width and height
 	//
@@ -727,7 +727,7 @@ const char * DMDFO( int dmDisplayFixedOutput ) {
 PrintDevMode
 ====================
 */
-void PrintDevMode( DEVMODE & devmode ) {
+static void PrintDevMode( DEVMODE & devmode ) {
 	idLib::Printf( "          dmPosition.x        : %i\n", devmode.dmPosition.x );
 	idLib::Printf( "          dmPosition.y        : %i\n", devmode.dmPosition.y );
 	idLib::Printf( "          dmBitsPerPel        : %i\n", devmode.dmBitsPerPel );
