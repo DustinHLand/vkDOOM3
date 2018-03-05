@@ -129,9 +129,6 @@ void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStag
 void RB_BakeTextureMatrixIntoTexgen( idPlane lightProject[3], const float *textureMatrix );
 void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *surfaceRegs, const float lightColor[4], idVec4 matrix[2], float color[4] );
 
-bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
-bool CreateGameWindow( gfxImpParms_t parms );
-
 struct GPUInfo_t {
 	VkPhysicalDevice					device;
 	VkPhysicalDeviceProperties			props;
