@@ -952,14 +952,6 @@ CreateWindowClasses
 */
 void CreateWindowClasses() {
 	WNDCLASS wc;
-
-	//
-	// register the window class if necessary
-	//
-	if ( win32.windowClassRegistered ) {
-		return;
-	}
-
 	memset( &wc, 0, sizeof( wc ) );
 
 	wc.style         = 0;
@@ -977,8 +969,6 @@ void CreateWindowClasses() {
 		common->FatalError( "CreateGameWindow: could not register window class" );
 	}
 	idLib::Printf( "...registered window class\n" );
-
-	win32.windowClassRegistered = true;
 }
 
 /*

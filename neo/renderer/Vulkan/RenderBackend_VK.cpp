@@ -261,7 +261,6 @@ static bool VK_Init() {
 	win32.isFullscreen = parms.fullScreen;
 	win32.nativeScreenWidth = parms.width;
 	win32.nativeScreenHeight = parms.height;
-	win32.multisamples = parms.multiSamples;
 	win32.pixelAspect = 1.0f;
 
 	return true;
@@ -296,13 +295,6 @@ static void VK_Shutdown() {
 		idLib::Printf( "...resetting display\n" );
 		ChangeDisplaySettings( 0, 0 );
 		win32.cdsFullscreen = 0;
-	}
-
-	// close the thread so the handle doesn't dangle
-	if ( win32.renderThreadHandle ) {
-		idLib::Printf( "...closing smp thread\n" );
-		CloseHandle( win32.renderThreadHandle );
-		win32.renderThreadHandle = NULL;
 	}
 
 	// restore gamma

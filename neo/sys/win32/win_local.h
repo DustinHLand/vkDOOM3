@@ -67,13 +67,14 @@ LONG WINAPI MainWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void Conbuf_AppendText( const char *msg );
 
 typedef struct {
+	//==================================
+	// OS
+	//==================================
+
 	HWND			hWnd;
 	HINSTANCE		hInstance;
-
+	HDC				hDC;				// handle to device context
 	bool			activeApp;			// changed with WM_ACTIVATE messages
-	bool			mouseReleased;		// when the game has the console down or is doing a long operation
-	bool			movingWindow;		// inhibit mouse grab when dragging the window
-	bool			mouseGrabbed;		// current state of grab and hide
 
 	OSVERSIONINFOEX	osversion;
 
@@ -83,44 +84,37 @@ typedef struct {
 	// can know the exact time of an event (not really needed now that we use async direct input)
 	int				sysMsgTime;
 
-	bool			windowClassRegistered;
-
-	HDC				hDC;				// handle to device context
-	HGLRC			hGLRC;				// handle to GL rendering context
-	PIXELFORMATDESCRIPTOR pfd;		
-	int				pixelformat;
-	int				isFullscreen;
-	int				nativeScreenWidth;	// this is the native screen width resolution of the renderer
-	int				nativeScreenHeight; // this is the native screen height resolution of the renderer
-	float			pixelAspect;
-	int				multisamples;
-
-	int				desktopBitsPixel;
-	int				desktopWidth, desktopHeight;
-
-	int				cdsFullscreen;		// 0 = not fullscreen, otherwise monitor number
-
-	idFileHandle	log_fp;
-
-	unsigned short	oldHardwareGamma[3][256];
-	// desktop gamma is saved here for restoration at exit
-
 	CRITICAL_SECTION criticalSections[ MAX_CRITICAL_SECTIONS ];
+
+	//==================================
+	// Input
+	//==================================
+
+	bool			mouseReleased;		// when the game has the console down or is doing a long operation
+	bool			movingWindow;		// inhibit mouse grab when dragging the window
+	bool			mouseGrabbed;		// current state of grab and hide
 
 	LPDIRECTINPUT8			g_pdi;
 	LPDIRECTINPUTDEVICE8	g_pMouse;
 	LPDIRECTINPUTDEVICE8	g_pKeyboard;
 	idJoystickWin32			g_Joystick;
 
-	HANDLE			renderCommandsEvent;
-	HANDLE			renderCompletedEvent;
-	HANDLE			renderActiveEvent;
-	HANDLE			renderThreadHandle;
-	unsigned long	renderThreadId;
-	void			(*glimpRenderThread)();
-	void			*smpData;
-	int				wglErrors;
-	// SMP acceleration vars
+	//==================================
+	// Renderer
+	//==================================
+
+	int				isFullscreen;
+	int				nativeScreenWidth;	// this is the native screen width resolution of the renderer
+	int				nativeScreenHeight; // this is the native screen height resolution of the renderer
+	float			pixelAspect;
+
+	int				desktopBitsPixel;
+	int				desktopWidth;
+	int				desktopHeight;
+
+	int				cdsFullscreen;		// 0 = not fullscreen, otherwise monitor number
+
+	uint16			oldHardwareGamma[ 3 ][ 256 ]; // desktop gamma is saved here for restoration at exit
 
 } Win32Vars_t;
 
