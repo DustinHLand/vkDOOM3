@@ -30,7 +30,6 @@ If you have questions concerning this license or the applicable additional terms
 #pragma hdrstop
 #include "../../framework/precompiled.h"
 #include "../../framework/Common_local.h"
-#include "../../sys/win32/rc/doom_resource.h"
 #include "../GLState.h"
 #include "../GLMatrix.h"
 #include "../RenderProgs.h"
@@ -41,6 +40,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "../../sys/win32/win_local.h"
 #include "Allocator_VK.h"
 #include "Staging_VK.h"
+
+void CreateWindowClasses();
 
 vulkanContext_t vkcontext;
 
@@ -203,42 +204,6 @@ static void ValidateValidationLayers() {
 			idLib::FatalError( "Cannot find validation layer: %s.\n", g_validationLayers[ i ] );
 		}
 	}
-}
-
-/*
-====================
-CreateWindowClasses
-====================
-*/
-void CreateWindowClasses() {
-	WNDCLASS wc;
-
-	//
-	// register the window class if necessary
-	//
-	if ( win32.windowClassRegistered ) {
-		return;
-	}
-
-	memset( &wc, 0, sizeof( wc ) );
-
-	wc.style         = 0;
-	wc.lpfnWndProc   = (WNDPROC) MainWndProc;
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = win32.hInstance;
-	wc.hIcon         = LoadIcon( win32.hInstance, MAKEINTRESOURCE(IDI_ICON1));
-	wc.hCursor       = NULL;
-	wc.hbrBackground = (struct HBRUSH__ *)COLOR_GRAYTEXT;
-	wc.lpszMenuName  = 0;
-	wc.lpszClassName = WIN32_WINDOW_CLASS_NAME;
-
-	if ( !RegisterClass( &wc ) ) {
-		common->FatalError( "CreateGameWindow: could not register window class" );
-	}
-	idLib::Printf( "...registered window class\n" );
-
-	win32.windowClassRegistered = true;
 }
 
 /*

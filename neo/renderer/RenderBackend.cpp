@@ -29,8 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 
 #pragma hdrstop
 #include "../framework/precompiled.h"
-#include "../sys/win32/win_local.h"
 #include "../framework/Common_local.h"
+#include "../sys/win32/win_local.h"
+#include "../sys/win32/rc/doom_resource.h"
 #include "RenderSystem_local.h"
 #include "RenderBackend.h"
 #include "RenderLog.h"
@@ -1044,11 +1045,44 @@ gfxImpParms_t R_GetModeParms() {
 }
 
 /*
+====================
+CreateWindowClasses
+====================
+*/
+void CreateWindowClasses() {
+	WNDCLASS wc;
+
+	//
+	// register the window class if necessary
+	//
+	if ( win32.windowClassRegistered ) {
+		return;
+	}
+
+	memset( &wc, 0, sizeof( wc ) );
+
+	wc.style         = 0;
+	wc.lpfnWndProc   = (WNDPROC) MainWndProc;
+	wc.cbClsExtra    = 0;
+	wc.cbWndExtra    = 0;
+	wc.hInstance     = win32.hInstance;
+	wc.hIcon         = LoadIcon( win32.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+	wc.hCursor       = NULL;
+	wc.hbrBackground = (struct HBRUSH__ *)COLOR_GRAYTEXT;
+	wc.lpszMenuName  = 0;
+	wc.lpszClassName = WIN32_WINDOW_CLASS_NAME;
+
+	if ( !RegisterClass( &wc ) ) {
+		common->FatalError( "CreateGameWindow: could not register window class" );
+	}
+	idLib::Printf( "...registered window class\n" );
+
+	win32.windowClassRegistered = true;
+}
+
+/*
 =======================
 CreateGameWindow
-
-Responsible for creating the Win32 window.
-If fullscreen, it won't have a border
 =======================
 */
 bool CreateGameWindow( gfxImpParms_t parms ) {
