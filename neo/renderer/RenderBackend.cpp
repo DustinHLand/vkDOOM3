@@ -1057,8 +1057,6 @@ bool CreateGameWindow( gfxImpParms_t parms ) {
 		return false;
 	}
 
-	::SetTimer( win32.hWnd, 0, 100, NULL );
-
 	ShowWindow( win32.hWnd, SW_SHOW );
 	UpdateWindow( win32.hWnd );
 	idLib::Printf( "...created window @ %d,%d (%dx%d)\n", x, y, w, h );
