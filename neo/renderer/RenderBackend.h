@@ -129,6 +129,14 @@ void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStag
 void RB_BakeTextureMatrixIntoTexgen( idPlane lightProject[3], const float *textureMatrix );
 void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *surfaceRegs, const float lightColor[4], idVec4 matrix[2], float color[4] );
 
+struct display_t {
+	bool	isDefault;
+	int		width;
+	int		height;
+	int		hertz;
+	idList< uint32 > modes;	// Packed 16:16 as width, height
+};
+
 struct GPUInfo_t {
 	VkPhysicalDevice					device;
 	VkPhysicalDeviceProperties			props;
@@ -183,14 +191,14 @@ public:
 	void				Execute( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
 
-private:
-	void				DrawElementsWithCounters( const drawSurf_t * surf );
-	void				DrawStencilShadowPass( const drawSurf_t * drawSurf, const bool renderZPass );
+	void				Restart();
 
-	void				SetColorMappings();
+private:
 	void				CheckCVars();
 	void				ResizeImages();
 
+	void				DrawElementsWithCounters( const drawSurf_t * surf );
+	void				DrawStencilShadowPass( const drawSurf_t * drawSurf, const bool renderZPass );
 	void				DrawView( const renderCommand_t & cmd );
 	void				CopyRender( const renderCommand_t & cmd );
 
@@ -342,7 +350,6 @@ private:
 	VkSurfaceKHR					m_surface;
 	VkPresentModeKHR				m_presentMode;
 
-	int								m_fullscreen;
 	VkSwapchainKHR					m_swapchain;
 	VkFormat						m_swapchainFormat;
 	VkExtent2D						m_swapchainExtent;

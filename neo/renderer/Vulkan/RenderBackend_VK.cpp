@@ -28,6 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
+#include "SDL.h"
 #include "../../framework/precompiled.h"
 #include "../../framework/Common_local.h"
 #include "../GLState.h"
@@ -41,10 +42,9 @@ If you have questions concerning this license or the applicable additional terms
 #include "Allocator_VK.h"
 #include "Staging_VK.h"
 
-void EnumerateMonitors();
-void CreateWindowClasses();
-bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms );
-bool CreateGameWindow( gfxImpParms_t parms );
+void EnumerateDisplays();
+bool CreateGameWindow();
+void CloseGameWindow();
 
 vulkanContext_t vkcontext;
 
@@ -206,107 +206,6 @@ static void ValidateValidationLayers() {
 		if ( !found ) {
 			idLib::FatalError( "Cannot find validation layer: %s.\n", g_validationLayers[ i ] );
 		}
-	}
-}
-
-/*
-=============
-VK_Init
-=============
-*/
-static bool VK_Init() {
-	gfxImpParms_t parms = R_GetModeParms();
-
-	idLib::Printf( "Initializing Vulkan subsystem with multisamples:%d fullscreen:%d\n", 
-		parms.multiSamples, parms.fullScreen );
-
-	// check our desktop attributes
-	{
-		HDC handle = GetDC( GetDesktopWindow() );
-		win32.desktopBitsPixel = GetDeviceCaps( handle, BITSPIXEL );
-		win32.desktopWidth = GetDeviceCaps( handle, HORZRES );
-		win32.desktopHeight = GetDeviceCaps( handle, VERTRES );
-		ReleaseDC( GetDesktopWindow(), handle );
-	}
-
-	// we can't run in a window unless it is 32 bpp
-	if ( win32.desktopBitsPixel < 32 && parms.fullScreen <= 0 ) {
-		idLib::Printf( "^3Windowed mode requires 32 bit desktop depth^0\n" );
-		return false;
-	}
-
-	// save the hardware gamma so it can be
-	// restored on exit
-	{
-		HDC handle = GetDC( GetDesktopWindow() );
-		BOOL success = GetDeviceGammaRamp( handle, win32.oldHardwareGamma );
-		idLib::Printf( "...getting default gamma ramp: %s\n", success ? "success" : "failed" );
-		ReleaseDC( GetDesktopWindow(), handle );
-	}
-
-	EnumerateMonitors();
-
-	// create our window classes if we haven't already
-	CreateWindowClasses();
-
-	// Optionally ChangeDisplaySettings to get a different fullscreen resolution.
-	if ( !ChangeDisplaySettingsIfNeeded( parms ) ) {
-		// XXX error? shutdown?
-		return false;
-	}
-
-	// try to create a window with the correct pixel format
-	if ( !CreateGameWindow( parms ) ) {
-		// XXX error? shutdown?
-		return false;
-	}
-
-	win32.isFullscreen = parms.fullScreen;
-	win32.nativeScreenWidth = parms.width;
-	win32.nativeScreenHeight = parms.height;
-	win32.pixelAspect = 1.0f;
-
-	return true;
-}
-
-/*
-=============
-VK_Shutdown
-=============
-*/
-static void VK_Shutdown() {
-	const char * success[] = { "failed", "success" };
-	int retVal;
-
-	// release DC
-	if ( win32.hDC ) {
-		retVal = ReleaseDC( win32.hWnd, win32.hDC ) != 0;
-		idLib::Printf( "...releasing DC: %s\n", success[ retVal ] );
-		win32.hDC = NULL;
-	}
-
-	// destroy window
-	if ( win32.hWnd ) {
-		idLib::Printf( "...destroying window\n" );
-		ShowWindow( win32.hWnd, SW_HIDE );
-		DestroyWindow( win32.hWnd );
-		win32.hWnd = NULL;
-	}
-
-	// reset display settings
-	if ( win32.cdsFullscreen ) {
-		idLib::Printf( "...resetting display\n" );
-		ChangeDisplaySettings( 0, 0 );
-		win32.cdsFullscreen = 0;
-	}
-
-	// restore gamma
-	// if we never read in a reasonable looking table, don't write it out
-	if ( win32.oldHardwareGamma[ 0 ][ 255 ] != 0 ) {
-		HDC hDC = GetDC( GetDesktopWindow() );
-		retVal = SetDeviceGammaRamp( hDC, win32.oldHardwareGamma );
-		idLib::Printf( "...restoring hardware gamma: %s\n", success[ retVal ] );
-		ReleaseDC( GetDesktopWindow(), hDC );
 	}
 }
 
@@ -723,7 +622,6 @@ void idRenderBackend::CreateSwapChain() {
 	m_swapchainFormat = surfaceFormat.format;
 	m_presentMode = presentMode;
 	m_swapchainExtent = extent;
-	m_fullscreen = win32.isFullscreen;
 
 	uint32 numImages = 0;
 	ID_VK_CHECK( vkGetSwapchainImagesKHR( vkcontext.device, m_swapchain, &numImages, NULL ) );
@@ -1142,7 +1040,6 @@ void idRenderBackend::Clear() {
 	m_surface = VK_NULL_HANDLE;
 	m_presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 	
-	m_fullscreen = 0;
 	m_swapchain = VK_NULL_HANDLE;
 	m_swapchainFormat = VK_FORMAT_UNDEFINED;
 	m_currentSwapIndex = 0;
@@ -1175,8 +1072,14 @@ idRenderBackend::Init
 void idRenderBackend::Init() {
 	idLib::Printf( "----- idRenderBackend::Init -----\n" );
 
-	if ( !VK_Init() ) {
-		idLib::FatalError( "Unable to initialize Vulkan" );
+	if ( SDL_Init( SDL_INIT_VIDEO ) != 0 ) {
+		idLib::FatalError( "SDL_Init() Failed" );
+	}
+
+	EnumerateDisplays();
+
+	if ( !CreateGameWindow() ) {
+		idLib::FatalError( "CreateGameWindow() Failed" );
 	}
 
 	// input and sound systems need to be tied to the new window
@@ -1324,21 +1227,15 @@ void idRenderBackend::Shutdown() {
 	ClearContext();
 	Clear();
 
-	VK_Shutdown();
+	CloseGameWindow();
 }
 
 /*
 ====================
-idRenderBackend::ResizeImages
+idRenderBackend::Restart
 ====================
 */
-void idRenderBackend::ResizeImages() {
-	if ( m_swapchainExtent.width == win32.nativeScreenWidth && 
-		m_swapchainExtent.height == win32.nativeScreenHeight &&
-		m_fullscreen == win32.isFullscreen ) {
-		return;
-	}
-
+void idRenderBackend::Restart() {
 	stagingManager.Flush();
 	
 	vkDeviceWaitIdle( vkcontext.device );

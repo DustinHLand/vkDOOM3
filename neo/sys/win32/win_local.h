@@ -32,6 +32,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include <windows.h>
 #include "win_input.h"
+#include "SDL.h"
 
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE|WS_THICKFRAME|WS_MINIMIZEBOX)
 
@@ -65,14 +66,6 @@ uint64 Sys_Microseconds();
 LONG WINAPI MainWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void Conbuf_AppendText( const char *msg );
-
-struct monitor_t {
-	HMONITOR		hMonitor;
-	int				width;				// width at launch
-	int				height;				// height at launch
-	bool			isDefault;
-	idList< uint32 > supportedModes;	// packed 16:16 as width, height
-};
 
 typedef struct {
 	//==================================
@@ -111,7 +104,7 @@ typedef struct {
 	// Renderer
 	//==================================
 
-	int				isFullscreen;
+	bool			isFullscreen;
 	int				nativeScreenWidth;	// this is the native screen width resolution of the renderer
 	int				nativeScreenHeight; // this is the native screen height resolution of the renderer
 	float			pixelAspect;
@@ -120,9 +113,9 @@ typedef struct {
 	int				desktopWidth;
 	int				desktopHeight;
 
-	int				cdsFullscreen;		// 0 = not fullscreen, otherwise monitor number
+	SDL_Window *	windowHandle;
 
-	idList< monitor_t > monitors;
+	int				cdsFullscreen;		// 0 = not fullscreen, otherwise monitor number
 
 	uint16			oldHardwareGamma[ 3 ][ 256 ]; // desktop gamma is saved here for restoration at exit
 

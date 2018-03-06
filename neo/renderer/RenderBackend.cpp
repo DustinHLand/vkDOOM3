@@ -28,6 +28,8 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #pragma hdrstop
+#include "SDL.h"
+#include "SDL_syswm.h"
 #include "../framework/precompiled.h"
 #include "../framework/Common_local.h"
 #include "../sys/win32/win_local.h"
@@ -88,6 +90,8 @@ extern idCVar r_shadowPolygonFactor;
 extern idCVar r_shadowPolygonOffset;
 extern idCVar r_useShadowDepthBounds;
 extern idCVar r_singleTriangle;
+
+static idList< display_t >	displays;
 
 /*
 ====================
@@ -436,284 +440,11 @@ void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *s
 }
 
 /*
-========================
-GetDisplayName
-========================
-*/
-static const char * GetDisplayName( const int deviceNum ) {
-	static DISPLAY_DEVICE	device;
-	device.cb = sizeof( device );
-	if ( !EnumDisplayDevices(
-			0,			// lpDevice
-			deviceNum,
-			&device,
-			0 /* dwFlags */ ) ) {
-		return NULL;
-	}
-	return device.DeviceName;
-}
-
-/*
-========================
-GetDeviceName
-========================
-*/
-static idStr GetDeviceName( const int deviceNum ) {
-	DISPLAY_DEVICE	device = {};
-	device.cb = sizeof( device );
-	if ( !EnumDisplayDevices(
-			0,			// lpDevice
-			deviceNum,
-			&device,
-			0 /* dwFlags */ ) ) {
-		return false;
-	}
-
-	// get the monitor for this display
-	if ( ! (device.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP ) ) {
-		return false;
-	}
-
-	return idStr( device.DeviceName );
-}
-
-/*
-========================
-SetGamma
-
-The renderer calls this when the user adjusts r_gamma or r_brightness
-
-Sets the hardware gamma ramps for gamma and brightness adjustment.
-These are now taken as 16 bit values, so we can take full advantage
-of dacs with >8 bits of precision
-========================
-*/
-static void SetGamma( unsigned short red[256], unsigned short green[256], unsigned short blue[256] ) {
-	unsigned short table[3][256];
-	int i;
-
-	if ( !win32.hDC ) {
-		return;
-	}
-
-	for ( i = 0; i < 256; i++ ) {
-		table[0][i] = red[i];
-		table[1][i] = green[i];
-		table[2][i] = blue[i];
-	}
-
-	if ( !SetDeviceGammaRamp( win32.hDC, table ) ) {
-		idLib::Printf( "WARNING: SetDeviceGammaRamp failed.\n" );
-	}
-}
-
-/*
-========================
-GetDisplayCoordinates
-========================
-*/
-static bool GetDisplayCoordinates( const int deviceNum, int & x, int & y, int & width, int & height, int & displayHz ) {
-	idStr deviceName = GetDeviceName( deviceNum );
-	if ( deviceName.Length() == 0 ) {
-		return false;
-	}
-
-	DISPLAY_DEVICE	device = {};
-	device.cb = sizeof( device );
-	if ( !EnumDisplayDevices(
-			0,			// lpDevice
-			deviceNum,
-			&device,
-			0 /* dwFlags */ ) ) {
-		return false;
-	}
-
-	DISPLAY_DEVICE	monitor;
-	monitor.cb = sizeof( monitor );
-	if ( !EnumDisplayDevices(
-			deviceName.c_str(),
-			0,
-			&monitor,
-			0 /* dwFlags */ ) ) {
-		return false;
-	}
-
-	DEVMODE	devmode;
-	devmode.dmSize = sizeof( devmode );
-	if ( !EnumDisplaySettings( deviceName.c_str(),ENUM_CURRENT_SETTINGS, &devmode ) ) {
-		return false;
-	}
-
-	idLib::Printf( "display device: %i\n", deviceNum );
-	idLib::Printf( "  DeviceName  : %s\n", device.DeviceName );
-	idLib::Printf( "  DeviceString: %s\n", device.DeviceString );
-	idLib::Printf( "  StateFlags  : 0x%x\n", device.StateFlags );
-	idLib::Printf( "  DeviceID    : %s\n", device.DeviceID );
-	idLib::Printf( "  DeviceKey   : %s\n", device.DeviceKey );
-	idLib::Printf( "      DeviceName  : %s\n", monitor.DeviceName );
-	idLib::Printf( "      DeviceString: %s\n", monitor.DeviceString );
-	idLib::Printf( "      StateFlags  : 0x%x\n", monitor.StateFlags );
-	idLib::Printf( "      DeviceID    : %s\n", monitor.DeviceID );
-	idLib::Printf( "      DeviceKey   : %s\n", monitor.DeviceKey );
-	idLib::Printf( "          dmPosition.x      : %i\n", devmode.dmPosition.x );
-	idLib::Printf( "          dmPosition.y      : %i\n", devmode.dmPosition.y );
-	idLib::Printf( "          dmBitsPerPel      : %i\n", devmode.dmBitsPerPel );
-	idLib::Printf( "          dmPelsWidth       : %i\n", devmode.dmPelsWidth );
-	idLib::Printf( "          dmPelsHeight      : %i\n", devmode.dmPelsHeight );
-	idLib::Printf( "          dmDisplayFlags    : 0x%x\n", devmode.dmDisplayFlags );
-	idLib::Printf( "          dmDisplayFrequency: %i\n", devmode.dmDisplayFrequency );
-
-	x = devmode.dmPosition.x;
-	y = devmode.dmPosition.y;
-	width = devmode.dmPelsWidth;
-	height = devmode.dmPelsHeight;
-	displayHz = devmode.dmDisplayFrequency;
-
-	return true;
-}
-
-/*
-===================
-ChangeDisplaySettingsIfNeeded
-
-Optionally ChangeDisplaySettings to get a different fullscreen resolution.
-Default uses the full desktop resolution.
-===================
-*/
-bool ChangeDisplaySettingsIfNeeded( gfxImpParms_t parms ) {
-	// If we had previously changed the display settings on a different monitor,
-	// go back to standard.
-	if ( win32.cdsFullscreen != 0 && win32.cdsFullscreen != parms.fullScreen ) {
-		win32.cdsFullscreen = 0;
-		ChangeDisplaySettings( 0, 0 );
-		Sys_Sleep( 1000 ); // Give the driver some time to think about this change
-	}
-
-	// 0 is dragable mode on desktop, -1 is borderless window on desktop
-	if ( parms.fullScreen <= 0 ) {
-		return true;
-	}
-
-	// if we are already in the right resolution, don't do a ChangeDisplaySettings
-	int x, y, width, height, displayHz;
-
-	if ( !GetDisplayCoordinates( parms.fullScreen - 1, x, y, width, height, displayHz ) ) {
-		return false;
-	}
-	if ( width == parms.width && height == parms.height && ( displayHz == parms.displayHz || parms.displayHz == 0 ) ) {
-		return true;
-	}
-
-	DEVMODE dm = {};
-
-	dm.dmSize = sizeof( dm );
-
-	dm.dmPelsWidth  = parms.width;
-	dm.dmPelsHeight = parms.height;
-	dm.dmBitsPerPel = 32;
-	dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
-	if ( parms.displayHz != 0 ) {
-		dm.dmDisplayFrequency = parms.displayHz;
-		dm.dmFields |= DM_DISPLAYFREQUENCY;
-	}
-	
-	idLib::Printf( "...calling CDS: " );
-	
-	const char * const deviceName = GetDisplayName( parms.fullScreen - 1 );
-
-	int		cdsRet;
-	if ( ( cdsRet = ChangeDisplaySettingsEx(
-		deviceName,
-		&dm, 
-		NULL,
-		CDS_FULLSCREEN,
-		NULL) ) == DISP_CHANGE_SUCCESSFUL ) {
-		idLib::Printf( "ok\n" );
-		win32.cdsFullscreen = parms.fullScreen;
-		return true;
-	}
-
-	idLib::Printf( "^3failed^0, " );
-	
-	switch ( cdsRet ) {
-	case DISP_CHANGE_RESTART:
-		idLib::Printf( "restart required\n" );
-		break;
-	case DISP_CHANGE_BADPARAM:
-		idLib::Printf( "bad param\n" );
-		break;
-	case DISP_CHANGE_BADFLAGS:
-		idLib::Printf( "bad flags\n" );
-		break;
-	case DISP_CHANGE_FAILED:
-		idLib::Printf( "DISP_CHANGE_FAILED\n" );
-		break;
-	case DISP_CHANGE_BADMODE:
-		idLib::Printf( "bad mode\n" );
-		break;
-	case DISP_CHANGE_NOTUPDATED:
-		idLib::Printf( "not updated\n" );
-		break;
-	default:
-		idLib::Printf( "unknown error %d\n", cdsRet );
-		break;
-	}
-
-	return false;
-}
-
-/*
-====================
-GetWindowDimensions
-====================
-*/
-static bool GetWindowDimensions( const gfxImpParms_t parms, int &x, int &y, int &w, int &h ) {
-	//
-	// compute width and height
-	//
-	if ( parms.fullScreen != 0 ) {
-		if ( parms.fullScreen == -1 ) {
-			// borderless window at specific location, as for spanning
-			// multiple monitor outputs
-			x = parms.x;
-			y = parms.y;
-			w = parms.width;
-			h = parms.height;
-		} else {
-			// get the current monitor position and size on the desktop, assuming
-			// any required ChangeDisplaySettings has already been done
-			int displayHz = 0;
-			if ( !GetDisplayCoordinates( parms.fullScreen - 1, x, y, w, h, displayHz ) ) {
-				return false;
-			}
-		}
-	} else {
-		RECT	r;
-
-		// adjust width and height for window border
-		r.bottom = parms.height;
-		r.left = 0;
-		r.top = 0;
-		r.right = parms.width;
-
-		AdjustWindowRect (&r, WINDOW_STYLE|WS_SYSMENU, FALSE);
-
-		w = r.right - r.left;
-		h = r.bottom - r.top;
-
-		x = parms.x;
-		y = parms.y;
-	}
-
-	return true;
-}
-
-/*
 ====================
 DMDFO
 ====================
 */
-const char * DMDFO( int dmDisplayFixedOutput ) {
+static const char * DMDFO( int dmDisplayFixedOutput ) {
 	switch( dmDisplayFixedOutput ) {
 	case DMDFO_DEFAULT: return "DMDFO_DEFAULT";
 	case DMDFO_CENTER: return "DMDFO_CENTER";
@@ -725,13 +456,9 @@ const char * DMDFO( int dmDisplayFixedOutput ) {
 /*
 ====================
 R_GetModeListForDisplay
-
-the number of displays can be found by itterating this until it returns false
-displayNum is the 0 based value passed to EnumDisplayDevices(), you must add
-1 to this to get an r_fullScreen value.
 ====================
 */
-bool R_GetModeListForDisplay( const int requestedDisplayNum, idList<vidMode_t> & modeList ) {
+bool R_GetModeListForDisplay( const int requestedDisplayNum, idList< vidMode_t > & modeList ) {
 	modeList.Clear();
 
 	bool	verbose = false;
@@ -766,17 +493,17 @@ bool R_GetModeListForDisplay( const int requestedDisplayNum, idList<vidMode_t> &
 		devmode.dmSize = sizeof( devmode );
 
 		if ( verbose ) {
-			idLib::Printf( "display device: %i\n", displayNum );
-			idLib::Printf( "  DeviceName  : %s\n", device.DeviceName );
-			idLib::Printf( "  DeviceString: %s\n", device.DeviceString );
-			idLib::Printf( "  StateFlags  : 0x%x\n", device.StateFlags );
-			idLib::Printf( "  DeviceID    : %s\n", device.DeviceID );
-			idLib::Printf( "  DeviceKey   : %s\n", device.DeviceKey );
-			idLib::Printf( "      DeviceName  : %s\n", monitor.DeviceName );
-			idLib::Printf( "      DeviceString: %s\n", monitor.DeviceString );
-			idLib::Printf( "      StateFlags  : 0x%x\n", monitor.StateFlags );
-			idLib::Printf( "      DeviceID    : %s\n", monitor.DeviceID );
-			idLib::Printf( "      DeviceKey   : %s\n", monitor.DeviceKey );
+			common->Printf( "display device: %i\n", displayNum );
+			common->Printf( "  DeviceName  : %s\n", device.DeviceName );
+			common->Printf( "  DeviceString: %s\n", device.DeviceString );
+			common->Printf( "  StateFlags  : 0x%x\n", device.StateFlags );
+			common->Printf( "  DeviceID    : %s\n", device.DeviceID );
+			common->Printf( "  DeviceKey   : %s\n", device.DeviceKey );
+			common->Printf( "      DeviceName  : %s\n", monitor.DeviceName );
+			common->Printf( "      DeviceString: %s\n", monitor.DeviceString );
+			common->Printf( "      StateFlags  : 0x%x\n", monitor.StateFlags );
+			common->Printf( "      DeviceID    : %s\n", monitor.DeviceID );
+			common->Printf( "      DeviceKey   : %s\n", monitor.DeviceKey );
 		}
 
 		for ( int modeNum = 0 ; ; modeNum++ ) {
@@ -794,16 +521,16 @@ bool R_GetModeListForDisplay( const int requestedDisplayNum, idList<vidMode_t> &
 				continue;
 			}
 			if ( verbose ) {
-				idLib::Printf( "          -------------------\n" );
-				idLib::Printf( "          modeNum             : %i\n", modeNum );
-				idLib::Printf( "          dmPosition.x        : %i\n", devmode.dmPosition.x );
-				idLib::Printf( "          dmPosition.y        : %i\n", devmode.dmPosition.y );
-				idLib::Printf( "          dmBitsPerPel        : %i\n", devmode.dmBitsPerPel );
-				idLib::Printf( "          dmPelsWidth         : %i\n", devmode.dmPelsWidth );
-				idLib::Printf( "          dmPelsHeight        : %i\n", devmode.dmPelsHeight );
-				idLib::Printf( "          dmDisplayFixedOutput: %s\n", DMDFO( devmode.dmDisplayFixedOutput ) );
-				idLib::Printf( "          dmDisplayFlags      : 0x%x\n", devmode.dmDisplayFlags );
-				idLib::Printf( "          dmDisplayFrequency  : %i\n", devmode.dmDisplayFrequency );
+				common->Printf( "          -------------------\n" );
+				common->Printf( "          modeNum             : %i\n", modeNum );
+				common->Printf( "          dmPosition.x        : %i\n", devmode.dmPosition.x );
+				common->Printf( "          dmPosition.y        : %i\n", devmode.dmPosition.y );
+				common->Printf( "          dmBitsPerPel        : %i\n", devmode.dmBitsPerPel );
+				common->Printf( "          dmPelsWidth         : %i\n", devmode.dmPelsWidth );
+				common->Printf( "          dmPelsHeight        : %i\n", devmode.dmPelsHeight );
+				common->Printf( "          dmDisplayFixedOutput: %s\n", DMDFO( devmode.dmDisplayFixedOutput ) );
+				common->Printf( "          dmDisplayFlags      : 0x%x\n", devmode.dmDisplayFlags );
+				common->Printf( "          dmDisplayFrequency  : %i\n", devmode.dmDisplayFrequency );
 			}
 			vidMode_t mode;
 			mode.width = devmode.dmPelsWidth;
@@ -833,194 +560,83 @@ bool R_GetModeListForDisplay( const int requestedDisplayNum, idList<vidMode_t> &
 }
 
 /*
-===================
-SetScreenParms
-
-Sets up the screen based on passed parms.. 
-===================
+====================
+idRenderBackend::EnumerateDisplays
+====================
 */
-bool SetScreenParms( gfxImpParms_t parms ) {
-	// Optionally ChangeDisplaySettings to get a different fullscreen resolution.
-	if ( !ChangeDisplaySettingsIfNeeded( parms ) ) {
+void EnumerateDisplays() {
+	displays.Clear();
+
+	int numDisplays = SDL_GetNumVideoDisplays();
+	for ( int i = 0; i < numDisplays; ++i ) {
+		display_t display;
+
+		SDL_DisplayMode currentMode;
+		if ( SDL_GetCurrentDisplayMode( i, &currentMode ) == 0 ) {
+			display.width = currentMode.w;
+			display.height = currentMode.h;
+			display.height = currentMode.refresh_rate;
+		} else {
+			idLib::Warning( "Could not get video mode for display %d\n", i );
+			display.width = r_customWidth.GetInteger();
+			display.height = r_customHeight.GetInteger();
+		}
+
+		display.isDefault = ( i == 0 );
+
+		int numModes = SDL_GetNumDisplayModes( i );
+		for ( int j = 0; j < numModes; ++j ) {
+			SDL_DisplayMode mode;
+			if ( !SDL_GetDisplayMode( i, j, &mode ) == 0 ) {
+				continue;
+			}
+
+			if ( SDL_BITSPERPIXEL( mode.format ) != 24 ) {
+				continue;
+			}
+
+			if ( mode.refresh_rate != 60 && mode.refresh_rate != 120 ) {
+				continue;
+			}
+
+			if ( mode.h < 720 ) {
+				continue;
+			}
+
+			display.modes.AddUnique( ( mode.w << 16 ) | ( mode.h & 0xFFFF ) );
+		}
+
+		displays.Append( display );
+	}
+}
+
+/*
+====================
+EnumerateDisplayModes
+====================
+*/
+static bool EnumerateDisplayModes( int vidMode, int & width, int & height, int & display ) {
+	width = 1;
+	height = 1;
+	display = 0;
+	
+	if ( vidMode < displays.Num() == 0 ) {
 		return false;
 	}
 
-	int x, y, w, h;
-	if ( !GetWindowDimensions( parms, x, y, w, h ) ) {
-		return false;
+	while ( vidMode >= displays[ display ].modes.Num() ) {
+		vidMode -= displays[ display ].modes.Num();
+		display++;
+		if ( display >= displays.Num() ) {
+			return false;
+		}
 	}
 
-	int stylebits;
-
-	if ( parms.fullScreen ) {
-		stylebits = WS_POPUP|WS_VISIBLE|WS_SYSMENU;
-	} else {
-		stylebits = WINDOW_STYLE|WS_SYSMENU;
-	}
-
-	SetWindowLong( win32.hWnd, GWL_STYLE, stylebits );
-	SetWindowLong( win32.hWnd, GWL_EXSTYLE, 0 );
-	SetWindowPos( win32.hWnd, HWND_NOTOPMOST, x, y, w, h, SWP_SHOWWINDOW );
-
-	win32.isFullscreen = parms.fullScreen;
-	win32.nativeScreenWidth = parms.width;
-	win32.nativeScreenHeight = parms.height;
-	win32.pixelAspect = 1.0f;	// FIXME: some monitor modes may be distorted
+	uint32 mode = displays[ display ].modes[ vidMode ];
+	width = mode >> 16;
+	height = mode & 0xFFFF;
 
 	return true;
-}
-
-/*
-=============================
-R_GetModeParms
-
-r_mode -1			use r_customWidth / r_customHeight, even if they don't appear on the mode list
-r_mode 0			use first mode returned by EnumDisplaySettings()
-r_mode 1			use second mode returned by EnumDisplaySettings()
-=============================
-*/
-gfxImpParms_t R_GetModeParms() {
-	// try up to three different configurations
-
-	gfxImpParms_t parms;
-
-	if ( r_fullscreen.GetInteger() == 0 ) {
-		// use explicit position / size for window
-		parms.x = r_windowX.GetInteger();
-		parms.y = r_windowY.GetInteger();
-		parms.width = r_windowWidth.GetInteger();
-		parms.height = r_windowHeight.GetInteger();
-		// may still be -1 to force a borderless window
-		parms.fullScreen = r_fullscreen.GetInteger();
-		parms.displayHz = 0;		// ignored
-	} else {
-		// get the mode list for this monitor
-		idList<vidMode_t> modeList;
-		if ( !R_GetModeListForDisplay( r_fullscreen.GetInteger()-1, modeList ) ) {
-			idLib::Printf( "r_fullscreen reset from %i to 1 because mode list failed.", r_fullscreen.GetInteger() );
-			r_fullscreen.SetInteger( 1 );
-			R_GetModeListForDisplay( r_fullscreen.GetInteger()-1, modeList );
-		}
-		if ( modeList.Num() < 1 ) {
-			idLib::FatalError( "No modes available." );
-		}
-
-		parms.x = 0;		// ignored
-		parms.y = 0;		// ignored
-		parms.fullScreen = r_fullscreen.GetInteger();
-
-		// set the parameters we are trying
-		if ( r_mode.GetInteger() < 0 ) {
-			// try forcing a specific mode, even if it isn't on the list
-			parms.width = r_customWidth.GetInteger();
-			parms.height = r_customHeight.GetInteger();
-			parms.displayHz = r_displayRefresh.GetInteger();
-		} else {
-			if ( r_mode.GetInteger() > modeList.Num() ) {
-				idLib::Printf( "r_mode reset from %i to 0.\n", r_mode.GetInteger() );
-				r_mode.SetInteger( 0 );
-			}
-
-			parms.width = modeList[ r_mode.GetInteger() ].width;
-			parms.height = modeList[ r_mode.GetInteger() ].height;
-			parms.displayHz = modeList[ r_mode.GetInteger() ].displayHz;
-		}
-	}
-
-	parms.multiSamples = r_multiSamples.GetInteger();
-
-	return parms;
-}
-
-/*
-========================
-MonitorEnumProc
-========================
-*/
-BOOL CALLBACK MonitorEnumProc( HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData ) {
-	MONITORINFOEX mi;
-	ZeroMemory( &mi, sizeof( mi ) );
-	mi.cbSize = sizeof( mi );
-	GetMonitorInfo( hMonitor, &mi );
-	monitor_t & monitor = win32.monitors.Alloc();
-	monitor.hMonitor = hMonitor;
-	return TRUE;
-}
-
-/*
-====================
-EnumerateMonitors
-====================
-*/
-void EnumerateMonitors() {
-	win32.monitors.Clear();
-
-	EnumDisplayMonitors( NULL, NULL, MonitorEnumProc, 0 );
-
-	for ( int i = 0; i < win32.monitors.Num(); ++i ) {
-		monitor_t & monitor = win32.monitors[ i ];
-
-		MONITORINFOEX mi;
-		ZeroMemory( &mi, sizeof( mi ) );
-		mi.cbSize = sizeof( mi );
-		GetMonitorInfo( monitor.hMonitor, &mi );
-		monitor.width = mi.rcMonitor.right - mi.rcMonitor.left;
-		monitor.height = mi.rcMonitor.bottom - mi.rcMonitor.top;
-		monitor.isDefault = mi.dwFlags & MONITORINFOF_PRIMARY;
-
-		DEVMODE devMode;
-		ZeroMemory( &devMode, sizeof( devMode ) );
-		devMode.dmSize = sizeof( devMode );
-
-		int mode = 0;
-		while ( EnumDisplaySettingsEx( mi.szDevice, mode++, &devMode, 0 ) ) {
-			if ( devMode.dmBitsPerPel != 32 ) {
-				continue;
-			}
-
-			if ( devMode.dmPelsHeight < 720 ) {
-				continue;
-			}
-
-			monitor.supportedModes.AddUnique( ( devMode.dmPelsWidth << 16 ) | devMode.dmPelsHeight );
-		}
-
-		monitor.supportedModes.SortWithTemplate();
-
-		if ( monitor.supportedModes.Num() == 0 ) {
-			win32.monitors.RemoveIndex( i );
-		}
-	}
-
-	if ( win32.monitors.Num() == 0 ) {
-		idLib::FatalError( "No valid monitors found." );
-	}
-}
-
-/*
-====================
-CreateWindowClasses
-====================
-*/
-void CreateWindowClasses() {
-	WNDCLASS wc;
-	memset( &wc, 0, sizeof( wc ) );
-
-	wc.style         = 0;
-	wc.lpfnWndProc   = (WNDPROC) MainWndProc;
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = win32.hInstance;
-	wc.hIcon         = LoadIcon( win32.hInstance, MAKEINTRESOURCE(IDI_ICON1));
-	wc.hCursor       = NULL;
-	wc.hbrBackground = (struct HBRUSH__ *)COLOR_GRAYTEXT;
-	wc.lpszMenuName  = 0;
-	wc.lpszClassName = WIN32_WINDOW_CLASS_NAME;
-
-	if ( !RegisterClass( &wc ) ) {
-		common->FatalError( "CreateGameWindow: could not register window class" );
-	}
-	idLib::Printf( "...registered window class\n" );
 }
 
 /*
@@ -1028,52 +644,71 @@ void CreateWindowClasses() {
 CreateGameWindow
 =======================
 */
-bool CreateGameWindow( gfxImpParms_t parms ) {
-	int				x, y, w, h;
-	if ( !GetWindowDimensions( parms, x, y, w, h ) ) {
-		return false;
-	}
+bool CreateGameWindow() {
+	const bool fullscreen = r_fullscreen.GetBool();
+	
+	int	width, height, display;
 
-	int	stylebits;
-	if ( parms.fullScreen != 0 ) {
-		stylebits = WS_POPUP|WS_VISIBLE|WS_SYSMENU;
+	if ( fullscreen ) {
+		if ( !EnumerateDisplayModes( r_mode.GetInteger(), width, height, display ) ) {
+			EnumerateDisplayModes( 0, width, height, display );
+		}
 	} else {
-		stylebits = WINDOW_STYLE|WS_SYSMENU;
+		width = r_windowWidth.GetInteger();
+		height = r_windowHeight.GetInteger();
+		display = 0;
 	}
 
-	win32.hWnd = CreateWindowEx (
-		 0, 
-		 WIN32_WINDOW_CLASS_NAME,
-		 GAME_NAME,
-		 stylebits,
-		 x, y, w, h,
-		 NULL,
-		 NULL,
-		 win32.hInstance,
-		 NULL);
+	uint32 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
+	flags |= SDL_WINDOW_RESIZABLE;
+	flags |= SDL_WINDOW_VULKAN;
 
-	if ( !win32.hWnd ) {
-		idLib::Printf( "^3GLW_CreateWindow() - Couldn't create window^0\n" );
+	win32.windowHandle = SDL_CreateWindow( 
+		GAME_NAME, 
+		SDL_WINDOWPOS_CENTERED_DISPLAY( display ),
+		SDL_WINDOWPOS_CENTERED_DISPLAY( display ),
+		width,
+		height,
+		flags );
+
+	if ( win32.windowHandle == NULL ) {
+		// Fallback to the default size.
+		win32.windowHandle = SDL_CreateWindow( 
+			GAME_NAME,
+			SDL_WINDOWPOS_CENTERED_DISPLAY( display ),
+			SDL_WINDOWPOS_CENTERED_DISPLAY( display ),
+			r_windowWidth.GetInteger(),
+			r_windowHeight.GetInteger(),
+			flags );
+	}
+
+	if ( win32.windowHandle == NULL ) {
 		return false;
 	}
 
-	ShowWindow( win32.hWnd, SW_SHOW );
-	UpdateWindow( win32.hWnd );
-	idLib::Printf( "...created window @ %d,%d (%dx%d)\n", x, y, w, h );
+	SDL_GetWindowSize( win32.windowHandle, &win32.nativeScreenWidth, &win32.nativeScreenHeight );
 
-	// makeCurrent NULL frees the DC, so get another
-	win32.hDC = GetDC( win32.hWnd );
-	if ( !win32.hDC ) {
-		idLib::Printf( "^3GLW_CreateWindow() - GetDC()failed^0\n" );
-		return false;
-	}
+	SDL_SysWMinfo wm;
+	SDL_VERSION( &wm.version );
+	SDL_GetWindowWMInfo( win32.windowHandle, &wm );
+	win32.hDC		= wm.info.win.hdc;
+	win32.hInstance	= wm.info.win.hinstance;
+	win32.hWnd		= wm.info.win.window;
 
-	SetForegroundWindow( win32.hWnd );
-	SetFocus( win32.hWnd );
-
-	win32.isFullscreen = parms.fullScreen;
+	win32.isFullscreen	= fullscreen;
+	win32.pixelAspect	= 1.0f;
 
 	return true;
+}
+
+/*
+====================
+CloseGameWindow
+====================
+*/
+void CloseGameWindow() {
+	SDL_DestroyWindow( win32.windowHandle );
+	win32.windowHandle = NULL;
 }
 
 /*
@@ -1122,24 +757,6 @@ void idRenderBackend::GL_Color( float r, float g, float b, float a ) {
 }
 
 /*
-===============
-idRenderBackend::SetColorMappings
-===============
-*/
-void idRenderBackend::SetColorMappings() {
-	float b = r_brightness.GetFloat();
-	float invg = 1.0f / r_gamma.GetFloat();
-
-	float j = 0.0f;
-	for ( int i = 0; i < 256; i++, j += b ) {
-		int inf = idMath::Ftoi( 0xffff * pow( j / 255.0f, invg ) + 0.5f );
-		m_gammaTable[i] = idMath::ClampInt( 0, 0xFFFF, inf );
-	}
-
-	SetGamma( m_gammaTable, m_gammaTable, m_gammaTable );
-}
-
-/*
 =========================================================================================================
 
 BACKEND COMMANDS
@@ -1163,8 +780,6 @@ void idRenderBackend::Execute( const int numCmds, const idArray< renderCommand_t
 	if ( numCmds == 0 ) {
 		return;
 	}
-
-	ResizeImages();
 
 	renderLog.StartFrame();
 	GL_StartFrame();

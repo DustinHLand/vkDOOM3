@@ -382,104 +382,6 @@ srfTriangles_t* R_MakeTestImageTriangles() {
 }
 
 /*
-=============================
-SetNewMode
-
-r_fullScreen -1		borderless window at exact desktop coordinates
-r_fullScreen 0		bordered window at exact desktop coordinates
-r_fullScreen 1		fullscreen on monitor 1 at r_mode
-r_fullScreen 2		fullscreen on monitor 2 at r_mode
-...
-
-r_mode -1		use r_customWidth / r_customHeight, even if they don't appear on the mode list
-r_mode 0			use first mode returned by EnumDisplaySettings()
-r_mode 1			use second mode returned by EnumDisplaySettings()
-...
-
-r_displayRefresh 0	don't specify refresh
-r_displayRefresh 70	specify 70 hz, etc
-=============================
-*/
-bool R_GetModeListForDisplay( const int requestedDisplayNum, idList<vidMode_t> & modeList );
-bool SetScreenParms( gfxImpParms_t parms );
-static void SetNewMode() {
-	// try up to three different configurations
-
-	for ( int i = 0 ; i < 3 ; i++ ) {
-		gfxImpParms_t parms;
-
-		if ( r_fullscreen.GetInteger() <= 0 ) {
-			// use explicit position / size for window
-			parms.x = r_windowX.GetInteger();
-			parms.y = r_windowY.GetInteger();
-			parms.width = r_windowWidth.GetInteger();
-			parms.height = r_windowHeight.GetInteger();
-			// may still be -1 to force a borderless window
-			parms.fullScreen = r_fullscreen.GetInteger();
-			parms.displayHz = 0;		// ignored
-		} else {
-			// get the mode list for this monitor
-			idList<vidMode_t> modeList;
-			if ( !R_GetModeListForDisplay( r_fullscreen.GetInteger() - 1, modeList ) ) {
-				idLib::Printf( "r_fullscreen reset from %i to 1 because mode list failed.", r_fullscreen.GetInteger() );
-				r_fullscreen.SetInteger( 1 );
-				R_GetModeListForDisplay( r_fullscreen.GetInteger() - 1, modeList );
-			}
-			if ( modeList.Num() < 1 ) {
-				idLib::Printf( "Going to safe mode because mode list failed." );
-				goto safeMode;
-			}
-
-			parms.x = 0;		// ignored
-			parms.y = 0;		// ignored
-			parms.fullScreen = r_fullscreen.GetInteger();
-
-			// set the parameters we are trying
-			if ( r_mode.GetInteger() < 0 ) {
-				// try forcing a specific mode, even if it isn't on the list
-				parms.width = r_customWidth.GetInteger();
-				parms.height = r_customHeight.GetInteger();
-				parms.displayHz = r_displayRefresh.GetInteger();
-			} else {
-				if ( r_mode.GetInteger() > modeList.Num() ) {
-					idLib::Printf( "r_mode reset from %i to 0.\n", r_mode.GetInteger() );
-					r_mode.SetInteger( 0 );
-				}
-
-				parms.width = modeList[ r_mode.GetInteger() ].width;
-				parms.height = modeList[ r_mode.GetInteger() ].height;
-				parms.displayHz = modeList[ r_mode.GetInteger() ].displayHz;
-			}
-		}
-
-		parms.multiSamples = r_multiSamples.GetInteger();
-
-		// rebuild the window
-		if ( SetScreenParms( parms ) ) {
-			// it worked
-			break;
-		}
-
-		if ( i == 2 ) {
-			idLib::FatalError( "Unable to initialize new mode." );
-		}
-
-		if ( i == 0 ) {
-			// same settings, no stereo
-			continue;
-		}
-
-safeMode:
-		// if we failed, set everything back to "safe mode"
-		// and try again
-		r_mode.SetInteger( 0 );
-		r_fullscreen.SetInteger( 1 );
-		r_displayRefresh.SetInteger( 0 );
-		r_multiSamples.SetInteger( 0 );
-	}
-}
-
-/*
 =============
 idRenderSystemLocal::idRenderSystemLocal
 =============
@@ -619,8 +521,7 @@ void idRenderSystemLocal::VidRestart() {
 		return;
 	}
 
-	// set the mode without re-initializing the context
-	SetNewMode();
+	m_backend.Restart();
 
 #if 0
 	// this could take a while, so give them the cursor back ASAP
@@ -786,7 +687,7 @@ idRenderSystemLocal::IsFullScreen
 ========================
 */
 bool idRenderSystemLocal::IsFullScreen() const {
-	return win32.isFullscreen != 0;
+	return win32.isFullscreen;
 }
 
 /*
