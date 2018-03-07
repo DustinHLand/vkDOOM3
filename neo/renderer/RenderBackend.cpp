@@ -1111,8 +1111,6 @@ void idRenderBackend::Execute( const int numCmds, const idArray< renderCommand_t
 		return;
 	}
 
-	ResizeImages();
-
 	renderLog.StartFrame();
 	GL_StartFrame();
 

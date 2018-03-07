@@ -1326,16 +1326,10 @@ void idRenderBackend::Shutdown() {
 
 /*
 ====================
-idRenderBackend::ResizeImages
+idRenderBackend::Restart
 ====================
 */
-void idRenderBackend::ResizeImages() {
-	if ( m_swapchainExtent.width == win32.nativeScreenWidth && 
-		m_swapchainExtent.height == win32.nativeScreenHeight &&
-		m_fullscreen == win32.isFullscreen ) {
-		return;
-	}
-
+void idRenderBackend::Restart() {
 	stagingManager.Flush();
 	
 	vkDeviceWaitIdle( vkcontext.device );

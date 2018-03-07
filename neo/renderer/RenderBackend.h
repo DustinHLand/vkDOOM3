@@ -183,13 +183,14 @@ public:
 	void				Execute( const int numCmds, const idArray< renderCommand_t, 16 > & renderCommands );
 	void				BlockingSwapBuffers();
 
+	void				Restart();
+
 private:
 	void				DrawElementsWithCounters( const drawSurf_t * surf );
 	void				DrawStencilShadowPass( const drawSurf_t * drawSurf, const bool renderZPass );
 
 	void				SetColorMappings();
 	void				CheckCVars();
-	void				ResizeImages();
 
 	void				DrawView( const renderCommand_t & cmd );
 	void				CopyRender( const renderCommand_t & cmd );

@@ -622,6 +622,8 @@ void idRenderSystemLocal::VidRestart() {
 	// set the mode without re-initializing the context
 	SetNewMode();
 
+	m_backend.Restart();
+
 #if 0
 	// this could take a while, so give them the cursor back ASAP
 	Sys_GrabMouseCursor( false );
