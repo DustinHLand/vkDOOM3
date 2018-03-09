@@ -128,8 +128,6 @@ int idGameThread::Run() {
 
 	commonLocal.m_frameTiming.finishGameTime = Sys_Microseconds();
 
-	SetThreadGameTime( commonLocal.m_frameTiming.finishGameTime - commonLocal.m_frameTiming.startGameTime );
-
 	// build render commands and geometry
 	{
 		SCOPED_PROFILE_EVENT( "Draw" );
@@ -137,10 +135,6 @@ int idGameThread::Run() {
 	}
 
 	commonLocal.m_frameTiming.finishDrawTime = Sys_Microseconds();
-
-	SetThreadRenderTime( commonLocal.m_frameTiming.finishDrawTime - commonLocal.m_frameTiming.finishGameTime );
-
-	SetThreadTotalTime( commonLocal.m_frameTiming.finishDrawTime - commonLocal.m_frameTiming.startGameTime );
 
 	return 0;
 }

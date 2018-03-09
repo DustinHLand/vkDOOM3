@@ -232,9 +232,9 @@ float idConsoleLocal::DrawFPS( float y ) {
 	int w = resolutionText.Length() * BIGCHAR_WIDTH;
 	renderSystem->DrawBigStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, resolutionText.c_str(), colorWhite, true );
 
-	const uint64 gameThreadTotalTime	= commonLocal.GetGameThreadTotalTime();
-	const uint64 gameThreadGameTime		= commonLocal.GetGameThreadGameTime();
-	const uint64 gameThreadRenderTime	= commonLocal.GetGameThreadRenderTime();
+	const uint64 gameThreadTotalTime	= commonLocal.m_mainFrameTiming.finishDrawTime - commonLocal.m_mainFrameTiming.startGameTime;
+	const uint64 gameThreadGameTime		= commonLocal.m_mainFrameTiming.finishGameTime - commonLocal.m_mainFrameTiming.startGameTime;
+	const uint64 gameThreadRenderTime	= commonLocal.m_mainFrameTiming.finishDrawTime - commonLocal.m_mainFrameTiming.finishGameTime;
 	const uint64 rendererBackEndTime	= commonLocal.m_mainFrameTiming.backendTime;
 	const uint64 rendererDepthTime		= commonLocal.m_mainFrameTiming.depthTime;
 	const uint64 rendererInteractTime	= commonLocal.m_mainFrameTiming.interactionTime;
@@ -242,8 +242,8 @@ float idConsoleLocal::DrawFPS( float y ) {
 	const uint64 rendererShadowsTime	= commonLocal.m_mainFrameTiming.shadowTime;
 	const uint64 rendererGPUIdleTime	= commonLocal.m_mainFrameTiming.startRenderTime - commonLocal.m_mainFrameTiming.finishSyncTime;
 	const uint64 rendererGPUTime		= commonLocal.m_mainFrameTiming.gpuTime;
-	const double rendererBackEndTimeAvg = commonLocal.m_mainFrameTiming.backendTimeAvg;
-	const double rendererGPUTimeAvg		= commonLocal.m_mainFrameTiming.gpuTimeAvg;
+	/*const double rendererBackEndTimeAvg = commonLocal.m_mainFrameTiming.backendTimeAvg;
+	const double rendererGPUTimeAvg		= commonLocal.m_mainFrameTiming.gpuTimeAvg;*/
 	const uint64 maxTime = 16 * 1000;
 
 	y += SMALLCHAR_HEIGHT + 4;
@@ -268,10 +268,10 @@ float idConsoleLocal::DrawFPS( float y ) {
 	printTiming( timeStr, "%sIDLE: %5llu", rendererGPUIdleTime );
 	printTiming( timeStr, "%sGPU: %5llu", rendererGPUTime );
 
-	y += SMALLCHAR_HEIGHT + 4;
+	/*y += SMALLCHAR_HEIGHT + 4;
 
 	printTiming( timeStr, "%sRB-AVG: %llu", uint64( rendererBackEndTimeAvg ) );
-	printTiming( timeStr, "%sGPU-AVG: %llu", uint64( rendererGPUTimeAvg ) );
+	printTiming( timeStr, "%sGPU-AVG: %llu", uint64( rendererGPUTimeAvg ) );*/
 
 	return y + BIGCHAR_HEIGHT + 4;
 }

@@ -41,9 +41,6 @@ static const int LOAD_TIP_COUNT = 26;
 class idGameThread : public idSysThread {
 public:
 	idGameThread() :
-		threadTime(),
-		threadGameTime(),
-		threadRenderTime(),
 		userCmdMgr( NULL ),
 		ret(),
 		numGameFrames(),
@@ -54,22 +51,9 @@ public:
 	// new frame will be running in parallel on exit
 	gameReturn_t	RunGameAndDraw( int numGameFrames, idUserCmdMgr & userCmdMgr_, bool isClient_, int startGameFrame );
 
-	// Accessors to the stored frame/thread time information
-	void			SetThreadTotalTime( const uint64 inTime ) { threadTime = inTime; }
-	uint64			GetThreadTotalTime() const { return threadTime; }
-
-	void			SetThreadGameTime( const uint64 time ) { threadGameTime = time; }
-	uint64			GetThreadGameTime() const { return threadGameTime; }
-
-	void			SetThreadRenderTime( const uint64 time ) { threadRenderTime = time; }
-	uint64			GetThreadRenderTime() const { return threadRenderTime; }
-
 private:
 	virtual int	Run();
-
-	uint64			threadTime;					// total time : game time + foreground render time
-	uint64			threadGameTime;				// game time only
-	uint64			threadRenderTime;			// render fg time only
+	
 	idUserCmdMgr *	userCmdMgr;
 	gameReturn_t	ret;
 	int				numGameFrames;
@@ -266,10 +250,6 @@ public:
 
 public:
 	void	Draw();			// called by gameThread
-
-	uint64		GetGameThreadTotalTime() const { return gameThread.GetThreadTotalTime(); }
-	uint64		GetGameThreadGameTime() const { return gameThread.GetThreadGameTime(); }
-	uint64		GetGameThreadRenderTime() const { return gameThread.GetThreadRenderTime(); }
 
 	frameTiming_t		m_frameTiming;
 	frameTiming_t		m_mainFrameTiming;
