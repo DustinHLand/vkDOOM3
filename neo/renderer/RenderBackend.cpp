@@ -2650,7 +2650,7 @@ int idRenderBackend::DrawShaderPasses( const drawSurf_t * const * const drawSurf
 		renderLog.CloseBlock();
 	}
 
-	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
+	GL_State( m_glStateBits & ~( GLS_CULL_BITS ) | GLS_CULL_FRONTSIDED );
 	GL_Color( 1.0f, 1.0f, 1.0f );
 
 	renderLog.CloseBlock();
@@ -2915,7 +2915,7 @@ void idRenderBackend::FogPass( const drawSurf_t * drawSurfs,  const drawSurf_t *
 	m_zeroOneCubeSurface.scissorRect = m_viewDef->scissor;
 	T_BasicFog( &m_zeroOneCubeSurface, fogPlanes, &vLight->inverseBaseLightProject );
 
-	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
+	GL_State( m_glStateBits & ~( GLS_CULL_BITS ) | GLS_CULL_FRONTSIDED );
 
 	renderLog.CloseBlock();
 }
@@ -3092,7 +3092,7 @@ void idRenderBackend::StencilShadowPass( const drawSurf_t *drawSurfs, const view
 
 	// cleanup the shadow specific rendering state
 
-	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
+	GL_State( m_glStateBits & ~( GLS_CULL_BITS ) | GLS_CULL_FRONTSIDED );
 
 	// reset depth bounds
 	if ( r_useShadowDepthBounds.GetBool() ) {
@@ -3160,7 +3160,7 @@ void idRenderBackend::StencilSelectLight( const viewLight_t * vLight ) {
 	DrawElementsWithCounters( &m_zeroOneCubeSurface );
 
 	// reset stencil state
-	GL_State( m_glStateBits & ~( GLS_CULL_MASK ) | GLS_CULL_FRONTSIDED );
+	GL_State( m_glStateBits & ~( GLS_CULL_BITS ) | GLS_CULL_FRONTSIDED );
 
 	// unset the depthbounds
 	GL_DepthBoundsTest( 0.0f, 0.0f );

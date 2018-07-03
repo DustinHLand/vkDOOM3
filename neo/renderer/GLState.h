@@ -74,8 +74,7 @@ static const uint64 GLS_DEPTHFUNC_BITS					= 3 << 13;
 static const uint64 GLS_CULL_FRONTSIDED					= 0 << 15;
 static const uint64 GLS_CULL_BACKSIDED					= 1 << 15;
 static const uint64 GLS_CULL_TWOSIDED					= 2 << 15;
-static const uint64 GLS_CULL_BITS						= 2 << 15;
-static const uint64 GLS_CULL_MASK						= GLS_CULL_FRONTSIDED | GLS_CULL_BACKSIDED | GLS_CULL_TWOSIDED;
+static const uint64 GLS_CULL_BITS						= 3 << 15;
 
 static const uint64 GLS_BLENDOP_ADD						= 0 << 18;
 static const uint64 GLS_BLENDOP_SUB						= 1 << 18;
