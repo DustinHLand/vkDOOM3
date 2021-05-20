@@ -154,6 +154,7 @@ struct vulkanContext_t {
 
 	VkFormat						depthFormat;
 	VkRenderPass					renderPass;
+	VkRenderPass					renderPassResume;
 	VkPipelineCache					pipelineCache;
 	VkSampleCountFlagBits			sampleCount;
 	bool							supersampling;

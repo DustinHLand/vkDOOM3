@@ -1016,6 +1016,19 @@ void idRenderBackend::CreateRenderPass() {
 	renderPassCreateInfo.dependencyCount = 0;
 
 	ID_VK_CHECK( vkCreateRenderPass( vkcontext.device, &renderPassCreateInfo, NULL, &vkcontext.renderPass ) );
+
+	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	attachments[0].initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkRenderPassCreateInfo renderPassResumeCreateInfo = {};
+	renderPassResumeCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassResumeCreateInfo.attachmentCount = resolve ? 3 : 2;
+	renderPassResumeCreateInfo.pAttachments = attachments;
+	renderPassResumeCreateInfo.subpassCount = 1;
+	renderPassResumeCreateInfo.pSubpasses = &subpass;
+	renderPassResumeCreateInfo.dependencyCount = 0;
+
+	ID_VK_CHECK(vkCreateRenderPass(vkcontext.device, &renderPassResumeCreateInfo, NULL, &vkcontext.renderPassResume));
 }
 
 /*
@@ -1267,6 +1280,9 @@ void idRenderBackend::Shutdown() {
 
 	// Destroy Render Pass
 	vkDestroyRenderPass( vkcontext.device, vkcontext.renderPass, NULL );
+
+	// Destroy Render Pass
+	vkDestroyRenderPass(vkcontext.device, vkcontext.renderPassResume, NULL);
 
 	// Destroy Render Targets
 	DestroyRenderTargets();
@@ -1731,8 +1747,8 @@ void idRenderBackend::GL_CopyFrameBuffer( idImage * image, int x, int y, int ima
 	}
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.renderPass = vkcontext.renderPass;
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;	
+	renderPassBeginInfo.renderPass = vkcontext.renderPassResume;
 	renderPassBeginInfo.framebuffer = m_frameBuffers[ m_currentSwapIndex ];
 	renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
 
