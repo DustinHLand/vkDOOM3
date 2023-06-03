@@ -1,3 +1,6 @@
+# Archived
+I have not had the time to maintain this to keep pace as a learning tool for Vulkan. There are still some good nuggets in here for beginners and it's a sizable chunk of code utilizing the API. However, it's years behind the API updates so it's not going to inform you on recent best practices. I recommend getting involved with https://github.com/RobertBeckebans/RBDOOM-3-BFG as it supports Vulkan and is actively maintained. 
+
 # Overview
 vkDOOM3 adds a Vulkan renderer to the GPL DOOM 3 BFG Edition.  It was written as an example of how to use Vulkan for writing something more sizable than simple recipes.  It covers topics such as General Setup, Proper Memory & Resource Allocation, Synchronization, Pipelines, etc.  Note this is an unofficial release.
 
